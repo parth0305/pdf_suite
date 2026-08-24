@@ -20,8 +20,11 @@ class ViewerScreen extends ConsumerStatefulWidget {
 
 class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   final _controller = PdfViewerController();
-  late final PdfTextSearcher _searcher = PdfTextSearcher(_controller)
-    ..addListener(_onSearchChanged);
+
+  /// Created only once the viewer signals readiness: PdfTextSearcher's
+  /// constructor dereferences controller.document, which is null until the
+  /// document has loaded.
+  PdfTextSearcher? _searcher;
 
   String? _path;
   AppFailure? _failure;
@@ -39,13 +42,19 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   @override
   void dispose() {
     _searcher
-      ..removeListener(_onSearchChanged)
+      ?..removeListener(_onSearchChanged)
       ..dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
     if (mounted) setState(() {});
+  }
+
+  /// Indirection so the paint callback can be registered before the searcher
+  /// exists; it simply does nothing until the document is ready.
+  void _paintSearchMatches(Canvas canvas, Rect pageRect, PdfPage page) {
+    _searcher?.pageTextMatchPaintCallback(canvas, pageRect, page);
   }
 
   Future<void> _load() async {
@@ -114,7 +123,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 IconButton(
                   tooltip: l10n.viewerSearch,
                   icon: const Icon(Icons.search),
-                  onPressed: () => setState(() => _searchOpen = !_searchOpen),
+                  onPressed: _searcher == null
+                      ? null
+                      : () => setState(() => _searchOpen = !_searchOpen),
                 ),
                 IconButton(
                   tooltip: l10n.viewerZoomOut,
@@ -135,11 +146,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             ),
       body: Column(
         children: [
-          if (_searchOpen && !_fullScreen)
+          if (_searchOpen && !_fullScreen && _searcher != null)
             ViewerSearchBar(
-              searcher: _searcher,
+              searcher: _searcher!,
               onClose: () {
-                _searcher.resetTextSearch();
+                _searcher!.resetTextSearch();
                 setState(() => _searchOpen = false);
               },
             ),
@@ -152,7 +163,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 textSelectionParams: const PdfTextSelectionParams(
                   enabled: true,
                 ),
-                pagePaintCallbacks: [_searcher.pageTextMatchPaintCallback],
+                pagePaintCallbacks: [_paintSearchMatches],
+                onViewerReady: (document, controller) {
+                  if (!mounted || _searcher != null) return;
+                  setState(() {
+                    _searcher = PdfTextSearcher(controller)
+                      ..addListener(_onSearchChanged);
+                  });
+                },
                 onDocumentChanged: (doc) {
                   if (doc != null && mounted) {
                     setState(() => _totalPages = doc.pages.length);
