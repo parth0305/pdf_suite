@@ -41,6 +41,7 @@ dependencies:
   crypto: ^3.0.7
   path_provider: 2.1.6
   path: ^1.9.1
+  pdfrx: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +53,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  integration_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -64,6 +67,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   generate: true
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:
