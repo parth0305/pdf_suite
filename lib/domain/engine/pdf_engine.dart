@@ -4,6 +4,13 @@ import 'package:folio/domain/engine/pdf_types.dart';
 
 /// Supplies a password when an encrypted document is opened. Returning null
 /// cancels the open.
+///
+/// Implementations may call this **repeatedly**: a rejected password results in
+/// another call rather than an immediate failure, which is what produces the
+/// re-prompt behaviour in the UI. A failure is only raised once the callback
+/// returns null. Consequently `WrongPassword` means "at least one password was
+/// rejected before the user gave up", while `PasswordRequired` means "the user
+/// declined without trying".
 typedef PasswordCallback = Future<String?> Function();
 
 /// Where a document's bytes come from.
