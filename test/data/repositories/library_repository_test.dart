@@ -237,4 +237,69 @@ void main() {
       expect(await repo.favorites(), hasLength(1));
     });
   });
+
+  group('exportCopy', () {
+    test(
+      'writes a copy to the destination and leaves the library intact',
+      () async {
+        final src = await sourceFile('x.pdf', [37, 80, 68, 70, 1, 2, 3]);
+        final doc = await repo.importFile(src.path, displayName: 'x.pdf');
+        final dest = File('${sandbox.path}/exported.pdf');
+
+        await repo.exportCopy(doc.id, dest.path);
+
+        expect(dest.existsSync(), isTrue);
+        expect(await dest.readAsBytes(), await src.readAsBytes());
+        expect(
+          File(await repo.resolveReadablePath(doc)).existsSync(),
+          isTrue,
+          reason: 'Save As exports; it must not move the library copy',
+        );
+      },
+    );
+
+    test('exporting a missing managed copy yields DocumentMoved', () async {
+      final src = await sourceFile('y.pdf', [37, 80, 68, 70, 2]);
+      final doc = await repo.importFile(src.path, displayName: 'y.pdf');
+      await File(await repo.resolveReadablePath(doc)).delete();
+
+      await expectLater(
+        repo.exportCopy(doc.id, '${sandbox.path}/out.pdf'),
+        throwsA(isA<DocumentMoved>()),
+      );
+    });
+  });
+
+  group('moveToCollection', () {
+    test('moves a document into a collection and back to the root', () async {
+      final src = await sourceFile('z.pdf', [37, 80, 68, 70, 3]);
+      final doc = await repo.importFile(src.path, displayName: 'z.pdf');
+      final dao = LibraryDao(db);
+      final folder = await dao.createCollection('Invoices');
+
+      await repo.moveToCollection(doc.id, folder);
+      expect(await dao.documentsIn(folder), hasLength(1));
+
+      await repo.moveToCollection(doc.id, null);
+      expect(await dao.documentsIn(null), hasLength(1));
+    });
+
+    test('moving never touches the file on disk', () async {
+      final src = await sourceFile('w.pdf', [37, 80, 68, 70, 4]);
+      final doc = await repo.importFile(src.path, displayName: 'w.pdf');
+      final before = await repo.resolveReadablePath(doc);
+      final dao = LibraryDao(db);
+      final folder = await dao.createCollection('Reports');
+
+      await repo.moveToCollection(doc.id, folder);
+
+      expect(
+        await repo.resolveReadablePath(doc),
+        before,
+        reason:
+            'folders are virtual; a move is an UPDATE, not a file operation',
+      );
+      expect(File(before).existsSync(), isTrue);
+    });
+  });
 }

@@ -137,6 +137,22 @@ class LibraryRepositoryImpl implements LibraryRepository {
   }
 
   @override
+  Future<void> exportCopy(int docId, String destinationPath) async {
+    final doc = (await all()).firstWhere((d) => d.id == docId);
+    final bytes = await File(await resolveReadablePath(doc)).readAsBytes();
+
+    await _writer.write(
+      destination: File(destinationPath),
+      produce: (working) => working.writeAsBytes(bytes, flush: true),
+      validate: (working) async => await working.length() == bytes.length,
+    );
+  }
+
+  @override
+  Future<void> moveToCollection(int docId, int? collectionId) =>
+      _dao.moveDocument(docId, collectionId);
+
+  @override
   Future<LibraryDocument> duplicate(int id) async {
     final doc = (await all()).firstWhere((d) => d.id == id);
     final bytes = await File(await resolveReadablePath(doc)).readAsBytes();
