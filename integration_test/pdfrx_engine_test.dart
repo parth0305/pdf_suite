@@ -96,6 +96,73 @@ void main() {
       await engine.close(doc);
     });
 
+    test(
+      'an encrypted document prompts and opens with the right password',
+      () async {
+        var asked = 0;
+        final doc = await engine.open(
+          FileSource(await fixturePath('encrypted_user_pw.pdf')),
+          onPasswordRequired: () async {
+            asked++;
+            return 'folio-test';
+          },
+        );
+
+        expect(asked, greaterThan(0), reason: 'a prompt must have been shown');
+        expect(doc.pageCount, 3);
+        final text = await engine.extractText(doc, 2);
+        expect(
+          text!.fullText,
+          contains('PLATYPUS-TOKEN-42'),
+          reason: 'decryption must yield the original content',
+        );
+        await engine.close(doc);
+      },
+    );
+
+    test('cancelling the password prompt yields PasswordRequired', () async {
+      await expectLater(
+        engine.open(
+          FileSource(await fixturePath('encrypted_user_pw.pdf')),
+          onPasswordRequired: () async => null,
+        ),
+        throwsA(isA<PasswordRequired>()),
+      );
+    });
+
+    test(
+      'a wrong password re-prompts, then reports WrongPassword on give-up',
+      () async {
+        var attempts = 0;
+        await expectLater(
+          engine.open(
+            FileSource(await fixturePath('encrypted_user_pw.pdf')),
+            onPasswordRequired: () async {
+              attempts++;
+              return attempts == 1 ? 'nope' : null;
+            },
+          ),
+          throwsA(isA<WrongPassword>()),
+        );
+        expect(attempts, greaterThan(1), reason: 'engine must re-prompt');
+      },
+    );
+
+    test(
+      'a copy-restricted document opens freely but forbids copying',
+      () async {
+        final doc = await engine.open(
+          FileSource(await fixturePath('no_copy_permission.pdf')),
+        );
+        final perms = await engine.permissions(doc);
+
+        expect(perms, isNotNull);
+        expect(perms!.allowsCopying, isFalse, reason: '/P bit 3 is cleared');
+        expect(perms.allowsPrinting, isTrue, reason: '/P bit 5 is set');
+        await engine.close(doc);
+      },
+    );
+
     test('opens a 1000-page document quickly', () async {
       final sw = Stopwatch()..start();
       final doc = await engine.open(
