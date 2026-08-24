@@ -69,6 +69,39 @@ class LibraryDao {
     await (_db.delete(_db.documents)..where((t) => t.id.equals(id))).go();
   }
 
+  Future<int> createCollection(String name) =>
+      _db.into(_db.collections).insert(CollectionsCompanion.insert(name: name));
+
+  Future<void> renameCollection(int id, String name) async {
+    await (_db.update(_db.collections)..where((t) => t.id.equals(id))).write(
+      CollectionsCompanion(name: Value(name)),
+    );
+  }
+
+  Future<void> deleteCollection(int id) async {
+    await (_db.delete(_db.collections)..where((t) => t.id.equals(id))).go();
+  }
+
+  Future<List<Collection>> allCollections() => (_db.select(
+    _db.collections,
+  )..orderBy([(t) => OrderingTerm.asc(t.id)])).get();
+
+  Future<void> moveDocument(int docId, int? collectionId) async {
+    await (_db.update(_db.documents)..where((t) => t.id.equals(docId))).write(
+      DocumentsCompanion(collectionId: Value(collectionId)),
+    );
+  }
+
+  Future<List<LibraryDocument>> documentsIn(int? collectionId) async {
+    final query = _db.select(_db.documents)
+      ..where(
+        (t) => collectionId == null
+            ? t.collectionId.isNull()
+            : t.collectionId.equals(collectionId),
+      );
+    return (await query.get()).map(_toDomain).toList();
+  }
+
   LibraryDocument _toDomain(Document row) => LibraryDocument(
     id: row.id,
     ref: DocumentRef.decode(row.refPayload),

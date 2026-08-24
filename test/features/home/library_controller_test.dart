@@ -73,6 +73,12 @@ class _FakeRepo implements LibraryRepository {
   }) async => _make(displayName);
 
   @override
+  Future<void> exportCopy(int docId, String destinationPath) async {}
+
+  @override
+  Future<void> moveToCollection(int docId, int? collectionId) async {}
+
+  @override
   Future<LibraryDocument> duplicate(int id) async {
     final doc = _make('copy');
     docs.add(doc);
