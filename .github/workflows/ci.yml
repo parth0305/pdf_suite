@@ -18,6 +18,9 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
       - run: flutter pub get
+      # *.g.dart is gitignored, so generated sources must be built before
+      # analysis or the analyzer sees missing parts.
+      - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart format --set-exit-if-changed lib test
       - run: flutter analyze --fatal-infos
       - run: flutter test --coverage
@@ -36,6 +39,7 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
       - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build apk --debug --dart-define-from-file=config/development.json
 
   build-apple:
@@ -47,6 +51,7 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
       - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
       # iOS and macOS share one job to conserve macOS runner minutes,
       # which bill at a 10x multiplier on private repositories.
       - run: flutter build ios --debug --no-codesign --dart-define-from-file=config/development.json
@@ -63,5 +68,6 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
       - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter test
       - run: flutter build windows --debug --dart-define-from-file=config/development.json

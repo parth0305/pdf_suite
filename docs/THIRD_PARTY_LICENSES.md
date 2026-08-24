@@ -69,3 +69,16 @@ paid OCR or analytics SDK.
 ### flutter_lints
 - **License:** BSD-3-Clause (Flutter team)
 - **Copyleft obligations:** none
+
+### drift 2.34.3 / drift_flutter 0.3.1
+- **License:** MIT
+- **Source:** https://github.com/simolus3/drift
+- **Copyleft obligations:** none
+
+### sqlite3 3.5.2 (transitive)
+- **License:** MIT (Dart bindings); SQLite itself is public domain
+- **Source:** https://github.com/simolus3/sqlite3.dart
+- **Copyleft obligations:** none
+- **Notes:** builds via Dart native assets (`hooks`, `code_assets`,
+  `native_toolchain_c`). `sqlite3_flutter_libs` 0.6.0+eol resolves as an empty
+  compatibility shim; the native build moved into `sqlite3` 3.x.
