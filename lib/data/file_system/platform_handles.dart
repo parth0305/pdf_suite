@@ -15,12 +15,24 @@ class PlatformHandles {
   static const MethodChannel _channel = MethodChannel('dev.folio.app/handles');
 
   /// Converts a freshly picked path or URI into a handle that survives relaunch.
+  ///
+  /// On Android the argument **must** be a Storage Access Framework
+  /// `content://` URI obtained from the system picker. A plain filesystem path
+  /// cannot be granted a persistable permission, and is rejected rather than
+  /// silently producing a handle that fails on the next launch.
   Future<ExternalHandle> capture(String pathOrUri) async {
     if (Platform.isWindows || Platform.isLinux) {
       return PathHandle(pathOrUri);
     }
     try {
       if (Platform.isAndroid) {
+        if (!pathOrUri.startsWith('content://')) {
+          throw const UnsupportedFeature(
+            technicalDetail:
+                'Android open-in-place requires a SAF content:// URI, '
+                'not a filesystem path',
+          );
+        }
         await _channel.invokeMethod<void>('persistUriPermission', {
           'uri': pathOrUri,
         });
