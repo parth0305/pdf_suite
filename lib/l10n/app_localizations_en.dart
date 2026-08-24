@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Folio';
 
   @override
+  String get libraryTitle => 'Library';
+
+  @override
+  String get settingsLabel => 'Settings';
+
+  @override
   String get errorDocumentCorruptTitle => 'Unable to open this PDF.';
 
   @override
