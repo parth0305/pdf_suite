@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
+import 'package:folio/engine/pdfrx_mappers.dart';
 import 'package:pdfrx/pdfrx.dart' as rx;
 
 /// [PdfEngine] backed by pdfrx / PDFium.
@@ -122,15 +123,8 @@ class PdfrxEngine implements PdfEngine {
   @override
   Future<List<OutlineNode>> outline(PdfDocumentHandle doc) async {
     final nodes = await _resolve(doc).loadOutline();
-    return nodes.map(_convertOutline).toList();
+    return nodes.map(convertOutlineNode).toList();
   }
-
-  OutlineNode _convertOutline(rx.PdfOutlineNode node) => OutlineNode(
-    title: node.title,
-    // PdfDest.pageNumber is 1-based; our API is 0-based.
-    pageIndex: node.dest?.pageNumber == null ? null : node.dest!.pageNumber - 1,
-    children: node.children.map(_convertOutline).toList(),
-  );
 
   @override
   Future<DocumentPermissions?> permissions(PdfDocumentHandle doc) async {
