@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 part 'app_database.g.dart';
 
@@ -19,7 +20,18 @@ class Documents extends Table {
 
 @DriftDatabase(tables: [Documents])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(driftDatabase(name: 'folio'));
+  AppDatabase()
+    : super(
+        driftDatabase(
+          name: 'folio',
+          // Application Support, not Documents. UIFileSharingEnabled makes
+          // Documents visible in the Files app, where a user could delete the
+          // database and lose their whole library. Matches AppDirectories.
+          native: const DriftNativeOptions(
+            databaseDirectory: getApplicationSupportDirectory,
+          ),
+        ),
+      );
 
   AppDatabase.forTesting(super.executor);
 
