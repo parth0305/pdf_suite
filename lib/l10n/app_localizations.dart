@@ -100,6 +100,18 @@ abstract class AppLocalizations {
   /// **'Folio'**
   String get appTitle;
 
+  /// No description provided for @libraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryTitle;
+
+  /// No description provided for @settingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsLabel;
+
   /// No description provided for @errorDocumentCorruptTitle.
   ///
   /// In en, this message translates to:
