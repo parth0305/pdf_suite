@@ -85,6 +85,7 @@ Ends with: an app that launches on the simulator, shows a themed adaptive shell,
 
 **Files:**
 - Create: `pubspec.yaml`, `analysis_options.yaml`, `lib/main.dart`, `lib/app.dart`
+- Platforms: `android`, `ios`, `windows`, **`macos`** — macOS is not a shipping target, but it is the only desktop this machine can build, so it stands in for manual verification of the expanded layout that Windows CI cannot provide
 - Create: `config/development.json`, `config/testing.json`, `config/production.json`
 - Create: `lib/core/constants/app_config.dart`
 - Create: `.github/workflows/ci.yml`
@@ -103,7 +104,7 @@ The repo already contains `.git`, `docs/`, and `scripts/`. Scaffold in place:
 ```bash
 cd /Users/user/pdf_suite
 flutter create --project-name folio --org dev.folio \
-  --platforms=android,ios,windows --overwrite .
+  --platforms=android,ios,windows,macos --overwrite .
 ```
 
 - [ ] **Step 2: Correct the bundle identifier to `dev.folio.app`**
