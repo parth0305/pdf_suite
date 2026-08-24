@@ -62,6 +62,7 @@ windows/flutter/ephemeral/
 
 # Generated (regenerated via build_runner; CI must run it)
 *.g.dart
+!lib/l10n/app_localizations*.dart
 *.freezed.dart
 coverage/
 

@@ -1,0 +1,20 @@
+{
+  "@@locale": "en",
+  "appTitle": "Folio",
+  "errorDocumentCorruptTitle": "Unable to open this PDF.",
+  "errorDocumentCorruptBody": "The file may be corrupted or use an unsupported PDF feature.",
+  "errorDocumentMovedTitle": "This document has moved.",
+  "errorDocumentMovedBody": "It may have been renamed, moved, or deleted outside the app.",
+  "errorPermissionRevokedTitle": "No longer able to open this file.",
+  "errorPermissionRevokedBody": "Permission to read it was withdrawn. Open it again to restore access.",
+  "errorPasswordRequiredTitle": "This PDF is password protected.",
+  "errorPasswordRequiredBody": "Enter the password to open it.",
+  "errorWrongPasswordTitle": "Incorrect password.",
+  "errorWrongPasswordBody": "Check the password and try again.",
+  "errorUnsupportedFeatureTitle": "Unable to display this PDF.",
+  "errorUnsupportedFeatureBody": "It uses a PDF feature this app does not support yet.",
+  "errorStorageFullTitle": "Not enough storage.",
+  "errorStorageFullBody": "Free up some space and try again.",
+  "errorUnknownTitle": "Something went wrong.",
+  "errorUnknownBody": "The operation could not be completed."
+}
