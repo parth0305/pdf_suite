@@ -18,5 +18,39 @@
   "errorStorageFullTitle": "Not enough storage.",
   "errorStorageFullBody": "Free up some space and try again.",
   "errorUnknownTitle": "Something went wrong.",
-  "errorUnknownBody": "The operation could not be completed."
+  "errorUnknownBody": "The operation could not be completed.",
+  "emptyLibraryTitle": "No documents yet",
+  "emptyLibraryBody": "Import a PDF to get started. Files are copied into the app so they always reopen.",
+  "importAction": "Import PDF",
+  "favoriteAction": "Favorite",
+  "unfavoriteAction": "Remove from favorites",
+  "renameAction": "Rename",
+  "deleteAction": "Delete",
+  "duplicateAction": "Duplicate",
+  "recentsTitle": "Recent",
+  "favoritesTitle": "Favorites",
+  "allDocumentsTitle": "All",
+  "searchHint": "Search documents",
+  "sortLabel": "Sort",
+  "sortByName": "Name",
+  "sortByDateAdded": "Date added",
+  "sortByDateOpened": "Last opened",
+  "sortBySize": "Size",
+  "sortAscending": "Ascending",
+  "sortDescending": "Descending",
+  "importedCopyBadge": "Imported copy",
+  "noSearchResults": "No documents match your search.",
+  "noRecents": "Documents you open will appear here.",
+  "noFavorites": "Star a document to keep it here.",
+  "cancelAction": "Cancel",
+  "saveAction": "Save",
+  "pageCountLabel": "{count} pages",
+  "@pageCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moreActionsLabel": "More actions"
 }

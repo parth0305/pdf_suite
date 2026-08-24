@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:folio/core/theme/app_theme.dart';
+import 'package:folio/features/home/library_screen.dart';
 import 'package:folio/l10n/app_localizations.dart';
 import 'package:folio/widgets/adaptive_scaffold.dart';
 
@@ -38,12 +39,9 @@ class _FolioAppState extends State<FolioApp> {
                 label: l10n.settingsLabel,
               ),
             ],
-            body: Center(
-              child: Text(
-                _index == 0 ? l10n.libraryTitle : l10n.settingsLabel,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ),
+            body: _index == 0
+                ? const LibraryScreen()
+                : Center(child: Text(l10n.settingsLabel)),
           );
         },
       ),

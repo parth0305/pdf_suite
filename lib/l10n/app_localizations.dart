@@ -207,6 +207,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The operation could not be completed.'**
   String get errorUnknownBody;
+
+  /// No description provided for @emptyLibraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents yet'**
+  String get emptyLibraryTitle;
+
+  /// No description provided for @emptyLibraryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a PDF to get started. Files are copied into the app so they always reopen.'**
+  String get emptyLibraryBody;
+
+  /// No description provided for @importAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import PDF'**
+  String get importAction;
+
+  /// No description provided for @favoriteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get favoriteAction;
+
+  /// No description provided for @unfavoriteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get unfavoriteAction;
+
+  /// No description provided for @renameAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameAction;
+
+  /// No description provided for @deleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteAction;
+
+  /// No description provided for @duplicateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get duplicateAction;
+
+  /// No description provided for @recentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get recentsTitle;
+
+  /// No description provided for @favoritesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favoritesTitle;
+
+  /// No description provided for @allDocumentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allDocumentsTitle;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search documents'**
+  String get searchHint;
+
+  /// No description provided for @sortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sortLabel;
+
+  /// No description provided for @sortByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get sortByName;
+
+  /// No description provided for @sortByDateAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Date added'**
+  String get sortByDateAdded;
+
+  /// No description provided for @sortByDateOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Last opened'**
+  String get sortByDateOpened;
+
+  /// No description provided for @sortBySize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get sortBySize;
+
+  /// No description provided for @sortAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get sortAscending;
+
+  /// No description provided for @sortDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get sortDescending;
+
+  /// No description provided for @importedCopyBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported copy'**
+  String get importedCopyBadge;
+
+  /// No description provided for @noSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents match your search.'**
+  String get noSearchResults;
+
+  /// No description provided for @noRecents.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents you open will appear here.'**
+  String get noRecents;
+
+  /// No description provided for @noFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Star a document to keep it here.'**
+  String get noFavorites;
+
+  /// No description provided for @cancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelAction;
+
+  /// No description provided for @saveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveAction;
+
+  /// No description provided for @pageCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pages'**
+  String pageCountLabel(int count);
+
+  /// No description provided for @moreActionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get moreActionsLabel;
 }
 
 class _AppLocalizationsDelegate
