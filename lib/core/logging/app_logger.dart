@@ -40,7 +40,7 @@ class AppLogger {
     _emit(
       Level.INFO,
       _compose('start', operation, {
-        if (fileHash != null) 'file': fileHash,
+        'file': ?fileHash,
         if (fileSizeBytes != null) 'bytes': '$fileSizeBytes',
       }),
     );
@@ -58,8 +58,7 @@ class AppLogger {
         'result': success ? 'success' : 'failure',
         if (elapsed != null) 'ms': '${elapsed.inMilliseconds}',
         if (failure != null) 'code': failure.code,
-        if (failure?.technicalDetail != null)
-          'detail': failure!.technicalDetail!,
+        'detail': ?failure?.technicalDetail,
       }),
     );
   }
