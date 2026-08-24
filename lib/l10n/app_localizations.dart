@@ -369,6 +369,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More actions'**
   String get moreActionsLabel;
+
+  /// No description provided for @passwordPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password required'**
+  String get passwordPromptTitle;
+
+  /// No description provided for @passwordPromptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordPromptHint;
+
+  /// No description provided for @passwordPromptOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get passwordPromptOpen;
+
+  /// No description provided for @viewerPageIndicator.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total}'**
+  String viewerPageIndicator(int current, int total);
+
+  /// No description provided for @viewerZoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get viewerZoomIn;
+
+  /// No description provided for @viewerZoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get viewerZoomOut;
+
+  /// No description provided for @viewerFullScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get viewerFullScreen;
+
+  /// No description provided for @viewerExitFullScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit full screen'**
+  String get viewerExitFullScreen;
+
+  /// No description provided for @viewerThumbnails.
+  ///
+  /// In en, this message translates to:
+  /// **'Page thumbnails'**
+  String get viewerThumbnails;
+
+  /// No description provided for @viewerOutline.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get viewerOutline;
+
+  /// No description provided for @viewerNoOutline.
+  ///
+  /// In en, this message translates to:
+  /// **'This document has no bookmarks.'**
+  String get viewerNoOutline;
+
+  /// No description provided for @viewerSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in document'**
+  String get viewerSearch;
+
+  /// No description provided for @viewerNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches'**
+  String get viewerNoMatches;
+
+  /// No description provided for @viewerMatchIndicator.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total}'**
+  String viewerMatchIndicator(int current, int total);
+
+  /// No description provided for @viewerNextMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match'**
+  String get viewerNextMatch;
+
+  /// No description provided for @viewerPreviousMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match'**
+  String get viewerPreviousMatch;
+
+  /// No description provided for @viewerCloseSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Close search'**
+  String get viewerCloseSearch;
+
+  /// No description provided for @viewerPageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {number}'**
+  String viewerPageLabel(int number);
 }
 
 class _AppLocalizationsDelegate

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:folio/core/theme/app_theme.dart';
 import 'package:folio/features/home/library_screen.dart';
+import 'package:folio/features/viewer/viewer_screen.dart';
 import 'package:folio/l10n/app_localizations.dart';
 import 'package:folio/widgets/adaptive_scaffold.dart';
 
@@ -40,7 +41,13 @@ class _FolioAppState extends State<FolioApp> {
               ),
             ],
             body: _index == 0
-                ? const LibraryScreen()
+                ? LibraryScreen(
+                    onOpenDocument: (doc) => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ViewerScreen(document: doc),
+                      ),
+                    ),
+                  )
                 : Center(child: Text(l10n.settingsLabel)),
           );
         },

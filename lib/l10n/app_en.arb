@@ -52,5 +52,50 @@
       }
     }
   },
-  "moreActionsLabel": "More actions"
+  "moreActionsLabel": "More actions",
+  "passwordPromptTitle": "Password required",
+  "passwordPromptHint": "Password",
+  "passwordPromptOpen": "Open",
+  "viewerPageIndicator": "{current} of {total}",
+  "@viewerPageIndicator": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "viewerZoomIn": "Zoom in",
+  "viewerZoomOut": "Zoom out",
+  "viewerFullScreen": "Full screen",
+  "viewerExitFullScreen": "Exit full screen",
+  "viewerThumbnails": "Page thumbnails",
+  "viewerOutline": "Bookmarks",
+  "viewerNoOutline": "This document has no bookmarks.",
+  "viewerSearch": "Search in document",
+  "viewerNoMatches": "No matches",
+  "viewerMatchIndicator": "{current} of {total}",
+  "@viewerMatchIndicator": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "viewerNextMatch": "Next match",
+  "viewerPreviousMatch": "Previous match",
+  "viewerCloseSearch": "Close search",
+  "viewerPageLabel": "Page {number}",
+  "@viewerPageLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  }
 }

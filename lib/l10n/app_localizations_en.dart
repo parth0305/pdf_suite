@@ -152,4 +152,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moreActionsLabel => 'More actions';
+
+  @override
+  String get passwordPromptTitle => 'Password required';
+
+  @override
+  String get passwordPromptHint => 'Password';
+
+  @override
+  String get passwordPromptOpen => 'Open';
+
+  @override
+  String viewerPageIndicator(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
+  String get viewerZoomIn => 'Zoom in';
+
+  @override
+  String get viewerZoomOut => 'Zoom out';
+
+  @override
+  String get viewerFullScreen => 'Full screen';
+
+  @override
+  String get viewerExitFullScreen => 'Exit full screen';
+
+  @override
+  String get viewerThumbnails => 'Page thumbnails';
+
+  @override
+  String get viewerOutline => 'Bookmarks';
+
+  @override
+  String get viewerNoOutline => 'This document has no bookmarks.';
+
+  @override
+  String get viewerSearch => 'Search in document';
+
+  @override
+  String get viewerNoMatches => 'No matches';
+
+  @override
+  String viewerMatchIndicator(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
+  String get viewerNextMatch => 'Next match';
+
+  @override
+  String get viewerPreviousMatch => 'Previous match';
+
+  @override
+  String get viewerCloseSearch => 'Close search';
+
+  @override
+  String viewerPageLabel(int number) {
+    return 'Page $number';
+  }
 }
