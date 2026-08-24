@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+import '../scripts/pdf_encrypt.dart';
 import '../scripts/pdf_fixture_builder.dart';
 
 /// Builds a fixture on the device and returns its path.
@@ -29,6 +30,10 @@ List<int> _build(String name) {
       return buildPdf(generatedPages(3), corruptXref: true);
     case 'embedded_javascript.pdf':
       return buildPdf(generatedPages(1), extraCatalogEntries: kJavaScriptNames);
+    case 'encrypted_user_pw.pdf':
+      return _encrypted('folio-test', -44);
+    case 'no_copy_permission.pdf':
+      return _encrypted('', -48);
     case 'corrupt_truncated.pdf':
       final full = buildPdf(generatedPages(3));
       return full.sublist(0, full.length - 200);
@@ -40,3 +45,15 @@ List<int> _build(String name) {
       throw ArgumentError('unknown fixture: $name');
   }
 }
+
+List<int> _encrypted(String password, int permissions) => buildEncryptedPdf(
+  kSampleThreePage,
+  userPassword: password,
+  permissions: permissions,
+  ownerValue: (o, u) => computeOwnerValue(ownerPassword: o, userPassword: u),
+  encryptionKey: computeEncryptionKey,
+  userValue: computeUserValue,
+  objectKey: objectKey,
+  rc4: rc4,
+  hexString: hexString,
+);
