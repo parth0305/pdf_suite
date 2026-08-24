@@ -68,4 +68,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorUnknownBody => 'The operation could not be completed.';
+
+  @override
+  String get emptyLibraryTitle => 'No documents yet';
+
+  @override
+  String get emptyLibraryBody =>
+      'Import a PDF to get started. Files are copied into the app so they always reopen.';
+
+  @override
+  String get importAction => 'Import PDF';
+
+  @override
+  String get favoriteAction => 'Favorite';
+
+  @override
+  String get unfavoriteAction => 'Remove from favorites';
+
+  @override
+  String get renameAction => 'Rename';
+
+  @override
+  String get deleteAction => 'Delete';
+
+  @override
+  String get duplicateAction => 'Duplicate';
+
+  @override
+  String get recentsTitle => 'Recent';
+
+  @override
+  String get favoritesTitle => 'Favorites';
+
+  @override
+  String get allDocumentsTitle => 'All';
+
+  @override
+  String get searchHint => 'Search documents';
+
+  @override
+  String get sortLabel => 'Sort';
+
+  @override
+  String get sortByName => 'Name';
+
+  @override
+  String get sortByDateAdded => 'Date added';
+
+  @override
+  String get sortByDateOpened => 'Last opened';
+
+  @override
+  String get sortBySize => 'Size';
+
+  @override
+  String get sortAscending => 'Ascending';
+
+  @override
+  String get sortDescending => 'Descending';
+
+  @override
+  String get importedCopyBadge => 'Imported copy';
+
+  @override
+  String get noSearchResults => 'No documents match your search.';
+
+  @override
+  String get noRecents => 'Documents you open will appear here.';
+
+  @override
+  String get noFavorites => 'Star a document to keep it here.';
+
+  @override
+  String get cancelAction => 'Cancel';
+
+  @override
+  String get saveAction => 'Save';
+
+  @override
+  String pageCountLabel(int count) {
+    return '$count pages';
+  }
+
+  @override
+  String get moreActionsLabel => 'More actions';
 }

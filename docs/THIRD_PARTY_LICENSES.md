@@ -82,3 +82,13 @@ paid OCR or analytics SDK.
 - **Notes:** builds via Dart native assets (`hooks`, `code_assets`,
   `native_toolchain_c`). `sqlite3_flutter_libs` 0.6.0+eol resolves as an empty
   compatibility shim; the native build moved into `sqlite3` 3.x.
+
+### flutter_riverpod
+- **License:** MIT
+- **Source:** https://github.com/rrousselGit/riverpod
+- **Copyleft obligations:** none
+
+### file_selector 1.1.0
+- **License:** BSD-3-Clause (Flutter team)
+- **Source:** https://github.com/flutter/packages
+- **Copyleft obligations:** none
