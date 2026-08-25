@@ -41,9 +41,26 @@ that platform. A build passing is not verification.
 **Windows is 🟡 throughout.** It compiles and passes unit tests on CI; no human
 or integration test has exercised it. See `LIMITATIONS.md`.
 
-## Not in SP-1
+## SP-2a — Page Operations
 
-Merge, split, reorder, rotate-and-save, annotations, signatures, scanner, OCR,
-compression, encryption authoring, redaction, watermarks, metadata editing,
-batch processing, automation rules, and printing are all ❌ — planned for
-SP-2 through SP-9.
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Pages mode (thumbnail grid) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Reorder pages (drag) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Delete pages | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Duplicate pages | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Rotate pages | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Extract pages to a new document | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Insert pages from another document | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Merge documents | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Split document (every page or ranges) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Undo / redo page edits | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Every operation writes a **new** document and leaves its source
+byte-identical, asserted by hash in the integration suite.
+
+## Not in SP-1 or SP-2a
+
+Annotations, signatures, scanner, OCR, compression, encryption authoring,
+redaction, watermarks, metadata editing, batch processing, automation rules,
+and printing are all ❌ — planned for SP-2b through SP-9.

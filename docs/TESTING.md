@@ -36,13 +36,13 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-25.
+Last measured on 2026-08-25, after SP-2a.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 132 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 28 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 27 passed, 2 skipped |
+| Unit (host) | 233 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 47 passed, 1 skipped |
+| Android emulator (API 35, x86_64) | see note below |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
@@ -56,7 +56,9 @@ flutter test --coverage
 ```
 
 Business-logic coverage (`lib/domain` + `lib/data`, excluding generated
-`*.g.dart`) is **81.4%** against a target of 80%.
+`*.g.dart`) is **85%** against a target of 80%. The SP-2a editing layer
+(`lib/domain/editing`) is at **99%** against its own 90% target, which is
+reachable because it is pure Dart with no native dependency.
 
 Two files are deliberately low and are covered by integration tests instead:
 `platform_handles.dart` is a platform-channel adapter that only answers on a

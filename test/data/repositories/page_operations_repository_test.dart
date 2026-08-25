@@ -84,6 +84,24 @@ void main() {
       expect(await library.all(), hasLength(1));
     });
 
+    // Inserting pages from another document leaves its id in the slot list, so
+    // apply must open every document the slots reference, not only the source.
+    test('applies slots that reference more than one document', () async {
+      final a = await seed('A.pdf');
+      final b = await seed('B.pdf');
+
+      final result = await ops.apply(
+        sourceDocumentId: a,
+        slots: [
+          PageSlot(sourceDocumentId: a, sourcePageIndex: 0),
+          PageSlot(sourceDocumentId: b, sourcePageIndex: 0),
+        ],
+      );
+
+      expect(result.displayName, 'A (edited).pdf');
+      expect(editor.calls.single, hasLength(2));
+    });
+
     test('editing an edited document numbers the suffix', () async {
       final id = await seed('Invoice.pdf');
       final once = await ops.apply(
