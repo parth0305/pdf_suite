@@ -1,0 +1,113 @@
+{
+  "@@locale": "en",
+  "appTitle": "Folio",
+  "libraryTitle": "Library",
+  "settingsLabel": "Settings",
+  "errorDocumentCorruptTitle": "Unable to open this PDF.",
+  "errorDocumentCorruptBody": "The file may be corrupted or use an unsupported PDF feature.",
+  "errorDocumentMovedTitle": "This document has moved.",
+  "errorDocumentMovedBody": "It may have been renamed, moved, or deleted outside the app.",
+  "errorPermissionRevokedTitle": "No longer able to open this file.",
+  "errorPermissionRevokedBody": "Permission to read it was withdrawn. Open it again to restore access.",
+  "errorPasswordRequiredTitle": "This PDF is password protected.",
+  "errorPasswordRequiredBody": "Enter the password to open it.",
+  "errorWrongPasswordTitle": "Incorrect password.",
+  "errorWrongPasswordBody": "Check the password and try again.",
+  "errorUnsupportedFeatureTitle": "Unable to display this PDF.",
+  "errorUnsupportedFeatureBody": "It uses a PDF feature this app does not support yet.",
+  "errorStorageFullTitle": "Not enough storage.",
+  "errorStorageFullBody": "Free up some space and try again.",
+  "errorUnknownTitle": "Something went wrong.",
+  "errorUnknownBody": "The operation could not be completed.",
+  "emptyLibraryTitle": "No documents yet",
+  "emptyLibraryBody": "Import a PDF to get started. Files are copied into the app so they always reopen.",
+  "importAction": "Import PDF",
+  "favoriteAction": "Favorite",
+  "unfavoriteAction": "Remove from favorites",
+  "renameAction": "Rename",
+  "deleteAction": "Delete",
+  "duplicateAction": "Duplicate",
+  "recentsTitle": "Recent",
+  "favoritesTitle": "Favorites",
+  "allDocumentsTitle": "All",
+  "searchHint": "Search documents",
+  "sortLabel": "Sort",
+  "sortByName": "Name",
+  "sortByDateAdded": "Date added",
+  "sortByDateOpened": "Last opened",
+  "sortBySize": "Size",
+  "sortAscending": "Ascending",
+  "sortDescending": "Descending",
+  "importedCopyBadge": "Imported copy",
+  "noSearchResults": "No documents match your search.",
+  "noRecents": "Documents you open will appear here.",
+  "noFavorites": "Star a document to keep it here.",
+  "cancelAction": "Cancel",
+  "saveAction": "Save",
+  "pageCountLabel": "{count} pages",
+  "@pageCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moreActionsLabel": "More actions",
+  "passwordPromptTitle": "Password required",
+  "passwordPromptHint": "Password",
+  "passwordPromptOpen": "Open",
+  "viewerPageIndicator": "{current} of {total}",
+  "@viewerPageIndicator": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "viewerZoomIn": "Zoom in",
+  "viewerZoomOut": "Zoom out",
+  "viewerFullScreen": "Full screen",
+  "viewerExitFullScreen": "Exit full screen",
+  "viewerThumbnails": "Page thumbnails",
+  "viewerOutline": "Bookmarks",
+  "viewerNoOutline": "This document has no bookmarks.",
+  "viewerSearch": "Search in document",
+  "viewerNoMatches": "No matches",
+  "viewerMatchIndicator": "{current} of {total}",
+  "@viewerMatchIndicator": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "viewerNextMatch": "Next match",
+  "viewerPreviousMatch": "Previous match",
+  "viewerCloseSearch": "Close search",
+  "viewerPageLabel": "Page {number}",
+  "@viewerPageLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionsAll": "All",
+  "collectionNew": "New folder",
+  "collectionNameHint": "Folder name",
+  "moveToAction": "Move to",
+  "moveToRoot": "Library root",
+  "saveAsAction": "Save a copy",
+  "exportSuccess": "Copy saved",
+  "deleteFolderAction": "Delete folder",
+  "renameFolderAction": "Rename folder",
+  "deleteFolderExplain": "Documents in this folder return to the library root. Nothing is deleted.",
+  "createAction": "Create",
+  "noDocumentsInFolder": "This folder is empty."
+}
