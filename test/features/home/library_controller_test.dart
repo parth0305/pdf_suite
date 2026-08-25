@@ -104,6 +104,18 @@ class _FakeRepo implements LibraryRepository {
   }
 
   @override
+  Future<LibraryDocument> registerManaged({
+    required String relativePath,
+    required String contentHash,
+    required String displayName,
+    required int sizeBytes,
+  }) async {
+    final doc = _make(displayName);
+    docs.add(doc);
+    return doc;
+  }
+
+  @override
   Future<void> deleteCollection(int id) async {
     folders.removeWhere((f) => f.id == id);
     for (var i = 0; i < docs.length; i++) {

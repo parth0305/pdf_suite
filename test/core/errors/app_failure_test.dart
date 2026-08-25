@@ -33,6 +33,14 @@ void main() {
       },
     );
 
+    // Without this, an ordinary `on Exception catch` would let an AppFailure
+    // escape uncaught.
+    test('every failure is an Exception', () {
+      expect(const DocumentCorrupt(), isA<Exception>());
+      expect(const EmptyDocument(), isA<Exception>());
+      expect(const UnknownFailure(), isA<Exception>());
+    });
+
     test('technical detail defaults to null', () {
       expect(const DocumentMoved().technicalDetail, isNull);
     });

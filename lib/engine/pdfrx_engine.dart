@@ -68,6 +68,10 @@ class PdfrxEngine implements PdfEngine {
     return doc;
   }
 
+  /// Internal access for [PdfrxPageEditor]. Not part of [PdfEngine]: exposing
+  /// it there would give every reader a route to the write path.
+  rx.PdfDocument documentFor(PdfDocumentHandle handle) => _resolve(handle);
+
   @override
   Future<PdfPageInfo> pageInfo(PdfDocumentHandle doc, int pageIndex) async {
     final page = _resolve(doc).pages[pageIndex];
