@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/pdf_annotation_writer.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 
 Uint8List classicPdf() => Uint8List.fromList(

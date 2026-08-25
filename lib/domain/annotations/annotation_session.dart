@@ -1,4 +1,4 @@
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 
 /// Markup staged for writing.
 ///

@@ -1,4 +1,4 @@
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 
 /// Content stream for a markup annotation's appearance.
 ///

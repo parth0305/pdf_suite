@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/domain/annotations/pdf_annotation_writer.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/editing/pdf_metadata.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/repositories/annotation_repository.dart';

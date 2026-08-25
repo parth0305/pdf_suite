@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/domain/annotations/annotation_session.dart';
 import 'package:folio/domain/annotations/quad_merge.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/repositories/annotation_repository.dart';
 

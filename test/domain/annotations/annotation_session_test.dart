@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/domain/annotations/annotation_session.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 
 TextMarkup markup({MarkupKind kind = MarkupKind.highlight, int page = 0}) =>

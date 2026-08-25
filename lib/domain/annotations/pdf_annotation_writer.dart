@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 
 /// Writes [markups] into [pdf] as real annotation objects, by appending a PDF
 /// incremental update.

@@ -11,7 +11,7 @@ import 'package:folio/engine/pdfrx_mappers.dart';
 import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/pages/split_sheet.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/features/viewer/annotation_providers.dart';
 import 'package:folio/features/viewer/widgets/markup_toolbar.dart';
 import 'package:folio/features/pages/widgets/page_grid.dart';

@@ -1,4 +1,4 @@
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/models/library_document.dart';
 
 /// Saves staged markup into a new document.
