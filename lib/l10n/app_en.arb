@@ -191,5 +191,16 @@
     }
   },
   "markupSelectFirst": "Select some text to mark it up.",
-  "markupDiscardPrompt": "Discard your markup? The original document is untouched either way."
+  "markupDiscardPrompt": "Discard your markup? The original document is untouched either way.",
+  "drawMode": "Draw",
+  "drawPen": "Pen",
+  "drawRectangle": "Rectangle",
+  "drawOval": "Oval",
+  "drawLine": "Line",
+  "drawArrow": "Arrow",
+  "drawColour": "Colour",
+  "drawThickness": "Thickness",
+  "drawUndo": "Undo",
+  "drawSave": "Save with drawings",
+  "drawDiscardPrompt": "Discard your drawings? The original document is untouched either way."
 }

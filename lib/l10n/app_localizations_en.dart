@@ -407,4 +407,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get markupDiscardPrompt =>
       'Discard your markup? The original document is untouched either way.';
+
+  @override
+  String get drawMode => 'Draw';
+
+  @override
+  String get drawPen => 'Pen';
+
+  @override
+  String get drawRectangle => 'Rectangle';
+
+  @override
+  String get drawOval => 'Oval';
+
+  @override
+  String get drawLine => 'Line';
+
+  @override
+  String get drawArrow => 'Arrow';
+
+  @override
+  String get drawColour => 'Colour';
+
+  @override
+  String get drawThickness => 'Thickness';
+
+  @override
+  String get drawUndo => 'Undo';
+
+  @override
+  String get drawSave => 'Save with drawings';
+
+  @override
+  String get drawDiscardPrompt =>
+      'Discard your drawings? The original document is untouched either way.';
 }

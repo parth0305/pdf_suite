@@ -831,6 +831,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discard your markup? The original document is untouched either way.'**
   String get markupDiscardPrompt;
+
+  /// No description provided for @drawMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get drawMode;
+
+  /// No description provided for @drawPen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pen'**
+  String get drawPen;
+
+  /// No description provided for @drawRectangle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rectangle'**
+  String get drawRectangle;
+
+  /// No description provided for @drawOval.
+  ///
+  /// In en, this message translates to:
+  /// **'Oval'**
+  String get drawOval;
+
+  /// No description provided for @drawLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Line'**
+  String get drawLine;
+
+  /// No description provided for @drawArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrow'**
+  String get drawArrow;
+
+  /// No description provided for @drawColour.
+  ///
+  /// In en, this message translates to:
+  /// **'Colour'**
+  String get drawColour;
+
+  /// No description provided for @drawThickness.
+  ///
+  /// In en, this message translates to:
+  /// **'Thickness'**
+  String get drawThickness;
+
+  /// No description provided for @drawUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get drawUndo;
+
+  /// No description provided for @drawSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save with drawings'**
+  String get drawSave;
+
+  /// No description provided for @drawDiscardPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your drawings? The original document is untouched either way.'**
+  String get drawDiscardPrompt;
 }
 
 class _AppLocalizationsDelegate
