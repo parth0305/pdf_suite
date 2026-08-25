@@ -364,4 +364,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get insertNoOtherDocuments =>
       'There are no other documents to insert.';
+
+  @override
+  String get errorUnsupportedPdfStructureTitle =>
+      'Can\'t add markup to this PDF.';
+
+  @override
+  String get errorUnsupportedPdfStructureBody =>
+      'It uses a newer PDF structure this app can\'t safely modify yet. The document is unchanged.';
 }

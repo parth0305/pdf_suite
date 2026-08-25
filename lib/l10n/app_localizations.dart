@@ -759,6 +759,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There are no other documents to insert.'**
   String get insertNoOtherDocuments;
+
+  /// No description provided for @errorUnsupportedPdfStructureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t add markup to this PDF.'**
+  String get errorUnsupportedPdfStructureTitle;
+
+  /// No description provided for @errorUnsupportedPdfStructureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It uses a newer PDF structure this app can\'t safely modify yet. The document is unchanged.'**
+  String get errorUnsupportedPdfStructureBody;
 }
 
 class _AppLocalizationsDelegate
