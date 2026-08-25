@@ -11,6 +11,9 @@ import 'package:folio/engine/pdfrx_mappers.dart';
 import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/pages/split_sheet.dart';
+import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/features/viewer/annotation_providers.dart';
+import 'package:folio/features/viewer/widgets/markup_toolbar.dart';
 import 'package:folio/features/pages/widgets/page_grid.dart';
 import 'package:folio/features/pages/widgets/page_toolbar.dart';
 import 'package:folio/features/viewer/widgets/outline_panel.dart';
@@ -22,7 +25,7 @@ import 'package:pdfrx/pdfrx.dart';
 
 enum _SidePanel { none, thumbnails, outline }
 
-enum _ViewerMode { read, pages }
+enum _ViewerMode { read, pages, markup }
 
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
@@ -52,6 +55,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   _ViewerMode _mode = _ViewerMode.read;
   int _currentPage = 1;
   int _totalPages = 0;
+
+  /// The live text selection, kept so the markup buttons know whether they can
+  /// act and what to act on.
+  PdfTextSelection? _selection;
 
   @override
   void initState() {
@@ -237,6 +244,99 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
+  void _enterMarkupMode() {
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.markup);
+  }
+
+  Future<void> _leaveMarkupMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (ref.read(annotationSessionProvider).session.isDirty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.markupDiscardPrompt),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.pagesDiscard),
+            ),
+          ],
+        ),
+      );
+      if (discard != true) return;
+    }
+    if (!mounted) return;
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.read);
+  }
+
+  /// Turns the live selection into staged markup.
+  ///
+  /// Each selected range carries its page and a character span; the matching
+  /// charRects are the geometry, already in PDF user space, so no conversion
+  /// is needed on the way to /QuadPoints.
+  Future<void> _markupSelection(MarkupKind kind) async {
+    final selection = _selection;
+    if (selection == null || !selection.hasSelectedText) return;
+
+    final ranges = await selection.getSelectedTextRanges();
+    if (!mounted) return;
+
+    final controller = ref.read(annotationSessionProvider.notifier);
+    for (final range in ranges) {
+      final rects = range.pageText.charRects
+          .sublist(range.start, range.end)
+          .map(
+            (r) => TextRect(
+              left: r.left,
+              top: r.top,
+              right: r.right,
+              bottom: r.bottom,
+            ),
+          )
+          .toList();
+
+      controller.addMarkup(
+        kind: kind,
+        pageIndex: range.pageText.pageNumber - 1,
+        charRects: rects,
+      );
+    }
+  }
+
+  Future<void> _saveMarkup() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = ref.read(annotationSessionProvider.notifier);
+    final markups = ref.read(annotationSessionProvider).session.markups;
+
+    controller.setBusy(true);
+    try {
+      final created = await ref
+          .read(annotationRepositoryProvider)
+          .saveMarkup(sourceDocumentId: widget.document.id, markups: markups);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+
+      if (!mounted) return;
+      controller.reset();
+      setState(() => _mode = _ViewerMode.read);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.markupSaved(created.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    } finally {
+      controller.setBusy(false);
+    }
+  }
+
   Future<void> _splitDocument() async {
     final l10n = AppLocalizations.of(context)!;
     final plan = await showSplitSheet(context, pageCount: _totalPages);
@@ -340,7 +440,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       controller: _controller,
       passwordProvider: () => promptForPassword(context),
       params: PdfViewerParams(
-        textSelectionParams: const PdfTextSelectionParams(enabled: true),
+        textSelectionParams: PdfTextSelectionParams(
+          enabled: true,
+          onTextSelectionChange: (selection) {
+            if (mounted) setState(() => _selection = selection);
+          },
+        ),
         pagePaintCallbacks: [_paintSearchMatches],
         onViewerReady: _onReady,
         onDocumentChanged: (doc) {
@@ -383,6 +488,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ],
                   ),
           ),
+          if (_mode == _ViewerMode.markup)
+            MarkupToolbar(
+              hasSelection: _selection?.hasSelectedText ?? false,
+              onMarkup: _markupSelection,
+              onSave: _saveMarkup,
+            ),
           if (_mode == _ViewerMode.pages)
             PageToolbar(
               onApply: _applyEdits,
@@ -392,7 +503,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         ],
       ),
       bottomNavigationBar:
-          _fullScreen || _totalPages == 0 || _mode == _ViewerMode.pages
+          _fullScreen || _totalPages == 0 || _mode != _ViewerMode.read
           ? null
           : BottomAppBar(
               height: 48,
@@ -419,12 +530,17 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     ),
-    leading: _mode == _ViewerMode.pages
-        ? IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: _leavePagesMode,
-          )
-        : null,
+    leading: switch (_mode) {
+      _ViewerMode.pages => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _leavePagesMode,
+      ),
+      _ViewerMode.markup => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _leaveMarkupMode,
+      ),
+      _ViewerMode.read => null,
+    },
     actions: [
       IconButton(
         tooltip: _mode == _ViewerMode.pages ? l10n.readMode : l10n.pagesMode,
@@ -440,6 +556,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   ? _leavePagesMode()
                   : _enterPagesMode(),
       ),
+      if (_mode == _ViewerMode.read)
+        IconButton(
+          tooltip: l10n.markupMode,
+          icon: const Icon(Icons.format_color_fill),
+          onPressed: _totalPages == 0 ? null : _enterMarkupMode,
+        ),
       if (_mode == _ViewerMode.pages)
         IconButton(
           tooltip: l10n.pagesSplit,
