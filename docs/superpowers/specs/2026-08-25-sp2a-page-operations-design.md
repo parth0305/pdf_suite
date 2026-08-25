@@ -283,7 +283,21 @@ nothing until the output is re-opened:
 
 ---
 
-## 10. Next
+## 10. Discovered after implementation: metadata is discarded
+
+A probe run after SP-2a merged found that `encodePdf` does not carry a source
+document's `/Info` dictionary into its output. Title, Author and Subject were
+all absent from the produced bytes.
+
+Every page operation therefore silently discards document metadata. This cannot
+be fixed within SP-2a's stack, because preserving `/Info` requires reading and
+writing it, which is exactly what SP-2b adds. Recorded in `docs/LIMITATIONS.md`
+as item 3, with a `with_metadata.pdf` fixture ready to verify the fix.
+
+It also raises SP-2b's priority: metadata was listed as one of five gaps, but it
+is now known to be an active data-loss path rather than a missing feature.
+
+## 11. Next
 
 SP-2b — the object layer — begins with a throwaway spike answering whether qpdf
 builds through Dart native assets on all four platforms. Its scope is decided by
