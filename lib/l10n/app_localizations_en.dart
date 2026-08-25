@@ -263,4 +263,69 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorInvalidPageRangeBody =>
       'Check the page numbers and try again.';
+
+  @override
+  String get pagesMode => 'Pages';
+
+  @override
+  String get readMode => 'Read';
+
+  @override
+  String pagesSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get pagesSelectAll => 'Select all';
+
+  @override
+  String get pagesClearSelection => 'Clear selection';
+
+  @override
+  String get pagesRotateLeft => 'Rotate left';
+
+  @override
+  String get pagesRotateRight => 'Rotate right';
+
+  @override
+  String get pagesDelete => 'Delete pages';
+
+  @override
+  String get pagesDuplicate => 'Duplicate pages';
+
+  @override
+  String get pagesExtract => 'Extract to new document';
+
+  @override
+  String get pagesInsert => 'Insert pages from…';
+
+  @override
+  String get pagesUndo => 'Undo';
+
+  @override
+  String get pagesRedo => 'Redo';
+
+  @override
+  String get pagesApply => 'Save as new document';
+
+  @override
+  String get pagesDiscard => 'Discard changes';
+
+  @override
+  String get pagesDiscardPrompt =>
+      'Discard your page changes? The original document is untouched either way.';
+
+  @override
+  String pagesApplied(String name) {
+    return 'Saved as $name';
+  }
+
+  @override
+  String get pagesSplit => 'Split document';
+
+  @override
+  String get pagesMerge => 'Merge documents';
+
+  @override
+  String get pagesEmptyWarning => 'A document must have at least one page.';
 }

@@ -7,6 +7,9 @@ import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/engine/pdfrx_mappers.dart';
 import 'package:folio/features/home/providers.dart';
+import 'package:folio/features/pages/providers.dart';
+import 'package:folio/features/pages/widgets/page_grid.dart';
+import 'package:folio/features/pages/widgets/page_toolbar.dart';
 import 'package:folio/features/viewer/widgets/outline_panel.dart';
 import 'package:folio/features/viewer/widgets/password_prompt.dart';
 import 'package:folio/features/viewer/widgets/thumbnail_panel.dart';
@@ -15,6 +18,8 @@ import 'package:folio/l10n/app_localizations.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 enum _SidePanel { none, thumbnails, outline }
+
+enum _ViewerMode { read, pages }
 
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
@@ -41,6 +46,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   bool _fullScreen = false;
   bool _searchOpen = false;
   _SidePanel _panel = _SidePanel.none;
+  _ViewerMode _mode = _ViewerMode.read;
   int _currentPage = 1;
   int _totalPages = 0;
 
@@ -142,6 +148,92 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
+  void _enterPagesMode() {
+    ref
+        .read(pageSessionProvider.notifier)
+        .start(documentId: widget.document.id, pageCount: _totalPages);
+    setState(() => _mode = _ViewerMode.pages);
+  }
+
+  Future<void> _leavePagesMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    final dirty = ref.read(pageSessionProvider).session.isDirty;
+
+    if (dirty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.pagesDiscardPrompt),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.pagesDiscard),
+            ),
+          ],
+        ),
+      );
+      if (discard != true) return;
+    }
+    if (mounted) setState(() => _mode = _ViewerMode.read);
+  }
+
+  Future<void> _applyEdits() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = ref.read(pageSessionProvider.notifier);
+    final slots = ref.read(pageSessionProvider).session.slots;
+
+    controller.setBusy(true);
+    try {
+      final created = await ref
+          .read(pageOperationsRepositoryProvider)
+          .apply(sourceDocumentId: widget.document.id, slots: slots);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+
+      if (!mounted) return;
+      setState(() => _mode = _ViewerMode.read);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.pagesApplied(created.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      final message = failureMessage(f, l10n);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message.title)));
+    } finally {
+      controller.setBusy(false);
+    }
+  }
+
+  Future<void> _extractSelection() async {
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.read(pageSessionProvider);
+    final slots = state.session.extract(state.selection);
+    if (slots.isEmpty) return;
+
+    try {
+      final created = await ref
+          .read(pageOperationsRepositoryProvider)
+          .extractPages(sourceDocumentId: widget.document.id, slots: slots);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.pagesApplied(created.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      final message = failureMessage(f, l10n);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message.title)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -189,7 +281,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               },
             ),
           Expanded(
-            child: dockedPanel == null
+            child: _mode == _ViewerMode.pages
+                ? (_document == null
+                      ? const Center(child: CircularProgressIndicator())
+                      : PageGrid(document: _document!))
+                : dockedPanel == null
                 ? viewer
                 : Row(
                     children: [
@@ -199,9 +295,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ],
                   ),
           ),
+          if (_mode == _ViewerMode.pages)
+            PageToolbar(
+              onApply: _applyEdits,
+              onExtract: _extractSelection,
+              onInsert: () {},
+            ),
         ],
       ),
-      bottomNavigationBar: _fullScreen || _totalPages == 0
+      bottomNavigationBar:
+          _fullScreen || _totalPages == 0 || _mode == _ViewerMode.pages
           ? null
           : BottomAppBar(
               height: 48,
@@ -228,41 +331,63 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     ),
+    leading: _mode == _ViewerMode.pages
+        ? IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _leavePagesMode,
+          )
+        : null,
     actions: [
       IconButton(
-        tooltip: l10n.viewerThumbnails,
-        icon: const Icon(Icons.grid_view),
-        isSelected: _panel == _SidePanel.thumbnails,
-        onPressed: () => _togglePanel(_SidePanel.thumbnails),
-      ),
-      IconButton(
-        tooltip: l10n.viewerOutline,
-        icon: const Icon(Icons.list),
-        isSelected: _panel == _SidePanel.outline,
-        onPressed: () => _togglePanel(_SidePanel.outline),
-      ),
-      IconButton(
-        tooltip: l10n.viewerSearch,
-        icon: const Icon(Icons.search),
-        onPressed: _searcher == null
+        tooltip: _mode == _ViewerMode.pages ? l10n.readMode : l10n.pagesMode,
+        icon: Icon(
+          _mode == _ViewerMode.pages
+              ? Icons.menu_book
+              : Icons.dashboard_customize,
+        ),
+        isSelected: _mode == _ViewerMode.pages,
+        onPressed: _totalPages == 0
             ? null
-            : () => setState(() => _searchOpen = !_searchOpen),
+            : () => _mode == _ViewerMode.pages
+                  ? _leavePagesMode()
+                  : _enterPagesMode(),
       ),
-      IconButton(
-        tooltip: l10n.viewerZoomOut,
-        icon: const Icon(Icons.zoom_out),
-        onPressed: () => _controller.zoomDown(),
-      ),
-      IconButton(
-        tooltip: l10n.viewerZoomIn,
-        icon: const Icon(Icons.zoom_in),
-        onPressed: () => _controller.zoomUp(),
-      ),
-      IconButton(
-        tooltip: l10n.viewerFullScreen,
-        icon: const Icon(Icons.fullscreen),
-        onPressed: () => setState(() => _fullScreen = true),
-      ),
+      if (_mode == _ViewerMode.read) ...[
+        IconButton(
+          tooltip: l10n.viewerThumbnails,
+          icon: const Icon(Icons.grid_view),
+          isSelected: _panel == _SidePanel.thumbnails,
+          onPressed: () => _togglePanel(_SidePanel.thumbnails),
+        ),
+        IconButton(
+          tooltip: l10n.viewerOutline,
+          icon: const Icon(Icons.list),
+          isSelected: _panel == _SidePanel.outline,
+          onPressed: () => _togglePanel(_SidePanel.outline),
+        ),
+        IconButton(
+          tooltip: l10n.viewerSearch,
+          icon: const Icon(Icons.search),
+          onPressed: _searcher == null
+              ? null
+              : () => setState(() => _searchOpen = !_searchOpen),
+        ),
+        IconButton(
+          tooltip: l10n.viewerZoomOut,
+          icon: const Icon(Icons.zoom_out),
+          onPressed: () => _controller.zoomDown(),
+        ),
+        IconButton(
+          tooltip: l10n.viewerZoomIn,
+          icon: const Icon(Icons.zoom_in),
+          onPressed: () => _controller.zoomUp(),
+        ),
+        IconButton(
+          tooltip: l10n.viewerFullScreen,
+          icon: const Icon(Icons.fullscreen),
+          onPressed: () => setState(() => _fullScreen = true),
+        ),
+      ],
     ],
   );
 

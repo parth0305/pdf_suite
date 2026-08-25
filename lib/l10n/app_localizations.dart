@@ -573,6 +573,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check the page numbers and try again.'**
   String get errorInvalidPageRangeBody;
+
+  /// No description provided for @pagesMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get pagesMode;
+
+  /// No description provided for @readMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get readMode;
+
+  /// No description provided for @pagesSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String pagesSelectedCount(int count);
+
+  /// No description provided for @pagesSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get pagesSelectAll;
+
+  /// No description provided for @pagesClearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selection'**
+  String get pagesClearSelection;
+
+  /// No description provided for @pagesRotateLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate left'**
+  String get pagesRotateLeft;
+
+  /// No description provided for @pagesRotateRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate right'**
+  String get pagesRotateRight;
+
+  /// No description provided for @pagesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete pages'**
+  String get pagesDelete;
+
+  /// No description provided for @pagesDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate pages'**
+  String get pagesDuplicate;
+
+  /// No description provided for @pagesExtract.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract to new document'**
+  String get pagesExtract;
+
+  /// No description provided for @pagesInsert.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert pages from…'**
+  String get pagesInsert;
+
+  /// No description provided for @pagesUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get pagesUndo;
+
+  /// No description provided for @pagesRedo.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get pagesRedo;
+
+  /// No description provided for @pagesApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as new document'**
+  String get pagesApply;
+
+  /// No description provided for @pagesDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes'**
+  String get pagesDiscard;
+
+  /// No description provided for @pagesDiscardPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your page changes? The original document is untouched either way.'**
+  String get pagesDiscardPrompt;
+
+  /// No description provided for @pagesApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as {name}'**
+  String pagesApplied(String name);
+
+  /// No description provided for @pagesSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Split document'**
+  String get pagesSplit;
+
+  /// No description provided for @pagesMerge.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge documents'**
+  String get pagesMerge;
+
+  /// No description provided for @pagesEmptyWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'A document must have at least one page.'**
+  String get pagesEmptyWarning;
 }
 
 class _AppLocalizationsDelegate
