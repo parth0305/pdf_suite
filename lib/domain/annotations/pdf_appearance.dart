@@ -17,8 +17,8 @@ String appearanceStream(TextMarkup markup) {
       buffer.writeln('$colour rg');
       for (final q in markup.quads) {
         buffer.writeln(
-          '${_n(q.left)} ${_n(q.bottom)} '
-          '${_n(q.right - q.left)} ${_n(q.top - q.bottom)} re',
+          '${pdfNumber(q.left)} ${pdfNumber(q.bottom)} '
+          '${pdfNumber(q.right - q.left)} ${pdfNumber(q.top - q.bottom)} re',
         );
       }
       buffer.writeln('f');
@@ -27,8 +27,8 @@ String appearanceStream(TextMarkup markup) {
       buffer.writeln('$colour RG');
       buffer.writeln('1 w');
       for (final q in markup.quads) {
-        buffer.writeln('${_n(q.left)} ${_n(q.bottom)} m');
-        buffer.writeln('${_n(q.right)} ${_n(q.bottom)} l');
+        buffer.writeln('${pdfNumber(q.left)} ${pdfNumber(q.bottom)} m');
+        buffer.writeln('${pdfNumber(q.right)} ${pdfNumber(q.bottom)} l');
       }
       buffer.writeln('S');
 
@@ -37,8 +37,8 @@ String appearanceStream(TextMarkup markup) {
       buffer.writeln('1 w');
       for (final q in markup.quads) {
         final mid = (q.top + q.bottom) / 2;
-        buffer.writeln('${_n(q.left)} ${_n(mid)} m');
-        buffer.writeln('${_n(q.right)} ${_n(mid)} l');
+        buffer.writeln('${pdfNumber(q.left)} ${pdfNumber(mid)} m');
+        buffer.writeln('${pdfNumber(q.right)} ${pdfNumber(mid)} l');
       }
       buffer.writeln('S');
   }
@@ -49,7 +49,8 @@ String appearanceStream(TextMarkup markup) {
 /// The form XObject dictionary wrapping [appearanceStream].
 String appearanceDict(TextMarkup markup, int streamLength) {
   final b = markup.boundingRect;
-  final bbox = '[${_n(b.left)} ${_n(b.bottom)} ${_n(b.right)} ${_n(b.top)}]';
+  final bbox =
+      '[${pdfNumber(b.left)} ${pdfNumber(b.bottom)} ${pdfNumber(b.right)} ${pdfNumber(b.top)}]';
 
   final resources = markup.kind == MarkupKind.highlight
       ? '/Resources << /ExtGState << /GSHL << /Type /ExtGState '
@@ -60,8 +61,10 @@ String appearanceDict(TextMarkup markup, int streamLength) {
       '$resources/Length $streamLength >>';
 }
 
-/// Trims trailing zeros so the stream stays compact and readable.
-String _n(double v) {
+/// Formats a PDF number compactly: two decimals at most, trailing zeros
+/// trimmed. Shared with the annotation writer so coordinates are written the
+/// same way everywhere rather than as verbose Dart doubles.
+String pdfNumber(double v) {
   final s = v.toStringAsFixed(2);
   return s.endsWith('.00') ? s.substring(0, s.length - 3) : s;
 }
