@@ -3,7 +3,11 @@
 /// Raw exceptions never reach the UI (brief section 34). Every failure carries a
 /// stable [code] for logging and an optional [technicalDetail] that is logged but
 /// never displayed.
-sealed class AppFailure {
+///
+/// Implements [Exception] so that generic `on Exception` handlers catch these
+/// too. Without it, an ordinary try/catch written against Exception would
+/// silently let an AppFailure escape.
+sealed class AppFailure implements Exception {
   const AppFailure({this.technicalDetail});
 
   final String? technicalDetail;
