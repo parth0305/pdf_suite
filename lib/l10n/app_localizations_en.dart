@@ -328,4 +328,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pagesEmptyWarning => 'A document must have at least one page.';
+
+  @override
+  String get splitEveryPage => 'Every page becomes its own document';
+
+  @override
+  String get splitByRanges => 'Custom ranges';
+
+  @override
+  String get splitRangeHint => 'e.g. 1-3, 7, 10-12';
+
+  @override
+  String splitOutputCount(int count) {
+    return '$count documents will be created';
+  }
+
+  @override
+  String get splitConfirm => 'Split';
+
+  @override
+  String get librarySelectMode => 'Select documents';
+
+  @override
+  String get libraryMergeSelected => 'Merge selected';
+
+  @override
+  String get libraryExitSelect => 'Cancel';
+
+  @override
+  String get mergeNeedsTwo => 'Select at least two documents to merge.';
+
+  @override
+  String get insertChooseDocument => 'Choose a document to insert';
+
+  @override
+  String get insertNoOtherDocuments =>
+      'There are no other documents to insert.';
 }

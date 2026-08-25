@@ -7,6 +7,7 @@ import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/home/widgets/collection_bar.dart';
 import 'package:folio/features/home/widgets/document_tile.dart';
 import 'package:folio/features/home/widgets/empty_state.dart';
+import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/home/widgets/library_toolbar.dart';
 import 'package:folio/l10n/app_localizations.dart';
 
@@ -24,7 +25,36 @@ class LibraryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.libraryTitle),
+        title: Text(
+          ref.watch(librarySelectModeProvider)
+              ? l10n.pagesSelectedCount(
+                  ref.watch(librarySelectionProvider).length,
+                )
+              : l10n.libraryTitle,
+        ),
+        actions: [
+          if (ref.watch(librarySelectModeProvider)) ...[
+            TextButton(
+              onPressed: ref.watch(librarySelectionProvider).length >= 2
+                  ? () => _mergeSelected(context, ref, l10n)
+                  : null,
+              child: Text(l10n.libraryMergeSelected),
+            ),
+            TextButton(
+              onPressed: () {
+                ref.read(librarySelectModeProvider.notifier).value = false;
+                ref.read(librarySelectionProvider.notifier).value = const {};
+              },
+              child: Text(l10n.libraryExitSelect),
+            ),
+          ] else
+            IconButton(
+              tooltip: l10n.librarySelectMode,
+              icon: const Icon(Icons.checklist),
+              onPressed: () =>
+                  ref.read(librarySelectModeProvider.notifier).value = true,
+            ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(144),
           child: Column(
@@ -93,6 +123,33 @@ class LibraryScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _mergeSelected(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final ids = ref.read(librarySelectionProvider).toList();
+    try {
+      final merged = await ref
+          .read(pageOperationsRepositoryProvider)
+          .merge(documentIds: ids);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+
+      ref.read(librarySelectModeProvider.notifier).value = false;
+      ref.read(librarySelectionProvider.notifier).value = const {};
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.pagesApplied(merged.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
   }
 
   Widget _emptyFor(
