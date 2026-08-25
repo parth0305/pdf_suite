@@ -39,10 +39,32 @@ through Dart native assets, and `build-windows` passed on first attempt. A
 follow-up check confirmed `native_toolchain_c` exposes `Language.cpp` and
 `cppLinkStdLib`, so C++ is supported.
 
-**This lowers the risk; it does not eliminate it.** qpdf is roughly 200 source
-files with a generated config header and a zlib dependency, so the open question
-is qpdf's *build system*, not the language. SP-2b begins with a throwaway spike
-that answers it. SP-2a does not depend on the outcome either way.
+**This lowers the risk; it does not eliminate it.** SP-2b begins with a
+throwaway spike that answers the remaining question. SP-2a does not depend on
+the outcome either way.
+
+### Correction, 2026-08-25: qpdf's dependency surface is larger than stated
+
+An initial probe of qpdf's own build documentation found more than this section
+originally claimed. Recorded here so SP-2b is not planned on the understated
+version:
+
+| Requirement | Note |
+|---|---|
+| **C++20** to build | C++17 only to link against |
+| **zlib** | required |
+| **libjpeg** (or libjpeg-turbo) | required - *not* in the original assessment |
+| GnuTLS or OpenSSL | only for certain crypto providers |
+| CMake 3.16+ | its own build system |
+
+So adopting qpdf means cross-compiling **two third-party C libraries in addition
+to qpdf itself** for Android NDK, iOS device, iOS simulator and MSVC. That is
+materially more work than "qpdf plus zlib".
+
+This does not rule qpdf out, but it changes the comparison: a hand-written Dart
+object layer scoped to only the five gaps SP-1 identified may now compare more
+favourably than the original assessment implied. The spike should measure both
+options, not just qpdf's feasibility.
 
 ---
 
