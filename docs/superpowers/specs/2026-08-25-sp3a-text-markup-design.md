@@ -135,19 +135,37 @@ refused rather than silently mishandled.
 
 ---
 
-## 7. Known risk: appearance streams
+## 7. Appearance streams — probed, partially answered
 
-**Unverified:** whether PDFium renders a `/Highlight` without an `/AP` appearance
-stream.
+**PDFium renders `/Highlight` without an `/AP`.** Probed 2026-08-25: a highlight
+built from `charRects` quads, with no appearance stream, changed 1090 pixels in
+the rendered page, positioned over the intended text. The quad coordinates came
+straight from SP-1's `charRects` with no conversion, confirming that geometry
+feeds directly into `/QuadPoints`.
 
-The spike's `/Square` rendered without one because PDFium synthesises appearances
-for simple annotations. Markup annotations may behave differently, and other
-viewers vary more than PDFium does.
+**Whether other viewers do the same is still unknown, and could not be measured
+on this machine.**
 
-**The implementation plan's first task is a probe answering this**, before
-anything is built on the assumption. If `/AP` turns out to be required, the
-writer must generate appearance streams — real additional work, and better
-discovered in task one than task six.
+An attempt to check macOS PDFKit via QuickLook returned "renders identically",
+which looked like a finding and was not one. Validating the instrument first — by
+feeding it a large opaque red square that PDFium definitely renders — produced
+byte-identical output too. **QuickLook ignores annotations entirely**, so the
+test measured nothing. Recorded here because a null result from a broken
+instrument is more dangerous than no result at all.
+
+### Decision: generate `/AP` anyway
+
+Portability is the entire justification for writing annotations into the PDF
+(§4). An annotation that renders only in Folio would defeat that reason while
+paying its whole cost.
+
+Since PDFium's tolerance cannot be generalised to Acrobat, Preview, Chrome or
+mobile viewers, the writer generates appearance streams. It is more work, and it
+is the only choice consistent with why this design was chosen.
+
+`/AP` generation for markup is modest: a form XObject per annotation containing
+one filled quad per rectangle, using `/Multiply` blend for highlight and a
+stroked line for underline and strikethrough.
 
 ---
 
@@ -237,6 +255,8 @@ not appear would be worse than declining.
 - `PdfObjectReader`: nested dictionaries, `/Type /Page` not first, an existing
   `/Annots` array merged rather than replaced, malformed input rejected
 - `TextMarkup` → `/QuadPoints`: correct ordering and y-up preservation
+- `/AP` form XObject generation: one filled quad per rectangle, correct blend
+  mode per markup kind
 - cross-reference-stream documents detected and refused
 
 ### Integration — device
