@@ -21,12 +21,35 @@ class DocumentTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(libraryControllerProvider.notifier);
+    final selectMode = ref.watch(librarySelectModeProvider);
+    final selected = ref.watch(librarySelectionProvider).contains(document.id);
 
     final subtitle = [
       formatBytes(document.sizeBytes),
       if (document.pageCount != null) l10n.pageCountLabel(document.pageCount!),
       if (document.isManaged) l10n.importedCopyBadge,
     ].join(' · ');
+
+    if (selectMode) {
+      return ListTile(
+        leading: Icon(
+          selected ? Icons.check_circle : Icons.radio_button_unchecked,
+          color: selected ? Theme.of(context).colorScheme.primary : null,
+        ),
+        title: Text(
+          document.displayName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        selected: selected,
+        onTap: () {
+          final next = Set<int>.of(ref.read(librarySelectionProvider));
+          if (!next.remove(document.id)) next.add(document.id);
+          ref.read(librarySelectionProvider.notifier).value = next;
+        },
+      );
+    }
 
     return ListTile(
       leading: CircleAvatar(

@@ -693,6 +693,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A document must have at least one page.'**
   String get pagesEmptyWarning;
+
+  /// No description provided for @splitEveryPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Every page becomes its own document'**
+  String get splitEveryPage;
+
+  /// No description provided for @splitByRanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom ranges'**
+  String get splitByRanges;
+
+  /// No description provided for @splitRangeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 1-3, 7, 10-12'**
+  String get splitRangeHint;
+
+  /// No description provided for @splitOutputCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} documents will be created'**
+  String splitOutputCount(int count);
+
+  /// No description provided for @splitConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get splitConfirm;
+
+  /// No description provided for @librarySelectMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Select documents'**
+  String get librarySelectMode;
+
+  /// No description provided for @libraryMergeSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge selected'**
+  String get libraryMergeSelected;
+
+  /// No description provided for @libraryExitSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get libraryExitSelect;
+
+  /// No description provided for @mergeNeedsTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least two documents to merge.'**
+  String get mergeNeedsTwo;
+
+  /// No description provided for @insertChooseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a document to insert'**
+  String get insertChooseDocument;
+
+  /// No description provided for @insertNoOtherDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no other documents to insert.'**
+  String get insertNoOtherDocuments;
 }
 
 class _AppLocalizationsDelegate

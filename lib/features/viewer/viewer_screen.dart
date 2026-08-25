@@ -5,9 +5,12 @@ import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/core/errors/failure_messages.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
+import 'package:folio/domain/engine/pdf_engine.dart';
+import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:folio/engine/pdfrx_mappers.dart';
 import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/pages/providers.dart';
+import 'package:folio/features/pages/split_sheet.dart';
 import 'package:folio/features/pages/widgets/page_grid.dart';
 import 'package:folio/features/pages/widgets/page_toolbar.dart';
 import 'package:folio/features/viewer/widgets/outline_panel.dart';
@@ -234,6 +237,91 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
+  Future<void> _splitDocument() async {
+    final l10n = AppLocalizations.of(context)!;
+    final plan = await showSplitSheet(context, pageCount: _totalPages);
+    if (plan == null || !mounted) return;
+
+    try {
+      final parts = await ref
+          .read(pageOperationsRepositoryProvider)
+          .split(sourceDocumentId: widget.document.id, groups: plan.groups);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.splitOutputCount(parts.length))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
+  }
+
+  Future<void> _insertPages() async {
+    final l10n = AppLocalizations.of(context)!;
+    final all = ref.read(libraryControllerProvider).value ?? const [];
+    final others = all.where((d) => d.id != widget.document.id).toList();
+
+    if (others.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.insertNoOtherDocuments)));
+      return;
+    }
+
+    final chosen = await showModalBottomSheet<LibraryDocument>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(
+              title: Text(
+                l10n.insertChooseDocument,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            for (final d in others)
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: Text(d.displayName),
+                onTap: () => Navigator.of(context).pop(d),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null || !mounted) return;
+
+    // Open the chosen document only to learn its page count; the editor
+    // reopens it when materialising.
+    final repo = ref.read(libraryRepositoryProvider);
+    final engine = PdfrxEngine();
+    try {
+      final handle = await engine.open(
+        FileSource(await repo.resolveReadablePath(chosen)),
+      );
+      final session = ref.read(pageSessionProvider);
+      final at = session.selection.isEmpty
+          ? session.session.slots.length
+          : session.selection.reduce((a, b) => a < b ? a : b);
+
+      ref
+          .read(pageSessionProvider.notifier)
+          .insertFrom(chosen.id, handle.pageCount, at: at);
+      await engine.close(handle);
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -299,7 +387,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             PageToolbar(
               onApply: _applyEdits,
               onExtract: _extractSelection,
-              onInsert: () {},
+              onInsert: _insertPages,
             ),
         ],
       ),
@@ -352,6 +440,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   ? _leavePagesMode()
                   : _enterPagesMode(),
       ),
+      if (_mode == _ViewerMode.pages)
+        IconButton(
+          tooltip: l10n.pagesSplit,
+          icon: const Icon(Icons.call_split),
+          onPressed: _totalPages == 0 ? null : _splitDocument,
+        ),
       if (_mode == _ViewerMode.read) ...[
         IconButton(
           tooltip: l10n.viewerThumbnails,
