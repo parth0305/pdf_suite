@@ -32,13 +32,14 @@ is what writes rotation to a file.
 
 ## 3. Markup cannot be added to newer PDFs, and cannot be edited once saved
 
-Text markup is attached by a PDF **incremental update**, which assumes a classic
+Annotations are attached by a PDF **incremental update**, which assumes a classic
 cross-reference table. Documents using PDF 1.5+ cross-reference streams are
 **refused with a clear message** rather than silently producing a file whose
 annotations never appear.
 
-Saved markup also cannot yet be moved, restyled or deleted: that requires reading
-`/Annots` back out, which is SP-3b. Staged markup can be undone before saving.
+Saved annotations — markup and drawings alike — cannot yet be moved, restyled or
+deleted: that requires reading `/Annots` back out, which is not yet scoped.
+Anything staged can be undone freely before saving.
 
 Appearance streams are generated for every markup. PDFium renders markup without
 them, but portability to other viewers could not be measured on this machine, and

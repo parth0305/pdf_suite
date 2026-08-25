@@ -36,18 +36,29 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-3a.
+Last measured on 2026-08-26, after SP-3b.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 323 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 57 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 46 passed, 2 skipped |
+| Unit (host) | 387 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 65 passed, 1 skipped |
+| Android emulator (API 35, x86_64) | 64 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
 Android SAF-URI contract, and Android skips the two filesystem-path handle
 tests that cannot apply there.
+
+## Running the integration suite
+
+```bash
+flutter test integration_test/all_tests.dart -d <device-id>
+```
+
+Use the aggregate entrypoint, not the directory. `flutter test integration_test`
+treats every file as its own Dart entrypoint and reinstalls and relaunches the
+app once per file; on iOS that was 6:46 against 2:19 for the same 65 tests.
+Run a single file directly when you want it in isolation.
 
 ## Coverage
 
