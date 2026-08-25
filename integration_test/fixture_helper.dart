@@ -34,6 +34,13 @@ List<int> _build(String name) {
       return _encrypted('folio-test', -44);
     case 'no_copy_permission.pdf':
       return _encrypted('', -48);
+    case 'with_metadata.pdf':
+      return buildPdf(
+        kSampleThreePage,
+        infoDict:
+            '<< /Title (FOLIO-PROBE-TITLE) /Author (FOLIO-PROBE-AUTHOR) '
+            '/Subject (FOLIO-PROBE-SUBJECT) >>',
+      );
     case 'corrupt_truncated.pdf':
       final full = buildPdf(generatedPages(3));
       return full.sublist(0, full.length - 200);

@@ -20,6 +20,11 @@ searching or browsing can alter a document. Page editing goes through a separate
 `PdfPageEditor`, and edits are staged in memory until you explicitly save — an
 abandoned edit writes nothing.
 
+**One caveat worth knowing before you use page operations:** they currently
+discard document metadata — title, author, subject and dates are not carried
+into the result. This is a known limitation, not a design choice, and is fixed
+by the next sub-project. See [LIMITATIONS.md](docs/LIMITATIONS.md) item 3.
+
 Not yet possible: annotations, signatures, OCR, redaction, compression,
 encryption authoring, metadata editing, watermarks, printing and batch
 processing. See [FEATURES.md](docs/FEATURES.md) for what is implemented and

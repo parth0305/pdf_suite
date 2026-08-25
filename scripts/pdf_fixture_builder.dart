@@ -38,11 +38,15 @@ List<int> assemble(
 
 /// A minimal but valid PDF: catalog, page tree, one content stream per page,
 /// and a Helvetica font resource.
+///
+/// [infoDict] adds a document information dictionary, used to probe whether
+/// metadata survives operations that rewrite the document.
 List<int> buildPdf(
   List<PageSpec> pages, {
   bool corruptXref = false,
   String? extraCatalogEntries,
   bool omitText = false,
+  String? infoDict,
 }) {
   final objects = <String>[];
   objects.add('<< /Type /Catalog /Pages 2 0 R${extraCatalogEntries ?? ''} >>');
@@ -68,11 +72,14 @@ List<int> buildPdf(
   }
   objects.add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
 
-  return assemble(
-    objects,
-    '<< /Size ${objects.length + 1} /Root 1 0 R >>',
-    corruptXref: corruptXref,
-  );
+  var trailer = '<< /Size ${objects.length + 1} /Root 1 0 R';
+  if (infoDict != null) {
+    objects.add(infoDict);
+    trailer += ' /Info ${objects.length} 0 R';
+  }
+  trailer += ' >>';
+
+  return assemble(objects, trailer, corruptXref: corruptXref);
 }
 
 List<PageSpec> generatedPages(int count) => List.generate(
