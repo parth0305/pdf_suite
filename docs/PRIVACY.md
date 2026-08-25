@@ -35,7 +35,17 @@ effort rather than a moment's inattention.
 
 ## Network access
 
-None. The application functions with networking fully disabled.
+None — and this is enforced by the build, not merely intended.
+
+`test/offline_guarantee_test.dart` fails the build if anyone adds a networking
+dependency, uses a network API in `lib/` or `scripts/`, adds the Android
+`INTERNET` permission to the shipping manifest, or grants the macOS
+`network.client` entitlement in release.
+
+The Android release manifest declares no `INTERNET` permission at all, so the
+operating system itself prevents the app from opening a connection. The
+permission appears only in the debug manifest, which Flutter adds for hot
+reload.
 
 ## Third-party services
 
