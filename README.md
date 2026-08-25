@@ -7,9 +7,23 @@ cloud, no telemetry, and no AI of any kind.
 
 ## What it is
 
-SP-1 ships a **reader**. It opens, displays, searches and organises PDFs. It
-does not modify document content — the PDF engine interface has no write method
-at all, so a bug cannot corrupt your files.
+Folio opens, displays, searches and organises PDFs, and rearranges their pages:
+merge, split, reorder, delete, extract, rotate, duplicate and insert.
+
+**Every operation produces a new document and leaves the original
+byte-identical**, asserted by SHA-256 in the test suite. Nothing overwrites your
+files.
+
+Reading and writing are separate by construction. The `PdfEngine` interface used
+throughout the reader has **no write method at all**, so no amount of viewing,
+searching or browsing can alter a document. Page editing goes through a separate
+`PdfPageEditor`, and edits are staged in memory until you explicitly save — an
+abandoned edit writes nothing.
+
+Not yet possible: annotations, signatures, OCR, redaction, compression,
+encryption authoring, metadata editing, watermarks, printing and batch
+processing. See [FEATURES.md](docs/FEATURES.md) for what is implemented and
+verified on which platform.
 
 ## What it deliberately is not
 
