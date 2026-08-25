@@ -312,13 +312,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   Future<void> _saveMarkup() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(annotationSessionProvider.notifier);
-    final markups = ref.read(annotationSessionProvider).session.markups;
+    final annotations = ref.read(annotationSessionProvider).session.annotations;
 
     controller.setBusy(true);
     try {
       final created = await ref
           .read(annotationRepositoryProvider)
-          .saveMarkup(sourceDocumentId: widget.document.id, markups: markups);
+          .saveMarkup(
+            sourceDocumentId: widget.document.id,
+            markups: annotations,
+          );
       await ref.read(libraryControllerProvider.notifier).refresh();
 
       if (!mounted) return;

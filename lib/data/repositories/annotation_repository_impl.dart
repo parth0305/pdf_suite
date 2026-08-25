@@ -22,7 +22,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
   @override
   Future<LibraryDocument> saveMarkup({
     required int sourceDocumentId,
-    required List<TextMarkup> markups,
+    required List<Annotation> markups,
   }) async {
     if (markups.isEmpty) {
       throw ArgumentError.value(markups, 'markups', 'nothing to save');

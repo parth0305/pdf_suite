@@ -21,7 +21,7 @@ class MarkupToolbar extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(annotationSessionProvider);
     final controller = ref.read(annotationSessionProvider.notifier);
-    final count = state.session.markups.length;
+    final count = state.session.annotations.length;
 
     return Material(
       elevation: 3,

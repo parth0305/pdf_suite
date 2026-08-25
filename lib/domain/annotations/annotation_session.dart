@@ -1,50 +1,51 @@
 import 'package:folio/domain/annotations/annotation.dart';
 
-/// Markup staged for writing.
+/// Annotations staged for writing.
 ///
-/// Nothing touches a PDF until the caller saves, so undo is a stack of
-/// in-memory snapshots and an abandoned session leaves no files behind. The
-/// same shape as PageEditSession, deliberately.
+/// Holds text markup and drawings together, so one undo stack and one Save
+/// serve both. Nothing touches a PDF until the caller saves, so undo is a
+/// stack of in-memory snapshots and an abandoned session leaves no files
+/// behind. The same shape as PageEditSession, deliberately.
 class AnnotationSession {
-  List<TextMarkup> _markups = [];
-  final List<List<TextMarkup>> _undo = [];
-  final List<List<TextMarkup>> _redo = [];
+  List<Annotation> _annotations = [];
+  final List<List<Annotation>> _undo = [];
+  final List<List<Annotation>> _redo = [];
 
-  List<TextMarkup> get markups => List.unmodifiable(_markups);
+  List<Annotation> get annotations => List.unmodifiable(_annotations);
 
-  bool get isEmpty => _markups.isEmpty;
-  bool get isDirty => _markups.isNotEmpty;
+  bool get isEmpty => _annotations.isEmpty;
+  bool get isDirty => _annotations.isNotEmpty;
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
 
-  List<TextMarkup> markupsOnPage(int pageIndex) =>
-      _markups.where((m) => m.pageIndex == pageIndex).toList();
+  List<Annotation> annotationsOnPage(int pageIndex) =>
+      _annotations.where((a) => a.pageIndex == pageIndex).toList();
 
-  void _mutate(void Function(List<TextMarkup>) change) {
-    final snapshot = List.of(_markups);
-    final working = List.of(_markups);
+  void _mutate(void Function(List<Annotation>) change) {
+    final snapshot = List.of(_annotations);
+    final working = List.of(_annotations);
     change(working);
     _undo.add(snapshot);
     _redo.clear();
-    _markups = working;
+    _annotations = working;
   }
 
-  void add(TextMarkup markup) => _mutate((list) => list.add(markup));
+  void add(Annotation annotation) => _mutate((list) => list.add(annotation));
 
   void removeAt(int index) {
-    RangeError.checkValidIndex(index, _markups, 'index');
+    RangeError.checkValidIndex(index, _annotations, 'index');
     _mutate((list) => list.removeAt(index));
   }
 
   void undo() {
     if (_undo.isEmpty) return;
-    _redo.add(List.of(_markups));
-    _markups = _undo.removeLast();
+    _redo.add(List.of(_annotations));
+    _annotations = _undo.removeLast();
   }
 
   void redo() {
     if (_redo.isEmpty) return;
-    _undo.add(List.of(_markups));
-    _markups = _redo.removeLast();
+    _undo.add(List.of(_annotations));
+    _annotations = _redo.removeLast();
   }
 }

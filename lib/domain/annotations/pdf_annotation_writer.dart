@@ -15,7 +15,15 @@ import 'package:folio/domain/annotations/annotation.dart';
 ///
 /// Throws [UnsupportedPdfStructure] for documents this technique cannot handle,
 /// rather than producing a file whose annotations silently never appear.
-Uint8List writeMarkup(Uint8List pdf, List<TextMarkup> markups) {
+Uint8List writeMarkup(Uint8List pdf, List<Annotation> annotations) {
+  // Drawings arrive in Task 6. Refuse them loudly rather than filtering them
+  // out: a silent drop would discard a user's work and still report success.
+  final markups = annotations.map((a) {
+    if (a is! TextMarkup) {
+      throw UnimplementedError('writeMarkup cannot yet write ${a.pdfSubtype}');
+    }
+    return a;
+  }).toList();
   if (markups.isEmpty) return pdf;
 
   final text = latin1.decode(pdf, allowInvalid: true);

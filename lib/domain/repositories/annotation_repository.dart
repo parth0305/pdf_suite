@@ -7,6 +7,6 @@ import 'package:folio/domain/models/library_document.dart';
 abstract interface class AnnotationRepository {
   Future<LibraryDocument> saveMarkup({
     required int sourceDocumentId,
-    required List<TextMarkup> markups,
+    required List<Annotation> markups,
   });
 }

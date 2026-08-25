@@ -17,7 +17,7 @@ void main() {
   AnnotationState state() => container.read(annotationSessionProvider);
 
   test('starts empty', () {
-    expect(state().session.markups, isEmpty);
+    expect(state().session.annotations, isEmpty);
     expect(state().session.isDirty, isFalse);
   });
 
@@ -28,8 +28,11 @@ void main() {
       charRects: const [quad],
     );
 
-    expect(state().session.markups, hasLength(1));
-    expect(state().session.markups.single.kind, MarkupKind.highlight);
+    expect(state().session.annotations, hasLength(1));
+    expect(
+      (state().session.annotations.single as TextMarkup).kind,
+      MarkupKind.highlight,
+    );
   });
 
   // The controller merges per-character rects into line quads before staging.
@@ -44,8 +47,14 @@ void main() {
       ],
     );
 
-    expect(state().session.markups.single.quads, hasLength(1));
-    expect(state().session.markups.single.quads.single.right, 81);
+    expect(
+      (state().session.annotations.single as TextMarkup).quads,
+      hasLength(1),
+    );
+    expect(
+      (state().session.annotations.single as TextMarkup).quads.single.right,
+      81,
+    );
   });
 
   test('an empty selection adds nothing', () {
@@ -54,7 +63,7 @@ void main() {
       pageIndex: 0,
       charRects: const [],
     );
-    expect(state().session.markups, isEmpty);
+    expect(state().session.annotations, isEmpty);
   });
 
   test('undo removes the last markup', () {
@@ -66,7 +75,7 @@ void main() {
       )
       ..undo();
 
-    expect(state().session.markups, isEmpty);
+    expect(state().session.annotations, isEmpty);
   });
 
   test('reset clears the session', () {
@@ -78,7 +87,7 @@ void main() {
       )
       ..reset();
 
-    expect(state().session.markups, isEmpty);
+    expect(state().session.annotations, isEmpty);
     expect(state().session.canUndo, isFalse);
   });
 }
