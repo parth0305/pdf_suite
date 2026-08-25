@@ -40,6 +40,14 @@ FailureMessage failureMessage(AppFailure failure, AppLocalizations l10n) {
       l10n.errorStorageFullTitle,
       l10n.errorStorageFullBody,
     ),
+    EmptyDocument() => FailureMessage(
+      l10n.errorEmptyDocumentTitle,
+      l10n.errorEmptyDocumentBody,
+    ),
+    InvalidPageRange() => FailureMessage(
+      l10n.errorInvalidPageRangeTitle,
+      l10n.errorInvalidPageRangeBody,
+    ),
     UnknownFailure() => FailureMessage(
       l10n.errorUnknownTitle,
       l10n.errorUnknownBody,

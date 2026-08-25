@@ -53,6 +53,18 @@ final class StorageFull extends AppFailure {
   String get code => 'storage_full';
 }
 
+final class EmptyDocument extends AppFailure {
+  const EmptyDocument({super.technicalDetail});
+  @override
+  String get code => 'empty_document';
+}
+
+final class InvalidPageRange extends AppFailure {
+  const InvalidPageRange({super.technicalDetail});
+  @override
+  String get code => 'invalid_page_range';
+}
+
 final class UnknownFailure extends AppFailure {
   const UnknownFailure({super.technicalDetail});
   @override

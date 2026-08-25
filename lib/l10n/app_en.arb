@@ -109,5 +109,9 @@
   "renameFolderAction": "Rename folder",
   "deleteFolderExplain": "Documents in this folder return to the library root. Nothing is deleted.",
   "createAction": "Create",
-  "noDocumentsInFolder": "This folder is empty."
+  "noDocumentsInFolder": "This folder is empty.",
+  "errorEmptyDocumentTitle": "Nothing to save.",
+  "errorEmptyDocumentBody": "This document has no pages left. Add or restore a page before saving.",
+  "errorInvalidPageRangeTitle": "That page range isn't valid.",
+  "errorInvalidPageRangeBody": "Check the page numbers and try again."
 }

@@ -549,6 +549,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This folder is empty.'**
   String get noDocumentsInFolder;
+
+  /// No description provided for @errorEmptyDocumentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to save.'**
+  String get errorEmptyDocumentTitle;
+
+  /// No description provided for @errorEmptyDocumentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This document has no pages left. Add or restore a page before saving.'**
+  String get errorEmptyDocumentBody;
+
+  /// No description provided for @errorInvalidPageRangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That page range isn\'t valid.'**
+  String get errorInvalidPageRangeTitle;
+
+  /// No description provided for @errorInvalidPageRangeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the page numbers and try again.'**
+  String get errorInvalidPageRangeBody;
 }
 
 class _AppLocalizationsDelegate

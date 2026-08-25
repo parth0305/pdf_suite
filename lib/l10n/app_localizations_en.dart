@@ -249,4 +249,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noDocumentsInFolder => 'This folder is empty.';
+
+  @override
+  String get errorEmptyDocumentTitle => 'Nothing to save.';
+
+  @override
+  String get errorEmptyDocumentBody =>
+      'This document has no pages left. Add or restore a page before saving.';
+
+  @override
+  String get errorInvalidPageRangeTitle => 'That page range isn\'t valid.';
+
+  @override
+  String get errorInvalidPageRangeBody =>
+      'Check the page numbers and try again.';
 }
