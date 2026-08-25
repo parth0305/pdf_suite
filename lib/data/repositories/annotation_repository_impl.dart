@@ -20,12 +20,12 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
   final DocumentWriter _documents;
 
   @override
-  Future<LibraryDocument> saveMarkup({
+  Future<LibraryDocument> saveAnnotations({
     required int sourceDocumentId,
-    required List<Annotation> markups,
+    required List<Annotation> annotations,
   }) async {
-    if (markups.isEmpty) {
-      throw ArgumentError.value(markups, 'markups', 'nothing to save');
+    if (annotations.isEmpty) {
+      throw ArgumentError.value(annotations, 'annotations', 'nothing to save');
     }
 
     final source = (await _library.all()).firstWhere(
@@ -35,10 +35,10 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       await _library.resolveReadablePath(source),
     ).readAsBytes();
 
-    // Read metadata from the source: writeMarkup appends to the document, and
-    // going through DocumentWriter re-attaches it on the way out.
+    // Read metadata from the source: writeAnnotations appends to the document,
+    // and going through DocumentWriter re-attaches it on the way out.
     final metadata = PdfMetadata.readFrom(bytes);
-    final annotated = writeMarkup(bytes, markups);
+    final annotated = writeAnnotations(bytes, annotations);
 
     return _documents.store(
       annotated,

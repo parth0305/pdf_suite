@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/pdf_annotation_writer.dart';
 import 'package:folio/domain/annotations/annotation.dart';
+import 'package:folio/domain/annotations/pdf_point.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 
 Uint8List classicPdf() => Uint8List.fromList(
@@ -28,14 +29,14 @@ TextMarkup markup([MarkupKind kind = MarkupKind.highlight]) => TextMarkup(
 void main() {
   test('leaves the original bytes untouched at the front', () {
     final original = classicPdf();
-    final out = writeMarkup(original, [markup()]);
+    final out = writeAnnotations(original, [markup()]);
 
     expect(out.length, greaterThan(original.length));
     expect(out.sublist(0, original.length), original);
   });
 
   test('emits the annotation with the right subtype and quads', () {
-    final text = latin1.decode(writeMarkup(classicPdf(), [markup()]));
+    final text = latin1.decode(writeAnnotations(classicPdf(), [markup()]));
 
     expect(text, contains('/Subtype /Highlight'));
     expect(text, contains('/QuadPoints'));
@@ -43,26 +44,26 @@ void main() {
   });
 
   test('emits an appearance stream', () {
-    final text = latin1.decode(writeMarkup(classicPdf(), [markup()]));
+    final text = latin1.decode(writeAnnotations(classicPdf(), [markup()]));
     expect(text, contains('/Subtype /Form'));
     expect(text, contains('/AP'));
   });
 
   test('the page object is overridden with /Annots', () {
-    final text = latin1.decode(writeMarkup(classicPdf(), [markup()]));
+    final text = latin1.decode(writeAnnotations(classicPdf(), [markup()]));
     final defs = RegExp(r'3 0 obj(.*?)endobj', dotAll: true).allMatches(text);
     expect(defs.last.group(1), contains('/Annots'));
   });
 
   test('ends with a trailer chaining to the previous xref', () {
-    final text = latin1.decode(writeMarkup(classicPdf(), [markup()]));
+    final text = latin1.decode(writeAnnotations(classicPdf(), [markup()]));
     expect(text, contains('/Prev 9'));
     expect(text.trimRight().endsWith('%%EOF'), isTrue);
   });
 
   test('writes several markups of different kinds', () {
     final text = latin1.decode(
-      writeMarkup(classicPdf(), [
+      writeAnnotations(classicPdf(), [
         markup(),
         markup(MarkupKind.underline),
         markup(MarkupKind.strikeOut),
@@ -76,7 +77,7 @@ void main() {
 
   test('overrides the page once however many markups it carries', () {
     final text = latin1.decode(
-      writeMarkup(classicPdf(), [markup(), markup(MarkupKind.underline)]),
+      writeAnnotations(classicPdf(), [markup(), markup(MarkupKind.underline)]),
     );
     // Original definition plus exactly one override.
     expect(RegExp(r'3 0 obj').allMatches(text).length, 2);
@@ -84,7 +85,7 @@ void main() {
 
   test('an empty markup list returns the document unchanged', () {
     final original = classicPdf();
-    expect(writeMarkup(original, const []), original);
+    expect(writeAnnotations(original, const []), original);
   });
 
   // Refusing loudly beats producing a file whose annotations never appear.
@@ -99,7 +100,7 @@ void main() {
     );
 
     expect(
-      () => writeMarkup(xrefStream, [markup()]),
+      () => writeAnnotations(xrefStream, [markup()]),
       throwsA(isA<UnsupportedPdfStructure>()),
     );
   });
@@ -113,8 +114,99 @@ void main() {
     );
 
     expect(
-      () => writeMarkup(noPages, [markup()]),
+      () => writeAnnotations(noPages, [markup()]),
       throwsA(isA<UnsupportedPdfStructure>()),
     );
+  });
+
+  group('drawings', () {
+    DrawingAnnotation ink() => const DrawingAnnotation(
+      kind: DrawingKind.ink,
+      pageIndex: 0,
+      points: [PdfPoint(60, 700), PdfPoint(90, 730), PdfPoint(120, 700)],
+    );
+
+    test('emits an /Ink annotation with an /InkList', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [ink()]));
+
+      expect(text, contains('/Subtype /Ink'));
+      expect(text, contains('/InkList'));
+      // Alternating x y, one array per stroke.
+      expect(text, contains('[[60 700 90 730 120 700]]'));
+    });
+
+    test('emits /Square with a /Rect for a rectangle', () {
+      final text = latin1.decode(
+        writeAnnotations(classicPdf(), [
+          const DrawingAnnotation(
+            kind: DrawingKind.rectangle,
+            pageIndex: 0,
+            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+          ),
+        ]),
+      );
+
+      expect(text, contains('/Subtype /Square'));
+      expect(text, contains('/Rect [60 700 160 760]'));
+    });
+
+    test('emits /Circle for an oval', () {
+      final text = latin1.decode(
+        writeAnnotations(classicPdf(), [
+          const DrawingAnnotation(
+            kind: DrawingKind.ellipse,
+            pageIndex: 0,
+            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+          ),
+        ]),
+      );
+      expect(text, contains('/Subtype /Circle'));
+    });
+
+    test('emits /Line with an /L array', () {
+      final text = latin1.decode(
+        writeAnnotations(classicPdf(), [
+          const DrawingAnnotation(
+            kind: DrawingKind.line,
+            pageIndex: 0,
+            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+          ),
+        ]),
+      );
+
+      expect(text, contains('/Subtype /Line'));
+      expect(text, contains('/L [60 700 160 760]'));
+    });
+
+    test('an arrow declares a line ending so viewers draw the head', () {
+      final text = latin1.decode(
+        writeAnnotations(classicPdf(), [
+          const DrawingAnnotation(
+            kind: DrawingKind.arrow,
+            pageIndex: 0,
+            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+          ),
+        ]),
+      );
+      expect(text, contains('/LE'));
+    });
+
+    test('every drawing gets an appearance stream', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [ink()]));
+      expect(text, contains('/AP'));
+      expect(text, contains('/Subtype /Form'));
+    });
+
+    // The point of the sealed type: one save, both kinds.
+    test('markup and drawings write together in one pass', () {
+      final text = latin1.decode(
+        writeAnnotations(classicPdf(), [markup(), ink()]),
+      );
+
+      expect(text, contains('/Subtype /Highlight'));
+      expect(text, contains('/Subtype /Ink'));
+      // Still exactly one page override.
+      expect(RegExp(r'3 0 obj').allMatches(text).length, 2);
+    });
   });
 }

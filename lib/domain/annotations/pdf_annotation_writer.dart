@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:folio/core/errors/app_failure.dart';
+import 'package:folio/domain/annotations/drawing_appearance.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
 import 'package:folio/domain/annotations/annotation.dart';
 
-/// Writes [markups] into [pdf] as real annotation objects, by appending a PDF
-/// incremental update.
+/// Writes [annotations] into [pdf] as real annotation objects, by appending a
+/// PDF incremental update.
 ///
 /// The original bytes are never rewritten: new objects, an overridden page
 /// dictionary carrying /Annots, a new xref section and a trailer chaining to
@@ -15,16 +16,8 @@ import 'package:folio/domain/annotations/annotation.dart';
 ///
 /// Throws [UnsupportedPdfStructure] for documents this technique cannot handle,
 /// rather than producing a file whose annotations silently never appear.
-Uint8List writeMarkup(Uint8List pdf, List<Annotation> annotations) {
-  // Drawings arrive in Task 6. Refuse them loudly rather than filtering them
-  // out: a silent drop would discard a user's work and still report success.
-  final markups = annotations.map((a) {
-    if (a is! TextMarkup) {
-      throw UnimplementedError('writeMarkup cannot yet write ${a.pdfSubtype}');
-    }
-    return a;
-  }).toList();
-  if (markups.isEmpty) return pdf;
+Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
+  if (annotations.isEmpty) return pdf;
 
   final text = latin1.decode(pdf, allowInvalid: true);
   final reader = PdfObjectReader.parse(text);
@@ -61,10 +54,11 @@ Uint8List writeMarkup(Uint8List pdf, List<Annotation> annotations) {
     out.addAll(latin1.encode('$number 0 obj\n$body\nendobj\n'));
   }
 
-  // Group by page: each page is overridden once, however many markups it has.
-  final byPage = <int, List<TextMarkup>>{};
-  for (final m in markups) {
-    byPage.putIfAbsent(m.pageIndex, () => []).add(m);
+  // Group by page: each page is overridden once, however many annotations it
+  // has.
+  final byPage = <int, List<Annotation>>{};
+  for (final a in annotations) {
+    byPage.putIfAbsent(a.pageIndex, () => []).add(a);
   }
 
   for (final entry in byPage.entries) {
@@ -76,26 +70,26 @@ Uint8List writeMarkup(Uint8List pdf, List<Annotation> annotations) {
     }
 
     final newRefs = <String>[];
-    for (final markup in entry.value) {
-      final stream = appearanceStream(markup);
+    for (final annotation in entry.value) {
+      final (stream, dict) = switch (annotation) {
+        TextMarkup() => (
+          appearanceStream(annotation),
+          appearanceDict(annotation, appearanceStream(annotation).length),
+        ),
+        DrawingAnnotation() => (
+          drawingAppearanceStream(annotation),
+          drawingAppearanceDict(
+            annotation,
+            drawingAppearanceStream(annotation).length,
+          ),
+        ),
+      };
+
       final apNum = nextObj++;
-      emit(
-        apNum,
-        '${appearanceDict(markup, stream.length)}\n'
-        'stream\n${stream}endstream',
-      );
+      emit(apNum, '$dict\nstream\n${stream}endstream');
 
       final annotNum = nextObj++;
-      final b = markup.boundingRect;
-      emit(
-        annotNum,
-        '<< /Type /Annot /Subtype /${markup.pdfSubtype} '
-        '/Rect [${pdfNumber(b.left)} ${pdfNumber(b.bottom)} '
-        '${pdfNumber(b.right)} ${pdfNumber(b.top)}] '
-        '/QuadPoints [${markup.quadPoints.map(pdfNumber).join(' ')}] '
-        '/C [${markup.pdfColour}] /CA 1 /F 4 '
-        '/AP << /N $apNum 0 R >> >>',
-      );
+      emit(annotNum, _annotationDict(annotation, apNum));
       newRefs.add('$annotNum 0 R');
     }
 
@@ -122,4 +116,51 @@ Uint8List writeMarkup(Uint8List pdf, List<Annotation> annotations) {
   out.addAll(latin1.encode(buffer.toString()));
 
   return Uint8List.fromList(out);
+}
+
+/// The annotation dictionary. Geometry differs per subtype: markup uses
+/// /QuadPoints, ink uses /InkList, a line uses /L, and shapes use /Rect alone.
+String _annotationDict(Annotation annotation, int apNum) {
+  final ap = '/AP << /N $apNum 0 R >>';
+
+  switch (annotation) {
+    case TextMarkup():
+      final b = annotation.boundingRect;
+      return '<< /Type /Annot /Subtype /${annotation.pdfSubtype} '
+          '/Rect [${pdfNumber(b.left)} ${pdfNumber(b.bottom)} '
+          '${pdfNumber(b.right)} ${pdfNumber(b.top)}] '
+          '/QuadPoints [${annotation.quadPoints.map(pdfNumber).join(' ')}] '
+          '/C [${annotation.pdfColour}] /CA 1 /F 4 $ap >>';
+
+    case DrawingAnnotation():
+      final b = annotation.boundsPt;
+      final rect =
+          '/Rect [${pdfNumber(b.left)} ${pdfNumber(b.bottom)} '
+          '${pdfNumber(b.right)} ${pdfNumber(b.top)}]';
+      final common =
+          '/Type /Annot /Subtype /${annotation.pdfSubtype} $rect '
+          '/C [${annotation.pdfColour}] /CA 1 /F 4 '
+          '/BS << /W ${pdfNumber(annotation.strokeWidth)} >>';
+
+      final geometry = switch (annotation.kind) {
+        DrawingKind.ink =>
+          ' /InkList [[${annotation.points.map((p) => '${pdfNumber(p.x)} ${pdfNumber(p.y)}').join(' ')}]]',
+        DrawingKind.line =>
+          ' /L [${pdfNumber(annotation.points.first.x)} '
+              '${pdfNumber(annotation.points.first.y)} '
+              '${pdfNumber(annotation.points.last.x)} '
+              '${pdfNumber(annotation.points.last.y)}]',
+        // /OpenArrow at the end of the shaft; viewers that honour /LE draw the
+        // head themselves, and our /AP draws it for those that do not.
+        DrawingKind.arrow =>
+          ' /L [${pdfNumber(annotation.points.first.x)} '
+              '${pdfNumber(annotation.points.first.y)} '
+              '${pdfNumber(annotation.points.last.x)} '
+              '${pdfNumber(annotation.points.last.y)}]'
+              ' /LE [/None /OpenArrow]',
+        DrawingKind.rectangle || DrawingKind.ellipse => '',
+      };
+
+      return '<< $common$geometry $ap >>';
+  }
 }

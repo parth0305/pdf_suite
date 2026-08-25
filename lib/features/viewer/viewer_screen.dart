@@ -309,7 +309,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
-  Future<void> _saveMarkup() async {
+  Future<void> _saveAnnotations() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(annotationSessionProvider.notifier);
     final annotations = ref.read(annotationSessionProvider).session.annotations;
@@ -318,9 +318,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     try {
       final created = await ref
           .read(annotationRepositoryProvider)
-          .saveMarkup(
+          .saveAnnotations(
             sourceDocumentId: widget.document.id,
-            markups: annotations,
+            annotations: annotations,
           );
       await ref.read(libraryControllerProvider.notifier).refresh();
 
@@ -495,7 +495,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             MarkupToolbar(
               hasSelection: _selection?.hasSelectedText ?? false,
               onMarkup: _markupSelection,
-              onSave: _saveMarkup,
+              onSave: _saveAnnotations,
             ),
           if (_mode == _ViewerMode.pages)
             PageToolbar(
