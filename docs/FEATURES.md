@@ -59,8 +59,25 @@ or integration test has exercised it. See `LIMITATIONS.md`.
 Every operation writes a **new** document and leaves its source
 byte-identical, asserted by hash in the integration suite.
 
+## SP-3a — Text markup annotations
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Highlight selected text | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Underline selected text | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Strikethrough selected text | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Undo staged markup | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Save markup into the PDF | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Markup is written as real PDF annotation objects, so any viewer can see it.
+Verified by rendering the page before and after and requiring the pixels to
+differ — a file that merely opens proves nothing.
+
+Editing or deleting markup after it has been saved is **not** yet possible; that
+needs reading `/Annots` back, which is SP-3b.
+
 ## Not in SP-1 or SP-2a
 
-Annotations, signatures, scanner, OCR, compression, encryption authoring,
-redaction, watermarks, metadata editing, batch processing, automation rules,
-and printing are all ❌ — planned for SP-2b through SP-9.
+Freehand ink, shapes, sticky notes, stamps, signatures, scanner, OCR,
+compression, encryption authoring, redaction, watermarks, metadata editing,
+batch processing, automation rules, and printing are all ❌ — planned for SP-2b through SP-9.

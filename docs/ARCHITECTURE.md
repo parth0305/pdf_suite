@@ -56,6 +56,25 @@ snapshots rather than a history of file writes, the operation logic is
 unit-testable with no simulator, and an abandoned session cannot leave partial
 files behind.
 
+## One write path into the library
+
+Every produced document enters through `DocumentWriter.store`. Metadata
+re-attachment lives there, so a new writer cannot forget it — which is exactly
+how the SP-2b data-loss bug happened, in a private method only one caller could
+reach.
+
+## Annotations are written, not overlaid
+
+Text markup becomes real PDF annotation objects rather than rows in Folio's
+database drawn over the page. Database-backed markup would have been far simpler,
+and invisible to every other viewer — which defeats what "annotate" means.
+
+The write uses the same incremental-update technique as metadata, with one extra
+requirement: the page dictionary must be **overridden** to carry `/Annots`. That
+is what `PdfObjectReader` exists for. It matches dictionaries by brace balance
+rather than regex, and merges into an existing `/Annots` array rather than
+replacing it. It parses page dictionaries and nothing else, deliberately.
+
 ## Metadata is preserved by incremental update
 
 The writer discards a source document's `/Info`, so page operations would

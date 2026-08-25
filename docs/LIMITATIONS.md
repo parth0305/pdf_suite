@@ -30,25 +30,39 @@ the separate `PdfPageEditor`, so the reader still cannot alter a document.
 View rotation in read mode is not persisted — rotating in Pages mode and saving
 is what writes rotation to a file.
 
-## 3. Search finds nothing in scanned documents
+## 3. Markup cannot be added to newer PDFs, and cannot be edited once saved
+
+Text markup is attached by a PDF **incremental update**, which assumes a classic
+cross-reference table. Documents using PDF 1.5+ cross-reference streams are
+**refused with a clear message** rather than silently producing a file whose
+annotations never appear.
+
+Saved markup also cannot yet be moved, restyled or deleted: that requires reading
+`/Annots` back out, which is SP-3b. Staged markup can be undone before saving.
+
+Appearance streams are generated for every markup. PDFium renders markup without
+them, but portability to other viewers could not be measured on this machine, and
+portability is the whole reason annotations are written into the file.
+
+## 4. Search finds nothing in scanned documents
 
 A PDF with no text layer yields empty text. This is correct behaviour, not a
 bug — OCR arrives in SP-6. The `scanned_no_text.pdf` fixture asserts it returns
 empty rather than failing.
 
-## 4. Android open-in-place requires a SAF URI
+## 5. Android open-in-place requires a SAF URI
 
 `PlatformHandles.capture()` on Android accepts only a `content://` URI from the
 system picker. A filesystem path cannot be granted a persistable permission, so
 it is rejected with `UnsupportedFeature` rather than producing a handle that
 would fail silently on next launch.
 
-## 5. English only
+## 6. English only
 
 The architecture supports localisation — all strings live in ARB files from the
 first commit — but no translations exist.
 
-## 6. Both native dependencies use Dart native assets
+## 7. Both native dependencies use Dart native assets
 
 `pdfrx` (PDFium) and `sqlite3` (via drift) build through Dart's newer native
 assets / build hooks mechanism rather than classic Flutter plugins. The iOS
@@ -57,13 +71,13 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 7. Encryption is generated, not authored by the app
+## 8. Encryption is generated, not authored by the app
 
 The RC4 standard-security-handler implementation in `scripts/` exists solely to
 produce encrypted test fixtures. The application cannot apply encryption to a
 document; it can only read encrypted documents. Authoring encryption is SP-5.
 
-## 8. Test fixtures are generated, not committed
+## 9. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their
