@@ -34,6 +34,18 @@ void main() {
     buildPdf(generatedPages(1), extraCatalogEntries: kJavaScriptNames),
   );
 
+  // Carries a document information dictionary, for verifying whether metadata
+  // survives operations that rewrite the document.
+  write(
+    'with_metadata.pdf',
+    buildPdf(
+      kSampleThreePage,
+      infoDict:
+          '<< /Title (FOLIO-PROBE-TITLE) /Author (FOLIO-PROBE-AUTHOR) '
+          '/Subject (FOLIO-PROBE-SUBJECT) >>',
+    ),
+  );
+
   // Truncated: %%EOF and part of the xref removed.
   final full = buildPdf(generatedPages(3));
   write('corrupt_truncated.pdf', full.sublist(0, full.length - 200));
