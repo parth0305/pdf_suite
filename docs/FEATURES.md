@@ -21,7 +21,8 @@ that platform. A build passing is not verification.
 | Search library | ✅ | ✅ | ✅ | 🟡 | ✅ |
 | Sort (name/date/size) | ✅ | ✅ | ✅ | 🟡 | ✅ |
 | Rename / duplicate / delete | ✅ | ✅ | ✅ | 🟡 | ✅ |
-| Collections (data layer) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Collections (virtual folders) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Move between folders | ✅ | ✅ | ✅ | 🟡 | ✅ |
 | Save As / export | ✅ | ✅ | ✅ | 🟡 | ✅ |
 | Page rendering | ✅ | ✅ | ✅ | 🟡 | ✅ |
 | Zoom (pinch, buttons, double-tap) | ✅ | ✅ | ✅ | 🟡 | ✅ |

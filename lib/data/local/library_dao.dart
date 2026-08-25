@@ -111,5 +111,6 @@ class LibraryDao {
     lastOpenedAt: row.lastOpenedAt,
     isFavorite: row.isFavorite,
     pageCount: row.pageCount,
+    collectionId: row.collectionId,
   );
 }

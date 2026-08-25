@@ -10,6 +10,7 @@ class LibraryDocument {
     required this.isFavorite,
     this.lastOpenedAt,
     this.pageCount,
+    this.collectionId,
   });
 
   final int id;
@@ -21,6 +22,9 @@ class LibraryDocument {
   final bool isFavorite;
   final int? pageCount;
 
+  /// Null means the document sits at the library root. Folders are virtual.
+  final int? collectionId;
+
   bool get isManaged => ref is ManagedRef;
 
   LibraryDocument copyWith({
@@ -28,6 +32,8 @@ class LibraryDocument {
     bool? isFavorite,
     int? pageCount,
     String? displayName,
+    int? collectionId,
+    bool clearCollection = false,
   }) => LibraryDocument(
     id: id,
     ref: ref,
@@ -37,5 +43,6 @@ class LibraryDocument {
     lastOpenedAt: lastOpenedAt ?? this.lastOpenedAt,
     isFavorite: isFavorite ?? this.isFavorite,
     pageCount: pageCount ?? this.pageCount,
+    collectionId: clearCollection ? null : (collectionId ?? this.collectionId),
   );
 }

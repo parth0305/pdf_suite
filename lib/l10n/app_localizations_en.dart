@@ -212,4 +212,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String viewerPageLabel(int number) {
     return 'Page $number';
   }
+
+  @override
+  String get collectionsAll => 'All';
+
+  @override
+  String get collectionNew => 'New folder';
+
+  @override
+  String get collectionNameHint => 'Folder name';
+
+  @override
+  String get moveToAction => 'Move to';
+
+  @override
+  String get moveToRoot => 'Library root';
+
+  @override
+  String get saveAsAction => 'Save a copy';
+
+  @override
+  String get exportSuccess => 'Copy saved';
+
+  @override
+  String get deleteFolderAction => 'Delete folder';
+
+  @override
+  String get renameFolderAction => 'Rename folder';
+
+  @override
+  String get deleteFolderExplain =>
+      'Documents in this folder return to the library root. Nothing is deleted.';
+
+  @override
+  String get createAction => 'Create';
+
+  @override
+  String get noDocumentsInFolder => 'This folder is empty.';
 }

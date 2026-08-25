@@ -1,3 +1,4 @@
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/domain/models/library_document.dart';
@@ -72,6 +73,19 @@ class DocumentTile extends ConsumerWidget {
                   await controller.duplicateDocument(document.id);
                 case 'delete':
                   await controller.remove(document.id);
+                case 'saveAs':
+                  final location = await getSaveLocation(
+                    suggestedName: document.displayName,
+                  );
+                  if (location == null) return;
+                  await controller.exportCopy(document.id, location.path);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(l10n.exportSuccess)));
+                case 'move':
+                  if (!context.mounted) return;
+                  await _promptMove(context, ref, document.id);
               }
             },
             itemBuilder: (context) => [
@@ -80,12 +94,52 @@ class DocumentTile extends ConsumerWidget {
                 value: 'duplicate',
                 child: Text(l10n.duplicateAction),
               ),
+              PopupMenuItem(value: 'move', child: Text(l10n.moveToAction)),
+              PopupMenuItem(value: 'saveAs', child: Text(l10n.saveAsAction)),
               PopupMenuItem(value: 'delete', child: Text(l10n.deleteAction)),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _promptMove(
+    BuildContext context,
+    WidgetRef ref,
+    int docId,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final folders = ref.read(collectionsControllerProvider).value ?? const [];
+
+    final target = await showModalBottomSheet<int?>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.home_outlined),
+              title: Text(l10n.moveToRoot),
+              onTap: () => Navigator.of(context).pop(-1),
+            ),
+            for (final f in folders)
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(f.name),
+                onTap: () => Navigator.of(context).pop(f.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (target == null) return;
+
+    // -1 is the sentinel for "library root"; null would be indistinguishable
+    // from the user dismissing the sheet.
+    await ref
+        .read(libraryControllerProvider.notifier)
+        .moveToCollection(docId, target == -1 ? null : target);
   }
 
   Future<String?> _promptRename(BuildContext context, String current) {
