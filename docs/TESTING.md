@@ -42,7 +42,7 @@ Last measured on 2026-08-25, after SP-2a.
 |---|---|
 | Unit (host) | 233 passing |
 | iOS simulator (iPhone 16 Plus, iOS 18.6) | 47 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | see note below |
+| Android emulator (API 35, x86_64) | 46 passing when suites are run individually; the combined run reported 3 unidentified failures — see LIMITATIONS.md |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
