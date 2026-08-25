@@ -759,6 +759,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There are no other documents to insert.'**
   String get insertNoOtherDocuments;
+
+  /// No description provided for @errorUnsupportedPdfStructureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t add markup to this PDF.'**
+  String get errorUnsupportedPdfStructureTitle;
+
+  /// No description provided for @errorUnsupportedPdfStructureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It uses a newer PDF structure this app can\'t safely modify yet. The document is unchanged.'**
+  String get errorUnsupportedPdfStructureBody;
+
+  /// No description provided for @markupMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Markup'**
+  String get markupMode;
+
+  /// No description provided for @markupHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight'**
+  String get markupHighlight;
+
+  /// No description provided for @markupUnderline.
+  ///
+  /// In en, this message translates to:
+  /// **'Underline'**
+  String get markupUnderline;
+
+  /// No description provided for @markupStrikeOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Strikethrough'**
+  String get markupStrikeOut;
+
+  /// No description provided for @markupUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo markup'**
+  String get markupUndo;
+
+  /// No description provided for @markupSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save with markup'**
+  String get markupSave;
+
+  /// No description provided for @markupCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} marked'**
+  String markupCount(int count);
+
+  /// No description provided for @markupSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as {name}'**
+  String markupSaved(String name);
+
+  /// No description provided for @markupSelectFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Select some text to mark it up.'**
+  String get markupSelectFirst;
+
+  /// No description provided for @markupDiscardPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your markup? The original document is untouched either way.'**
+  String get markupDiscardPrompt;
 }
 
 class _AppLocalizationsDelegate

@@ -6,12 +6,15 @@ import 'package:folio/core/storage/safe_file_writer.dart';
 import 'package:folio/data/local/app_database.dart';
 import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
+import 'package:folio/data/repositories/annotation_repository_impl.dart';
+import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/page_operations_repository_impl.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:folio/engine/pdfrx_page_editor.dart';
 import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/pages/providers.dart';
+import 'package:folio/features/viewer/annotation_providers.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 Future<void> main() async {
@@ -26,6 +29,15 @@ Future<void> main() async {
     dao: LibraryDao(db),
     writer: SafeFileWriter(),
     libraryRoot: libraryRoot,
+  );
+
+  final annotations = AnnotationRepositoryImpl(
+    library: library,
+    documents: DocumentWriter(
+      library: library,
+      writer: SafeFileWriter(),
+      libraryRoot: libraryRoot,
+    ),
   );
 
   // One engine instance shared by the editor, so the handles it opens are the
@@ -46,6 +58,7 @@ Future<void> main() async {
       overrides: [
         libraryRepositoryProvider.overrideWithValue(library),
         pageOperationsRepositoryProvider.overrideWithValue(pageOperations),
+        annotationRepositoryProvider.overrideWithValue(annotations),
       ],
       child: const FolioApp(),
     ),

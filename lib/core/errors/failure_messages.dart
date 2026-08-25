@@ -48,6 +48,10 @@ FailureMessage failureMessage(AppFailure failure, AppLocalizations l10n) {
       l10n.errorInvalidPageRangeTitle,
       l10n.errorInvalidPageRangeBody,
     ),
+    UnsupportedPdfStructure() => FailureMessage(
+      l10n.errorUnsupportedPdfStructureTitle,
+      l10n.errorUnsupportedPdfStructureBody,
+    ),
     UnknownFailure() => FailureMessage(
       l10n.errorUnknownTitle,
       l10n.errorUnknownBody,

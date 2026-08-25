@@ -69,6 +69,12 @@ final class InvalidPageRange extends AppFailure {
   String get code => 'invalid_page_range';
 }
 
+final class UnsupportedPdfStructure extends AppFailure {
+  const UnsupportedPdfStructure({super.technicalDetail});
+  @override
+  String get code => 'unsupported_pdf_structure';
+}
+
 final class UnknownFailure extends AppFailure {
   const UnknownFailure({super.technicalDetail});
   @override

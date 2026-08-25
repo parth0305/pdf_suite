@@ -364,4 +364,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get insertNoOtherDocuments =>
       'There are no other documents to insert.';
+
+  @override
+  String get errorUnsupportedPdfStructureTitle =>
+      'Can\'t add markup to this PDF.';
+
+  @override
+  String get errorUnsupportedPdfStructureBody =>
+      'It uses a newer PDF structure this app can\'t safely modify yet. The document is unchanged.';
+
+  @override
+  String get markupMode => 'Markup';
+
+  @override
+  String get markupHighlight => 'Highlight';
+
+  @override
+  String get markupUnderline => 'Underline';
+
+  @override
+  String get markupStrikeOut => 'Strikethrough';
+
+  @override
+  String get markupUndo => 'Undo markup';
+
+  @override
+  String get markupSave => 'Save with markup';
+
+  @override
+  String markupCount(int count) {
+    return '$count marked';
+  }
+
+  @override
+  String markupSaved(String name) {
+    return 'Saved as $name';
+  }
+
+  @override
+  String get markupSelectFirst => 'Select some text to mark it up.';
+
+  @override
+  String get markupDiscardPrompt =>
+      'Discard your markup? The original document is untouched either way.';
 }
