@@ -30,44 +30,25 @@ the separate `PdfPageEditor`, so the reader still cannot alter a document.
 View rotation in read mode is not persisted — rotating in Pages mode and saving
 is what writes rotation to a file.
 
-## 3. Page operations discard document metadata
-
-**Every page operation loses the document information dictionary.** Merge,
-split, reorder, delete, extract, rotate, duplicate and insert all produce a new
-document whose `/Info` entries — Title, Author, Subject, Keywords, creation and
-modification dates — are empty, regardless of what the source contained.
-
-Verified by probe on 2026-08-25: a source carrying Title, Author and Subject
-was reordered through `PdfrxPageEditor`, and none of the three values appeared
-anywhere in the output bytes, though an `/Info` key was present.
-
-This is quiet data loss: nothing fails, and the interface gives no hint that
-anything was dropped. It is the strongest argument yet for SP-2b, which is the
-sub-project that gains the ability to read and write `/Info` at all — the
-current stack cannot preserve metadata because it cannot parse or author it.
-
-Until then, treat a page operation as producing an untitled document. The
-`with_metadata.pdf` fixture exists to verify the fix when SP-2b lands.
-
-## 4. Search finds nothing in scanned documents
+## 3. Search finds nothing in scanned documents
 
 A PDF with no text layer yields empty text. This is correct behaviour, not a
 bug — OCR arrives in SP-6. The `scanned_no_text.pdf` fixture asserts it returns
 empty rather than failing.
 
-## 5. Android open-in-place requires a SAF URI
+## 4. Android open-in-place requires a SAF URI
 
 `PlatformHandles.capture()` on Android accepts only a `content://` URI from the
 system picker. A filesystem path cannot be granted a persistable permission, so
 it is rejected with `UnsupportedFeature` rather than producing a handle that
 would fail silently on next launch.
 
-## 6. English only
+## 5. English only
 
 The architecture supports localisation — all strings live in ARB files from the
 first commit — but no translations exist.
 
-## 7. Both native dependencies use Dart native assets
+## 6. Both native dependencies use Dart native assets
 
 `pdfrx` (PDFium) and `sqlite3` (via drift) build through Dart's newer native
 assets / build hooks mechanism rather than classic Flutter plugins. The iOS
@@ -76,13 +57,13 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 8. Encryption is generated, not authored by the app
+## 7. Encryption is generated, not authored by the app
 
 The RC4 standard-security-handler implementation in `scripts/` exists solely to
 produce encrypted test fixtures. The application cannot apply encryption to a
 document; it can only read encrypted documents. Authoring encryption is SP-5.
 
-## 9. Test fixtures are generated, not committed
+## 8. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their

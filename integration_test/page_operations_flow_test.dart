@@ -9,6 +9,7 @@ import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
 import 'package:folio/data/repositories/page_operations_repository_impl.dart';
 import 'package:folio/domain/editing/page_slot.dart';
+import 'package:folio/domain/editing/pdf_metadata.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
@@ -225,6 +226,72 @@ void main() {
       expect(handle.pageCount, 3);
       final middle = await engine.extractText(handle, 1);
       expect(middle!.fullText, contains('Section 1'));
+      await engine.close(handle);
+    });
+
+    // The data-loss bug this sub-project exists to fix: page operations used to
+    // discard the source's /Info entirely.
+    test('metadata survives a page operation', () async {
+      final src = await seed('with_metadata.pdf', 'Has Metadata.pdf');
+
+      final before = PdfMetadata.readFrom(
+        await File(await library.resolveReadablePath(src)).readAsBytes(),
+      );
+      expect(before!.title, 'FOLIO-PROBE-TITLE');
+
+      final out = await ops.apply(
+        sourceDocumentId: src.id,
+        slots: [
+          PageSlot(sourceDocumentId: src.id, sourcePageIndex: 1),
+          PageSlot(sourceDocumentId: src.id, sourcePageIndex: 0),
+        ],
+      );
+
+      final after = PdfMetadata.readFrom(
+        await File(await library.resolveReadablePath(out)).readAsBytes(),
+      );
+      expect(after, isNotNull, reason: 'the output must carry an /Info');
+      expect(after!.title, 'FOLIO-PROBE-TITLE');
+      expect(after.author, 'FOLIO-PROBE-AUTHOR');
+      expect(after.subject, 'FOLIO-PROBE-SUBJECT');
+
+      // And the patched document must still be a valid PDF.
+      final handle = await openOutput(out);
+      expect(handle.pageCount, 2);
+      final first = await engine.extractText(handle, 0);
+      expect(first!.fullText, contains('Terms and Conditions'));
+      await engine.close(handle);
+    });
+
+    test('metadata survives split, on every part', () async {
+      final src = await seed('with_metadata.pdf', 'Has Metadata.pdf');
+
+      final parts = await ops.split(
+        sourceDocumentId: src.id,
+        groups: const [
+          [0],
+          [1, 2],
+        ],
+      );
+
+      for (final part in parts) {
+        final meta = PdfMetadata.readFrom(
+          await File(await library.resolveReadablePath(part)).readAsBytes(),
+        );
+        expect(meta?.title, 'FOLIO-PROBE-TITLE');
+      }
+    });
+
+    test('a source with no metadata still produces a valid document', () async {
+      final src = await seed('sample_3page.pdf', 'Plain.pdf');
+
+      final out = await ops.apply(
+        sourceDocumentId: src.id,
+        slots: [PageSlot(sourceDocumentId: src.id, sourcePageIndex: 0)],
+      );
+
+      final handle = await openOutput(out);
+      expect(handle.pageCount, 1);
       await engine.close(handle);
     });
   });
