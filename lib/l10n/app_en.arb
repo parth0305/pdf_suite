@@ -167,5 +167,29 @@
   "insertChooseDocument": "Choose a document to insert",
   "insertNoOtherDocuments": "There are no other documents to insert.",
   "errorUnsupportedPdfStructureTitle": "Can't add markup to this PDF.",
-  "errorUnsupportedPdfStructureBody": "It uses a newer PDF structure this app can't safely modify yet. The document is unchanged."
+  "errorUnsupportedPdfStructureBody": "It uses a newer PDF structure this app can't safely modify yet. The document is unchanged.",
+  "markupMode": "Markup",
+  "markupHighlight": "Highlight",
+  "markupUnderline": "Underline",
+  "markupStrikeOut": "Strikethrough",
+  "markupUndo": "Undo markup",
+  "markupSave": "Save with markup",
+  "markupCount": "{count} marked",
+  "@markupCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "markupSaved": "Saved as {name}",
+  "@markupSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "markupSelectFirst": "Select some text to mark it up.",
+  "markupDiscardPrompt": "Discard your markup? The original document is untouched either way."
 }
