@@ -202,5 +202,6 @@
   "drawThickness": "Thickness",
   "drawUndo": "Undo",
   "drawSave": "Save with drawings",
-  "drawDiscardPrompt": "Discard your drawings? The original document is untouched either way."
+  "drawDiscardPrompt": "Discard your drawings? The original document is untouched either way.",
+  "annotateMode": "Annotate"
 }

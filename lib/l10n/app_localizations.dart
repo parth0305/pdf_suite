@@ -897,6 +897,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discard your drawings? The original document is untouched either way.'**
   String get drawDiscardPrompt;
+
+  /// No description provided for @annotateMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Annotate'**
+  String get annotateMode;
 }
 
 class _AppLocalizationsDelegate

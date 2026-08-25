@@ -29,6 +29,8 @@ enum _SidePanel { none, thumbnails, outline }
 
 enum _ViewerMode { read, pages, markup, draw }
 
+enum _AnnotateTool { markup, draw }
+
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
 
@@ -627,18 +629,37 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   ? _leavePagesMode()
                   : _enterPagesMode(),
       ),
-      if (_mode == _ViewerMode.read) ...[
-        IconButton(
-          tooltip: l10n.markupMode,
-          icon: const Icon(Icons.format_color_fill),
-          onPressed: _totalPages == 0 ? null : _enterMarkupMode,
+      // One menu rather than one icon per tool: the action bar was already at
+      // the width limit, and a second annotation icon overflowed it. Sticky
+      // notes and stamps land here too rather than pushing it over again.
+      if (_mode == _ViewerMode.read)
+        PopupMenuButton<_AnnotateTool>(
+          tooltip: l10n.annotateMode,
+          icon: const Icon(Icons.edit_outlined),
+          enabled: _totalPages != 0,
+          onSelected: (tool) => switch (tool) {
+            _AnnotateTool.markup => _enterMarkupMode(),
+            _AnnotateTool.draw => _enterDrawMode(),
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: _AnnotateTool.markup,
+              child: ListTile(
+                leading: const Icon(Icons.format_color_fill),
+                title: Text(l10n.markupMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.draw,
+              child: ListTile(
+                leading: const Icon(Icons.draw_outlined),
+                title: Text(l10n.drawMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
         ),
-        IconButton(
-          tooltip: l10n.drawMode,
-          icon: const Icon(Icons.draw_outlined),
-          onPressed: _totalPages == 0 ? null : _enterDrawMode,
-        ),
-      ],
       if (_mode == _ViewerMode.pages)
         IconButton(
           tooltip: l10n.pagesSplit,

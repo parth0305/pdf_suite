@@ -441,4 +441,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get drawDiscardPrompt =>
       'Discard your drawings? The original document is untouched either way.';
+
+  @override
+  String get annotateMode => 'Annotate';
 }

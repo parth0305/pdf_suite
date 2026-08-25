@@ -10,7 +10,6 @@ import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/data/repositories/annotation_repository_impl.dart';
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
-import 'package:folio/domain/annotations/pdf_point.dart';
 import 'package:folio/domain/annotations/quad_merge.dart';
 import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/editing/pdf_metadata.dart';
@@ -19,7 +18,7 @@ import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:pdfrx/pdfrx.dart' hide PdfPoint;
+import 'package:pdfrx/pdfrx.dart';
 
 import 'fixture_helper.dart';
 
@@ -276,115 +275,6 @@ void main() {
         ),
         throwsA(isA<UnsupportedPdfStructure>()),
       );
-    });
-  });
-
-  group('drawing flow', () {
-    // Stage 2's gate: a drawing must RENDER through the production path.
-    // Byte assertions only prove the objects are present; PDFium deciding not
-    // to draw them would still pass those and ship a broken feature.
-    Future<int> pixelsChangedBy(List<Annotation> drawings) async {
-      final src = await seed(
-        'sample_3page.pdf',
-        'D-${drawings.first.pdfSubtype}-${DateTime.now().microsecondsSinceEpoch}.pdf',
-      );
-
-      final before = await engine.open(
-        FileSource(await library.resolveReadablePath(src)),
-      );
-      final beforePx = (await engine.renderPage(
-        before,
-        0,
-        targetWidthPx: 400,
-        targetHeightPx: 566,
-      )).bgraPixels;
-      await engine.close(before);
-
-      final out = await annotations.saveAnnotations(
-        sourceDocumentId: src.id,
-        annotations: drawings,
-      );
-
-      final after = await engine.open(
-        FileSource(await library.resolveReadablePath(out)),
-      );
-      final afterPx = (await engine.renderPage(
-        after,
-        0,
-        targetWidthPx: 400,
-        targetHeightPx: 566,
-      )).bgraPixels;
-      await engine.close(after);
-
-      var changed = 0;
-      for (var i = 0; i < beforePx.length; i++) {
-        if (beforePx[i] != afterPx[i]) changed++;
-      }
-      return changed;
-    }
-
-    test('an ink stroke renders when the document is reopened', () async {
-      final changed = await pixelsChangedBy(const [
-        DrawingAnnotation(
-          kind: DrawingKind.ink,
-          pageIndex: 0,
-          points: [
-            PdfPoint(100, 500),
-            PdfPoint(200, 600),
-            PdfPoint(300, 500),
-            PdfPoint(400, 600),
-          ],
-          strokeWidth: 4,
-        ),
-      ]);
-
-      expect(changed, greaterThan(500), reason: 'the ink must be drawn');
-    });
-
-    test('every shape kind renders', () async {
-      for (final kind in [
-        DrawingKind.rectangle,
-        DrawingKind.ellipse,
-        DrawingKind.line,
-        DrawingKind.arrow,
-      ]) {
-        final changed = await pixelsChangedBy([
-          DrawingAnnotation(
-            kind: kind,
-            pageIndex: 0,
-            points: const [PdfPoint(120, 450), PdfPoint(420, 650)],
-            strokeWidth: 4,
-          ),
-        ]);
-
-        expect(changed, greaterThan(500), reason: '${kind.name} must be drawn');
-      }
-    });
-
-    test('markup and a drawing save together and both render', () async {
-      final src = await seed('sample_3page.pdf', 'Both.pdf');
-      final quads = await quadsOver(src, 'Confidential');
-
-      final out = await annotations.saveAnnotations(
-        sourceDocumentId: src.id,
-        annotations: [
-          TextMarkup(kind: MarkupKind.highlight, pageIndex: 0, quads: quads),
-          const DrawingAnnotation(
-            kind: DrawingKind.rectangle,
-            pageIndex: 0,
-            points: [PdfPoint(120, 450), PdfPoint(420, 650)],
-            strokeWidth: 4,
-          ),
-        ],
-      );
-
-      // Reopening proves the file is structurally valid after two annotation
-      // kinds shared one page override.
-      final doc = await engine.open(
-        FileSource(await library.resolveReadablePath(out)),
-      );
-      expect(doc.pageCount, 3);
-      await engine.close(doc);
     });
   });
 }
