@@ -36,12 +36,12 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-25, after SP-2a.
+Last measured on 2026-08-26, after SP-3a.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 233 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 47 passed, 1 skipped |
+| Unit (host) | 323 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 57 passed, 1 skipped |
 | Android emulator (API 35, x86_64) | 46 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
