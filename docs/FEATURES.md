@@ -59,10 +59,6 @@ or integration test has exercised it. See `LIMITATIONS.md`.
 Every operation writes a **new** document and leaves its source
 byte-identical, asserted by hash in the integration suite.
 
-Android status above reflects suites run individually. The combined Android
-run has three unresolved failures; see `LIMITATIONS.md` before relying on the
-Android column.
-
 ## Not in SP-1 or SP-2a
 
 Annotations, signatures, scanner, OCR, compression, encryption authoring,

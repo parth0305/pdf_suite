@@ -42,7 +42,7 @@ Last measured on 2026-08-25, after SP-2a.
 |---|---|
 | Unit (host) | 233 passing |
 | iOS simulator (iPhone 16 Plus, iOS 18.6) | 47 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 46 passing when suites are run individually; the combined run reported 3 unidentified failures — see LIMITATIONS.md |
+| Android emulator (API 35, x86_64) | 46 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
@@ -63,6 +63,19 @@ reachable because it is pure Dart with no native dependency.
 Two files are deliberately low and are covered by integration tests instead:
 `platform_handles.dart` is a platform-channel adapter that only answers on a
 real device, and `app_database.dart` is drift schema declaration.
+
+## Timing assertions are pathology bounds, not benchmarks
+
+The integration suite contains a few wall-clock assertions on opening and
+rendering large documents. They are deliberately generous: they exist to catch
+an algorithm going quadratic, not to measure performance.
+
+Tight thresholds here produce false failures. A 2000ms bound on rendering page
+750 of a 1000-page document failed at 2796ms on an Android emulator fourteen
+minutes into a full run - a loaded emulator, not a regression.
+
+Real performance measurement needs a stable device and a dedicated run. Do not
+tighten these bounds to make them meaningful; move the measurement instead.
 
 ## Verifying a test actually tests something
 

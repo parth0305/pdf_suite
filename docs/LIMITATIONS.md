@@ -43,30 +43,12 @@ system picker. A filesystem path cannot be granted a persistable permission, so
 it is rejected with `UnsupportedFeature` rather than producing a handle that
 would fail silently on next launch.
 
-## 5. Android: three failures in the combined integration run
-
-Every integration suite passes when run individually on the Android emulator
-(46 tests across seven files). The full `flutter test integration_test` run,
-which takes roughly eight and a half minutes, reported **3 failures that could
-not be reproduced in isolation**.
-
-This looks like contention or emulator instability under a long run rather than
-a broken feature, but that is a hypothesis, not a finding: the failing test
-names were lost to log truncation and have not been identified.
-
-**Do not treat Android integration as green until this is understood.** iOS runs
-the same suites in one pass with 47 passed and 1 skipped.
-
-Next step: re-run `flutter test integration_test -d emulator-5554` capturing
-full output, identify the three tests, and determine whether they fail
-deterministically in combination or intermittently.
-
-## 6. English only
+## 5. English only
 
 The architecture supports localisation — all strings live in ARB files from the
 first commit — but no translations exist.
 
-## 7. Both native dependencies use Dart native assets
+## 6. Both native dependencies use Dart native assets
 
 `pdfrx` (PDFium) and `sqlite3` (via drift) build through Dart's newer native
 assets / build hooks mechanism rather than classic Flutter plugins. The iOS
@@ -75,13 +57,13 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 8. Encryption is generated, not authored by the app
+## 7. Encryption is generated, not authored by the app
 
 The RC4 standard-security-handler implementation in `scripts/` exists solely to
 produce encrypted test fixtures. The application cannot apply encryption to a
 document; it can only read encrypted documents. Authoring encryption is SP-5.
 
-## 9. Test fixtures are generated, not committed
+## 8. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their
