@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:folio/core/storage/safe_file_writer.dart';
 import 'package:folio/domain/editing/page_slot.dart';
+import 'package:folio/domain/editing/pdf_metadata.dart';
 import 'package:folio/domain/editing/pdf_page_editor.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
@@ -70,8 +71,39 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
     }
   }
 
+  /// Reads the metadata a produced document should carry.
+  ///
+  /// The writer discards the source's /Info, so it is read from the original
+  /// bytes and re-attached in [_store]. On merge the first document wins,
+  /// matching how the merged output is already named after it.
+  Future<PdfMetadata?> _metadataOf(LibraryDocument source) async {
+    try {
+      final path = await _library.resolveReadablePath(source);
+      return PdfMetadata.readFrom(await File(path).readAsBytes());
+    } catch (_) {
+      // Metadata is a nicety; failing to read it must never fail the operation.
+      return null;
+    }
+  }
+
   /// Writes bytes into the library as a new content-addressed document.
-  Future<LibraryDocument> _store(Uint8List bytes, String displayName) async {
+  ///
+  /// [metadata], when present, is re-attached first: the writer drops the
+  /// source's /Info, so without this every page operation would silently
+  /// discard the document's title, author and subject.
+  Future<LibraryDocument> _store(
+    Uint8List bytes,
+    String displayName, {
+    PdfMetadata? metadata,
+  }) async {
+    if (metadata != null && !metadata.isEmpty) {
+      try {
+        bytes = metadata.appendTo(bytes);
+      } on FormatException {
+        // Preserving metadata is best-effort. A document we cannot patch is
+        // still a valid document; losing its title is better than losing it.
+      }
+    }
     final hash = sha256.convert(bytes).toString();
     final relative = p.join(hash.substring(0, 2), '$hash.pdf');
 
@@ -95,8 +127,9 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
     required List<PageSlot> slots,
   }) async {
     final source = await _documentById(sourceDocumentId);
+    final metadata = await _metadataOf(source);
     final bytes = await _materialise(slots, await _sourcesFor(slots));
-    return _store(bytes, editedName(source.displayName));
+    return _store(bytes, editedName(source.displayName), metadata: metadata);
   }
 
   @override
@@ -125,7 +158,11 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
         }
       }
       final bytes = await _editor.materialise(slots: slots, sources: handles);
-      return await _store(bytes, editedName(sources.first.displayName));
+      return await _store(
+        bytes,
+        editedName(sources.first.displayName),
+        metadata: await _metadataOf(sources.first),
+      );
     } finally {
       for (final handle in handles.values) {
         await _close(handle);
@@ -139,8 +176,13 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
     required List<PageSlot> slots,
   }) async {
     final source = await _documentById(sourceDocumentId);
+    final metadata = await _metadataOf(source);
     final bytes = await _materialise(slots, await _sourcesFor(slots));
-    return _store(bytes, extractedName(source.displayName, slots.length));
+    return _store(
+      bytes,
+      extractedName(source.displayName, slots.length),
+      metadata: metadata,
+    );
   }
 
   @override
@@ -157,6 +199,7 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
     }
 
     final source = await _documentById(sourceDocumentId);
+    final metadata = await _metadataOf(source);
     final created = <LibraryDocument>[];
 
     try {
@@ -167,7 +210,11 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
         ];
         final bytes = await _materialise(slots, [source]);
         created.add(
-          await _store(bytes, splitPartName(source.displayName, part + 1)),
+          await _store(
+            bytes,
+            splitPartName(source.displayName, part + 1),
+            metadata: metadata,
+          ),
         );
       }
       return created;

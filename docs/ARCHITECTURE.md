@@ -56,6 +56,25 @@ snapshots rather than a history of file writes, the operation logic is
 unit-testable with no simulator, and an abandoned session cannot leave partial
 files behind.
 
+## Metadata is preserved by incremental update
+
+The writer discards a source document's `/Info`, so page operations would
+otherwise silently destroy every document's title and author.
+
+Rather than parse and rewrite the document, `PdfMetadata` appends a **PDF
+incremental update**: the original bytes untouched, then a new `/Info` object, a
+new xref section listing only it, and a trailer whose `/Prev` chains to the
+previous one. Readers walk that chain backwards, so the new `/Info` supersedes
+any older one. Roughly 200 bytes of overhead and no object model required.
+
+This assumes a classic xref table, which is what our own writer emits. It would
+need extending for PDF 1.5+ cross-reference streams, and is therefore only
+applied to documents Folio itself produced.
+
+Re-attachment happens in one place - `PageOperationsRepositoryImpl._store` -
+so every operation inherits it, and it is best-effort: a document that cannot be
+patched is still written, because losing a title is better than losing the file.
+
 ## Document identity
 
 The single most important decision in the data layer.
