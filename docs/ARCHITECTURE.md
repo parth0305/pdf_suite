@@ -39,6 +39,23 @@ would be worse code and worse performance.
 `PdfEngine` remains the only path for **headless** work — text extraction,
 outline, permissions — which is what unit tests exercise.
 
+## The write path is a separate interface
+
+`PdfEngine` has no write method, and SP-2a deliberately did not add one. Page
+editing goes through `PdfPageEditor`, a separate interface with a single
+`materialise` method.
+
+Merging them would have been less code and would have silently dissolved the
+guarantee for every existing `PdfEngine` caller. The Definition of Done for
+SP-2a includes a check that `PdfEngine` is still write-free.
+
+Editing is **staged**: a `PageEditSession` holds an ordered `List<PageSlot>` and
+a command stack, and every operation is a list manipulation in pure Dart. Only
+"Apply" materialises. Three consequences follow — undo is a stack of in-memory
+snapshots rather than a history of file writes, the operation logic is
+unit-testable with no simulator, and an abandoned session cannot leave partial
+files behind.
+
 ## Document identity
 
 The single most important decision in the data layer.

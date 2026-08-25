@@ -40,6 +40,17 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
   Future<LibraryDocument> _documentById(int id) async =>
       (await _library.all()).firstWhere((d) => d.id == id);
 
+  /// Every distinct document the slots draw from.
+  ///
+  /// Slots may reference more than the document being edited: inserting pages
+  /// from another document leaves its id in the list, and materialising then
+  /// needs a handle for it too.
+  Future<List<LibraryDocument>> _sourcesFor(List<PageSlot> slots) async {
+    final ids = {for (final slot in slots) slot.sourceDocumentId};
+    final all = await _library.all();
+    return [for (final id in ids) all.firstWhere((d) => d.id == id)];
+  }
+
   /// Opens the needed sources, materialises, then always closes them, so a
   /// failure part-way cannot leak native handles.
   Future<Uint8List> _materialise(
@@ -84,7 +95,7 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
     required List<PageSlot> slots,
   }) async {
     final source = await _documentById(sourceDocumentId);
-    final bytes = await _materialise(slots, [source]);
+    final bytes = await _materialise(slots, await _sourcesFor(slots));
     return _store(bytes, editedName(source.displayName));
   }
 
@@ -128,7 +139,7 @@ class PageOperationsRepositoryImpl implements PageOperationsRepository {
     required List<PageSlot> slots,
   }) async {
     final source = await _documentById(sourceDocumentId);
-    final bytes = await _materialise(slots, [source]);
+    final bytes = await _materialise(slots, await _sourcesFor(slots));
     return _store(bytes, extractedName(source.displayName, slots.length));
   }
 

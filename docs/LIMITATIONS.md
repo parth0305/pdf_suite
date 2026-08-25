@@ -15,11 +15,20 @@ File Explorer drag-and-drop, printing, and the batch UI. macOS desktop is used
 as a stand-in for verifying the expanded-width layout, but it is a different
 platform and not a shipping target.
 
-## 2. SP-1 does not modify PDFs at all
+## 2. Page operations exist; content editing does not
 
-By design. `PdfEngine` has no write method. Merging, splitting, annotating,
-signing, redacting, compressing and encrypting are later sub-projects. View
-rotation is not persisted to the file.
+SP-2a added merge, split, reorder, delete, extract, rotate, duplicate and
+insert. Every one produces a **new** document and leaves its source
+byte-identical.
+
+Still absent: annotations, signatures, metadata editing, encryption authoring,
+redaction, compression, watermarks and OCR. Those are SP-2b onward.
+
+`PdfEngine` remains read-only and has no write method; all writing goes through
+the separate `PdfPageEditor`, so the reader still cannot alter a document.
+
+View rotation in read mode is not persisted — rotating in Pages mode and saving
+is what writes rotation to a file.
 
 ## 3. Search finds nothing in scanned documents
 
