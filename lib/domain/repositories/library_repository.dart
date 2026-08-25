@@ -34,4 +34,13 @@ abstract interface class LibraryRepository {
   /// Deleting a collection returns its documents to the library root. It never
   /// deletes documents.
   Future<void> deleteCollection(int id);
+
+  /// Registers a file already written into the library root. Used by page
+  /// operations, which produce bytes rather than importing an external file.
+  Future<LibraryDocument> registerManaged({
+    required String relativePath,
+    required String contentHash,
+    required String displayName,
+    required int sizeBytes,
+  });
 }

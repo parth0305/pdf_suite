@@ -249,4 +249,119 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noDocumentsInFolder => 'This folder is empty.';
+
+  @override
+  String get errorEmptyDocumentTitle => 'Nothing to save.';
+
+  @override
+  String get errorEmptyDocumentBody =>
+      'This document has no pages left. Add or restore a page before saving.';
+
+  @override
+  String get errorInvalidPageRangeTitle => 'That page range isn\'t valid.';
+
+  @override
+  String get errorInvalidPageRangeBody =>
+      'Check the page numbers and try again.';
+
+  @override
+  String get pagesMode => 'Pages';
+
+  @override
+  String get readMode => 'Read';
+
+  @override
+  String pagesSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get pagesSelectAll => 'Select all';
+
+  @override
+  String get pagesClearSelection => 'Clear selection';
+
+  @override
+  String get pagesRotateLeft => 'Rotate left';
+
+  @override
+  String get pagesRotateRight => 'Rotate right';
+
+  @override
+  String get pagesDelete => 'Delete pages';
+
+  @override
+  String get pagesDuplicate => 'Duplicate pages';
+
+  @override
+  String get pagesExtract => 'Extract to new document';
+
+  @override
+  String get pagesInsert => 'Insert pages from…';
+
+  @override
+  String get pagesUndo => 'Undo';
+
+  @override
+  String get pagesRedo => 'Redo';
+
+  @override
+  String get pagesApply => 'Save as new document';
+
+  @override
+  String get pagesDiscard => 'Discard changes';
+
+  @override
+  String get pagesDiscardPrompt =>
+      'Discard your page changes? The original document is untouched either way.';
+
+  @override
+  String pagesApplied(String name) {
+    return 'Saved as $name';
+  }
+
+  @override
+  String get pagesSplit => 'Split document';
+
+  @override
+  String get pagesMerge => 'Merge documents';
+
+  @override
+  String get pagesEmptyWarning => 'A document must have at least one page.';
+
+  @override
+  String get splitEveryPage => 'Every page becomes its own document';
+
+  @override
+  String get splitByRanges => 'Custom ranges';
+
+  @override
+  String get splitRangeHint => 'e.g. 1-3, 7, 10-12';
+
+  @override
+  String splitOutputCount(int count) {
+    return '$count documents will be created';
+  }
+
+  @override
+  String get splitConfirm => 'Split';
+
+  @override
+  String get librarySelectMode => 'Select documents';
+
+  @override
+  String get libraryMergeSelected => 'Merge selected';
+
+  @override
+  String get libraryExitSelect => 'Cancel';
+
+  @override
+  String get mergeNeedsTwo => 'Select at least two documents to merge.';
+
+  @override
+  String get insertChooseDocument => 'Choose a document to insert';
+
+  @override
+  String get insertNoOtherDocuments =>
+      'There are no other documents to insert.';
 }

@@ -108,6 +108,21 @@ class LibraryRepositoryImpl implements LibraryRepository {
   }
 
   @override
+  Future<LibraryDocument> registerManaged({
+    required String relativePath,
+    required String contentHash,
+    required String displayName,
+    required int sizeBytes,
+  }) async {
+    final id = await _dao.insertDocument(
+      ref: ManagedRef(relativePath: relativePath, contentHash: contentHash),
+      displayName: displayName,
+      sizeBytes: sizeBytes,
+    );
+    return (await all()).firstWhere((d) => d.id == id);
+  }
+
+  @override
   Future<List<LibraryDocument>> all() => _dao.allDocuments();
 
   @override

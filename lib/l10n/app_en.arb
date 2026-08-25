@@ -109,5 +109,61 @@
   "renameFolderAction": "Rename folder",
   "deleteFolderExplain": "Documents in this folder return to the library root. Nothing is deleted.",
   "createAction": "Create",
-  "noDocumentsInFolder": "This folder is empty."
+  "noDocumentsInFolder": "This folder is empty.",
+  "errorEmptyDocumentTitle": "Nothing to save.",
+  "errorEmptyDocumentBody": "This document has no pages left. Add or restore a page before saving.",
+  "errorInvalidPageRangeTitle": "That page range isn't valid.",
+  "errorInvalidPageRangeBody": "Check the page numbers and try again.",
+  "pagesMode": "Pages",
+  "readMode": "Read",
+  "pagesSelectedCount": "{count} selected",
+  "@pagesSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pagesSelectAll": "Select all",
+  "pagesClearSelection": "Clear selection",
+  "pagesRotateLeft": "Rotate left",
+  "pagesRotateRight": "Rotate right",
+  "pagesDelete": "Delete pages",
+  "pagesDuplicate": "Duplicate pages",
+  "pagesExtract": "Extract to new document",
+  "pagesInsert": "Insert pages from…",
+  "pagesUndo": "Undo",
+  "pagesRedo": "Redo",
+  "pagesApply": "Save as new document",
+  "pagesDiscard": "Discard changes",
+  "pagesDiscardPrompt": "Discard your page changes? The original document is untouched either way.",
+  "pagesApplied": "Saved as {name}",
+  "@pagesApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pagesSplit": "Split document",
+  "pagesMerge": "Merge documents",
+  "pagesEmptyWarning": "A document must have at least one page.",
+  "splitEveryPage": "Every page becomes its own document",
+  "splitByRanges": "Custom ranges",
+  "splitRangeHint": "e.g. 1-3, 7, 10-12",
+  "splitOutputCount": "{count} documents will be created",
+  "@splitOutputCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "splitConfirm": "Split",
+  "librarySelectMode": "Select documents",
+  "libraryMergeSelected": "Merge selected",
+  "libraryExitSelect": "Cancel",
+  "mergeNeedsTwo": "Select at least two documents to merge.",
+  "insertChooseDocument": "Choose a document to insert",
+  "insertNoOtherDocuments": "There are no other documents to insert."
 }

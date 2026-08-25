@@ -549,6 +549,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This folder is empty.'**
   String get noDocumentsInFolder;
+
+  /// No description provided for @errorEmptyDocumentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to save.'**
+  String get errorEmptyDocumentTitle;
+
+  /// No description provided for @errorEmptyDocumentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This document has no pages left. Add or restore a page before saving.'**
+  String get errorEmptyDocumentBody;
+
+  /// No description provided for @errorInvalidPageRangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That page range isn\'t valid.'**
+  String get errorInvalidPageRangeTitle;
+
+  /// No description provided for @errorInvalidPageRangeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the page numbers and try again.'**
+  String get errorInvalidPageRangeBody;
+
+  /// No description provided for @pagesMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get pagesMode;
+
+  /// No description provided for @readMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get readMode;
+
+  /// No description provided for @pagesSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String pagesSelectedCount(int count);
+
+  /// No description provided for @pagesSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get pagesSelectAll;
+
+  /// No description provided for @pagesClearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selection'**
+  String get pagesClearSelection;
+
+  /// No description provided for @pagesRotateLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate left'**
+  String get pagesRotateLeft;
+
+  /// No description provided for @pagesRotateRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate right'**
+  String get pagesRotateRight;
+
+  /// No description provided for @pagesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete pages'**
+  String get pagesDelete;
+
+  /// No description provided for @pagesDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate pages'**
+  String get pagesDuplicate;
+
+  /// No description provided for @pagesExtract.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract to new document'**
+  String get pagesExtract;
+
+  /// No description provided for @pagesInsert.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert pages from…'**
+  String get pagesInsert;
+
+  /// No description provided for @pagesUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get pagesUndo;
+
+  /// No description provided for @pagesRedo.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get pagesRedo;
+
+  /// No description provided for @pagesApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as new document'**
+  String get pagesApply;
+
+  /// No description provided for @pagesDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes'**
+  String get pagesDiscard;
+
+  /// No description provided for @pagesDiscardPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your page changes? The original document is untouched either way.'**
+  String get pagesDiscardPrompt;
+
+  /// No description provided for @pagesApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as {name}'**
+  String pagesApplied(String name);
+
+  /// No description provided for @pagesSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Split document'**
+  String get pagesSplit;
+
+  /// No description provided for @pagesMerge.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge documents'**
+  String get pagesMerge;
+
+  /// No description provided for @pagesEmptyWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'A document must have at least one page.'**
+  String get pagesEmptyWarning;
+
+  /// No description provided for @splitEveryPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Every page becomes its own document'**
+  String get splitEveryPage;
+
+  /// No description provided for @splitByRanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom ranges'**
+  String get splitByRanges;
+
+  /// No description provided for @splitRangeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 1-3, 7, 10-12'**
+  String get splitRangeHint;
+
+  /// No description provided for @splitOutputCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} documents will be created'**
+  String splitOutputCount(int count);
+
+  /// No description provided for @splitConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get splitConfirm;
+
+  /// No description provided for @librarySelectMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Select documents'**
+  String get librarySelectMode;
+
+  /// No description provided for @libraryMergeSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge selected'**
+  String get libraryMergeSelected;
+
+  /// No description provided for @libraryExitSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get libraryExitSelect;
+
+  /// No description provided for @mergeNeedsTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least two documents to merge.'**
+  String get mergeNeedsTwo;
+
+  /// No description provided for @insertChooseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a document to insert'**
+  String get insertChooseDocument;
+
+  /// No description provided for @insertNoOtherDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no other documents to insert.'**
+  String get insertNoOtherDocuments;
 }
 
 class _AppLocalizationsDelegate

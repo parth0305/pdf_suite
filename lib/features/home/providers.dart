@@ -134,6 +134,17 @@ final searchQueryProvider = NotifierProvider<_ValueNotifier<String>, String>(
   () => _ValueNotifier(''),
 );
 
+/// Documents picked in library selection mode, for multi-document operations.
+final librarySelectionProvider =
+    NotifierProvider<_ValueNotifier<Set<int>>, Set<int>>(
+      () => _ValueNotifier(const {}),
+    );
+
+/// Whether the library is in multi-select mode.
+final librarySelectModeProvider = NotifierProvider<_ValueNotifier<bool>, bool>(
+  () => _ValueNotifier(false),
+);
+
 /// Null means "All": no folder filter at all, not "the root folder".
 final selectedCollectionProvider = NotifierProvider<_ValueNotifier<int?>, int?>(
   () => _ValueNotifier(null),
