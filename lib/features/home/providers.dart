@@ -1,5 +1,6 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:folio/domain/models/library_collection.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/repositories/library_repository.dart';
 import 'package:folio/domain/services/document_sorter.dart';
@@ -62,6 +63,47 @@ class LibraryController extends AsyncNotifier<List<LibraryDocument>> {
       _mutate(() => _repo.duplicate(id).then((_) {}));
 
   Future<void> markOpened(int id) => _mutate(() => _repo.markOpened(id));
+
+  Future<void> moveToCollection(int docId, int? collectionId) =>
+      _mutate(() => _repo.moveToCollection(docId, collectionId));
+
+  Future<void> exportCopy(int docId, String destinationPath) =>
+      _mutate(() => _repo.exportCopy(docId, destinationPath));
+}
+
+final collectionsControllerProvider =
+    AsyncNotifierProvider<CollectionsController, List<LibraryCollection>>(
+      CollectionsController.new,
+    );
+
+class CollectionsController extends AsyncNotifier<List<LibraryCollection>> {
+  LibraryRepository get _repo => ref.read(libraryRepositoryProvider);
+
+  @override
+  Future<List<LibraryCollection>> build() => _repo.collections();
+
+  Future<void> _mutate(Future<void> Function() action) async {
+    state = await AsyncValue.guard(() async {
+      await action();
+      return _repo.collections();
+    });
+    // Documents carry a collectionId, so the library list must reload too.
+    await ref.read(libraryControllerProvider.notifier).refresh();
+  }
+
+  Future<void> create(String name) =>
+      _mutate(() => _repo.createCollection(name).then((_) {}));
+
+  Future<void> rename(int id, String name) =>
+      _mutate(() => _repo.renameCollection(id, name));
+
+  Future<void> remove(int id) async {
+    await _mutate(() => _repo.deleteCollection(id));
+    // A deleted folder cannot stay selected.
+    if (ref.read(selectedCollectionProvider) == id) {
+      ref.read(selectedCollectionProvider.notifier).value = null;
+    }
+  }
 }
 
 /// Which library tab is showing.
@@ -92,21 +134,32 @@ final searchQueryProvider = NotifierProvider<_ValueNotifier<String>, String>(
   () => _ValueNotifier(''),
 );
 
+/// Null means "All": no folder filter at all, not "the root folder".
+final selectedCollectionProvider = NotifierProvider<_ValueNotifier<int?>, int?>(
+  () => _ValueNotifier(null),
+);
+
 /// Documents after tab selection, filtering and sorting - ready to render.
 final visibleDocumentsProvider = Provider<AsyncValue<List<LibraryDocument>>>((
   ref,
 ) {
   final docs = ref.watch(libraryControllerProvider);
   final tab = ref.watch(selectedTabProvider);
+  final collection = ref.watch(selectedCollectionProvider);
   final query = ref.watch(searchQueryProvider);
   final field = ref.watch(sortFieldProvider);
   final ascending = ref.watch(sortAscendingProvider);
 
   return docs.whenData((items) {
+    final inCollection = collection == null
+        ? items
+        : items.where((d) => d.collectionId == collection).toList();
+
     final scoped = switch (tab) {
-      LibraryTab.all => items,
-      LibraryTab.recents => items.where((d) => d.lastOpenedAt != null).toList(),
-      LibraryTab.favorites => items.where((d) => d.isFavorite).toList(),
+      LibraryTab.all => inCollection,
+      LibraryTab.recents =>
+        inCollection.where((d) => d.lastOpenedAt != null).toList(),
+      LibraryTab.favorites => inCollection.where((d) => d.isFavorite).toList(),
     };
     return sortDocuments(
       filterDocuments(scoped, query),

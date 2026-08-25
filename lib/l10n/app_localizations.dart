@@ -477,6 +477,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Page {number}'**
   String viewerPageLabel(int number);
+
+  /// No description provided for @collectionsAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get collectionsAll;
+
+  /// No description provided for @collectionNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get collectionNew;
+
+  /// No description provided for @collectionNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder name'**
+  String get collectionNameHint;
+
+  /// No description provided for @moveToAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to'**
+  String get moveToAction;
+
+  /// No description provided for @moveToRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'Library root'**
+  String get moveToRoot;
+
+  /// No description provided for @saveAsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a copy'**
+  String get saveAsAction;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy saved'**
+  String get exportSuccess;
+
+  /// No description provided for @deleteFolderAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete folder'**
+  String get deleteFolderAction;
+
+  /// No description provided for @renameFolderAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename folder'**
+  String get renameFolderAction;
+
+  /// No description provided for @deleteFolderExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents in this folder return to the library root. Nothing is deleted.'**
+  String get deleteFolderExplain;
+
+  /// No description provided for @createAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get createAction;
+
+  /// No description provided for @noDocumentsInFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is empty.'**
+  String get noDocumentsInFolder;
 }
 
 class _AppLocalizationsDelegate

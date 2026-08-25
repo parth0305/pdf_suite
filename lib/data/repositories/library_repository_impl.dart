@@ -6,6 +6,7 @@ import 'package:folio/core/storage/safe_file_writer.dart';
 import 'package:folio/data/file_system/platform_handles.dart';
 import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/domain/models/document_ref.dart';
+import 'package:folio/domain/models/library_collection.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/repositories/library_repository.dart';
 import 'package:path/path.dart' as p;
@@ -151,6 +152,22 @@ class LibraryRepositoryImpl implements LibraryRepository {
   @override
   Future<void> moveToCollection(int docId, int? collectionId) =>
       _dao.moveDocument(docId, collectionId);
+
+  @override
+  Future<List<LibraryCollection>> collections() async {
+    final rows = await _dao.allCollections();
+    return [for (final r in rows) LibraryCollection(id: r.id, name: r.name)];
+  }
+
+  @override
+  Future<int> createCollection(String name) => _dao.createCollection(name);
+
+  @override
+  Future<void> renameCollection(int id, String name) =>
+      _dao.renameCollection(id, name);
+
+  @override
+  Future<void> deleteCollection(int id) => _dao.deleteCollection(id);
 
   @override
   Future<LibraryDocument> duplicate(int id) async {

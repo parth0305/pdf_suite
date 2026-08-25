@@ -1,3 +1,4 @@
+import 'package:folio/domain/models/library_collection.dart';
 import 'package:folio/domain/models/library_document.dart';
 
 abstract interface class LibraryRepository {
@@ -25,4 +26,12 @@ abstract interface class LibraryRepository {
 
   /// Folders are virtual; null returns the document to the library root.
   Future<void> moveToCollection(int docId, int? collectionId);
+
+  Future<List<LibraryCollection>> collections();
+  Future<int> createCollection(String name);
+  Future<void> renameCollection(int id, String name);
+
+  /// Deleting a collection returns its documents to the library root. It never
+  /// deletes documents.
+  Future<void> deleteCollection(int id);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/domain/models/document_ref.dart';
+import 'package:folio/domain/models/library_collection.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/repositories/library_repository.dart';
 import 'package:folio/features/home/providers.dart';
@@ -76,7 +77,41 @@ class _FakeRepo implements LibraryRepository {
   Future<void> exportCopy(int docId, String destinationPath) async {}
 
   @override
-  Future<void> moveToCollection(int docId, int? collectionId) async {}
+  Future<void> moveToCollection(int docId, int? collectionId) async {
+    final i = docs.indexWhere((d) => d.id == docId);
+    docs[i] = collectionId == null
+        ? docs[i].copyWith(clearCollection: true)
+        : docs[i].copyWith(collectionId: collectionId);
+  }
+
+  final List<LibraryCollection> folders = [];
+  int _nextFolderId = 1;
+
+  @override
+  Future<List<LibraryCollection>> collections() async => List.of(folders);
+
+  @override
+  Future<int> createCollection(String name) async {
+    final id = _nextFolderId++;
+    folders.add(LibraryCollection(id: id, name: name));
+    return id;
+  }
+
+  @override
+  Future<void> renameCollection(int id, String name) async {
+    final i = folders.indexWhere((f) => f.id == id);
+    folders[i] = LibraryCollection(id: id, name: name);
+  }
+
+  @override
+  Future<void> deleteCollection(int id) async {
+    folders.removeWhere((f) => f.id == id);
+    for (var i = 0; i < docs.length; i++) {
+      if (docs[i].collectionId == id) {
+        docs[i] = docs[i].copyWith(clearCollection: true);
+      }
+    }
+  }
 
   @override
   Future<LibraryDocument> duplicate(int id) async {
@@ -162,6 +197,100 @@ void main() {
       final docs = await container.read(libraryControllerProvider.future);
 
       expect(docs.single.lastOpenedAt, isNotNull);
+    });
+  });
+
+  group('collections', () {
+    test('creating a folder makes it available', () async {
+      await container.read(collectionsControllerProvider.future);
+      await container
+          .read(collectionsControllerProvider.notifier)
+          .create('Invoices');
+
+      final folders = await container.read(
+        collectionsControllerProvider.future,
+      );
+      expect(folders.single.name, 'Invoices');
+    });
+
+    test('moving a document sets its collection', () async {
+      repo.seed('a.pdf');
+      await container.read(libraryControllerProvider.future);
+      await container.read(collectionsControllerProvider.future);
+      await container
+          .read(collectionsControllerProvider.notifier)
+          .create('Invoices');
+      final folder = (await container.read(
+        collectionsControllerProvider.future,
+      )).single;
+
+      await container
+          .read(libraryControllerProvider.notifier)
+          .moveToCollection(1, folder.id);
+
+      final docs = await container.read(libraryControllerProvider.future);
+      expect(docs.single.collectionId, folder.id);
+    });
+
+    test('deleting a folder returns its documents to the root', () async {
+      repo.seed('a.pdf');
+      await container.read(libraryControllerProvider.future);
+      await container.read(collectionsControllerProvider.future);
+      await container
+          .read(collectionsControllerProvider.notifier)
+          .create('Temp');
+      final folder = (await container.read(
+        collectionsControllerProvider.future,
+      )).single;
+      await container
+          .read(libraryControllerProvider.notifier)
+          .moveToCollection(1, folder.id);
+
+      await container
+          .read(collectionsControllerProvider.notifier)
+          .remove(folder.id);
+
+      final docs = await container.read(libraryControllerProvider.future);
+      expect(docs, hasLength(1), reason: 'the document must survive');
+      expect(docs.single.collectionId, isNull);
+    });
+
+    test('deleting the selected folder clears the selection', () async {
+      await container.read(collectionsControllerProvider.future);
+      await container
+          .read(collectionsControllerProvider.notifier)
+          .create('Temp');
+      final folder = (await container.read(
+        collectionsControllerProvider.future,
+      )).single;
+      container.read(selectedCollectionProvider.notifier).value = folder.id;
+
+      await container
+          .read(collectionsControllerProvider.notifier)
+          .remove(folder.id);
+
+      expect(container.read(selectedCollectionProvider), isNull);
+    });
+
+    test('visibleDocuments filters by the selected folder', () async {
+      repo
+        ..seed('a.pdf')
+        ..seed('b.pdf');
+      await container.read(libraryControllerProvider.future);
+      await container.read(collectionsControllerProvider.future);
+      await container.read(collectionsControllerProvider.notifier).create('F');
+      final folder = (await container.read(
+        collectionsControllerProvider.future,
+      )).single;
+      await container
+          .read(libraryControllerProvider.notifier)
+          .moveToCollection(1, folder.id);
+
+      container.read(selectedCollectionProvider.notifier).value = folder.id;
+      expect(container.read(visibleDocumentsProvider).value, hasLength(1));
+
+      container.read(selectedCollectionProvider.notifier).value = null;
+      expect(container.read(visibleDocumentsProvider).value, hasLength(2));
     });
   });
 }

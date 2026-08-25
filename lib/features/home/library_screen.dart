@@ -4,6 +4,7 @@ import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/core/errors/failure_messages.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/features/home/providers.dart';
+import 'package:folio/features/home/widgets/collection_bar.dart';
 import 'package:folio/features/home/widgets/document_tile.dart';
 import 'package:folio/features/home/widgets/empty_state.dart';
 import 'package:folio/features/home/widgets/library_toolbar.dart';
@@ -25,9 +26,10 @@ class LibraryScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.libraryTitle),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(96),
+          preferredSize: const Size.fromHeight(144),
           child: Column(
             children: [
+              const CollectionBar(),
               SegmentedButton<LibraryTab>(
                 segments: [
                   ButtonSegment(
@@ -73,7 +75,14 @@ class LibraryScreen extends ConsumerWidget {
           );
         },
         data: (items) {
-          if (items.isEmpty) return _emptyFor(tab, query, l10n);
+          if (items.isEmpty) {
+            return _emptyFor(
+              tab,
+              query,
+              l10n,
+              inCollection: ref.watch(selectedCollectionProvider) != null,
+            );
+          }
           return ListView.separated(
             padding: const EdgeInsets.only(bottom: 88),
             itemCount: items.length,
@@ -86,12 +95,24 @@ class LibraryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _emptyFor(LibraryTab tab, String query, AppLocalizations l10n) {
+  Widget _emptyFor(
+    LibraryTab tab,
+    String query,
+    AppLocalizations l10n, {
+    required bool inCollection,
+  }) {
     if (query.trim().isNotEmpty) {
       return EmptyState(
         icon: Icons.search_off,
         title: l10n.noSearchResults,
         body: l10n.searchHint,
+      );
+    }
+    if (inCollection && tab == LibraryTab.all) {
+      return EmptyState(
+        icon: Icons.folder_open,
+        title: l10n.noDocumentsInFolder,
+        body: l10n.moveToAction,
       );
     }
     return switch (tab) {

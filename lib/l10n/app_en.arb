@@ -97,5 +97,17 @@
         "type": "int"
       }
     }
-  }
+  },
+  "collectionsAll": "All",
+  "collectionNew": "New folder",
+  "collectionNameHint": "Folder name",
+  "moveToAction": "Move to",
+  "moveToRoot": "Library root",
+  "saveAsAction": "Save a copy",
+  "exportSuccess": "Copy saved",
+  "deleteFolderAction": "Delete folder",
+  "renameFolderAction": "Rename folder",
+  "deleteFolderExplain": "Documents in this folder return to the library root. Nothing is deleted.",
+  "createAction": "Create",
+  "noDocumentsInFolder": "This folder is empty."
 }
