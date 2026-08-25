@@ -66,5 +66,24 @@ void main() {
       );
       expect(a, isNot(b));
     });
+
+    // The type guard in operator== is a real branch: without it, comparing a
+    // slot to anything else would throw rather than return false.
+    test('a slot is not equal to a non-slot', () {
+      const slot = PageSlot(sourceDocumentId: 1, sourcePageIndex: 0);
+      const Object other = 'not a slot';
+      expect(slot == other, isFalse);
+    });
+
+    test('toString names the document, page and rotation', () {
+      const slot = PageSlot(
+        sourceDocumentId: 7,
+        sourcePageIndex: 3,
+        quarterTurns: 2,
+      );
+      expect(slot.toString(), contains('7'));
+      expect(slot.toString(), contains('3'));
+      expect(slot.toString(), contains('2'));
+    });
   });
 }
