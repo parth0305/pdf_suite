@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:folio/domain/pdf/pdf_encryption.dart';
+import 'package:folio/domain/pdf/pdf_encryption_dictionary.dart';
 
 String hex(List<int> b) =>
     b.map((x) => x.toRadixString(16).padLeft(2, '0')).join().toUpperCase();
@@ -150,6 +151,79 @@ void main() {
 
     test('is 10 bytes for a 5-byte file key', () {
       expect(objectKey([1, 2, 3, 4, 5], 1, 0), hasLength(10));
+    });
+  });
+
+  group('encryptObjectBody', () {
+    final key = List<int>.generate(10, (i) => i + 1);
+
+    List<int> encrypt(String body) =>
+        encryptObjectBody(latin1.encode(body), key);
+
+    test('a body with no strings or streams is unchanged', () {
+      const body = '<< /Type /Page /MediaBox [0 0 595 842] >>';
+      expect(latin1.decode(encrypt(body)), body);
+    });
+
+    // A document whose streams are encrypted but whose strings are not still
+    // opens and still renders - and leaks every annotation's text.
+    test('a literal string is encrypted', () {
+      const body = '<< /Type /Annot /Contents (secret words) >>';
+      final out = latin1.decode(encrypt(body));
+
+      expect(out, isNot(contains('secret words')));
+      expect(out, startsWith('<< /Type /Annot /Contents ('));
+    });
+
+    test('a hexadecimal string is encrypted', () {
+      const body = '<< /ID <deadbeef> >>';
+      expect(latin1.decode(encrypt(body)), isNot(contains('deadbeef')));
+    });
+
+    test('stream data is encrypted', () {
+      const payload = 'q 1 0 0 RG Q';
+      final body =
+          '<< /Length ${payload.length} >>\nstream\n$payload\nendstream';
+      expect(latin1.decode(encrypt(body)), isNot(contains(payload)));
+    });
+
+    test('the dictionary around a stream survives', () {
+      const payload = 'q Q';
+      final body =
+          '<< /Type /XObject /Length ${payload.length} >>\n'
+          'stream\n$payload\nendstream';
+      final out = latin1.decode(encrypt(body));
+
+      expect(out, contains('/Type /XObject'));
+      expect(out, contains('stream'));
+      expect(out, contains('endstream'));
+    });
+
+    test('encryption is reversible with the same key', () {
+      const payload = 'q 1 0 0 RG Q';
+      final body =
+          '<< /Length ${payload.length} >>\nstream\n$payload\nendstream';
+      final once = encryptObjectBody(latin1.encode(body), key);
+
+      // RC4 is symmetric, so decrypting is the same operation.
+      expect(latin1.decode(encryptObjectBody(once, key)), body);
+    });
+  });
+
+  group('the encryption dictionary', () {
+    test('matches the revision 2 shape PDFium already opens', () {
+      final d = encryptionDictionary(
+        ownerValue: List<int>.filled(32, 0xAB),
+        userValue: List<int>.filled(32, 0xCD),
+        permissions: -44,
+      );
+
+      expect(d, contains('/Filter /Standard'));
+      expect(d, contains('/V 1'));
+      expect(d, contains('/R 2'));
+      expect(d, contains('/P -44'));
+      expect(d, contains('/O <'));
+      expect(d, contains('/U <'));
     });
   });
 }
