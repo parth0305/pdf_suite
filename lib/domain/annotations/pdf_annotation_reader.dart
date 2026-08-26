@@ -38,6 +38,17 @@ class SavedAnnotation {
 
   /// Colour and width can be changed only when an appearance can be rebuilt.
   bool get restylable => reconstructed != null;
+
+  /// Text markup is anchored to the words it covers, so moving it is
+  /// meaningless.
+  bool get movable =>
+      subtype != 'Highlight' &&
+      subtype != 'Underline' &&
+      subtype != 'StrikeOut';
+
+  /// Every viewer draws a /Text icon at a fixed size, so there is nothing for
+  /// a resize to change.
+  bool get resizable => movable && subtype != 'Text';
 }
 
 /// Reads annotations already present in a document.

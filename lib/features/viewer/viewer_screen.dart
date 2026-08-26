@@ -467,6 +467,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             documentId: widget.document.id,
             deleted: session.deleted,
             restyled: session.restyled,
+            moved: session.moved,
           );
       await ref.read(libraryControllerProvider.notifier).refresh();
 

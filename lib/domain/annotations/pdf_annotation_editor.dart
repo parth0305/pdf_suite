@@ -6,7 +6,9 @@ import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/annotations/drawing_appearance.dart';
 import 'package:folio/domain/annotations/pdf_annotation_reader.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart';
+import 'package:folio/domain/annotations/annotation_transform.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
+import 'package:folio/domain/engine/pdf_types.dart';
 
 /// The only properties a restyle may change.
 class AnnotationStyle {
@@ -47,8 +49,9 @@ Uint8List applyAnnotationEdits(
   Uint8List pdf, {
   required Set<int> deleted,
   required Map<int, AnnotationStyle> restyled,
+  required Map<int, TextRect> moved,
 }) {
-  if (deleted.isEmpty && restyled.isEmpty) return pdf;
+  if (deleted.isEmpty && restyled.isEmpty && moved.isEmpty) return pdf;
 
   final text = latin1.decode(pdf, allowInvalid: true);
   final pages = PdfObjectReader.parse(text);
@@ -92,18 +95,49 @@ Uint8List applyAnnotationEdits(
     out.addAll(latin1.encode('$number 0 obj\n$body\nendobj\n'));
   }
 
-  // Restyle: override the annotation's own object, with a fresh appearance.
-  for (final entry in restyled.entries) {
-    final target = _find(saved, entry.key);
-    if (target?.reconstructed == null) continue;
+  // The union, walked once. Emitting a second override of the same object
+  // number means the later one wins and the earlier change vanishes.
+  final touched = {...restyled.keys, ...moved.keys};
+  for (final objectNumber in touched) {
+    final target = _find(saved, objectNumber);
+    if (target == null) continue;
 
-    final restyledAnnotation = _withStyle(target!.reconstructed!, entry.value);
+    final destinationRect = moved[objectNumber];
+    final requestedStyle = restyled[objectNumber];
+    // A restyle we cannot honour - no reconstruction, so no appearance to
+    // regenerate - and no move either means there is nothing to write. An
+    // identical override would append an xref and a trailer for no change.
+    if (destinationRect == null &&
+        (requestedStyle == null || target.reconstructed == null)) {
+      continue;
+    }
+
+    // The move applies to the raw dictionary and needs no reconstruction,
+    // which is why a stamp can move even though it cannot be restyled.
+    var dict = target.rawDictionary;
+    if (destinationRect != null) {
+      dict = transformAnnotationDict(
+        dict,
+        from: target.rectPt,
+        to: destinationRect,
+      );
+    }
+
+    if (requestedStyle == null || target.reconstructed == null) {
+      emit(objectNumber, dict);
+      continue;
+    }
+
+    final restyledAnnotation = _withStyle(
+      target.reconstructed!,
+      requestedStyle,
+    );
 
     // A note has no appearance stream; adding one would disagree with the icon
     // every viewer already draws.
     int? apNum;
     if (restyledAnnotation is! StickyNote) {
-      final (stream, dict) = switch (restyledAnnotation) {
+      final (stream, apDict) = switch (restyledAnnotation) {
         TextMarkup() => (
           appearanceStream(restyledAnnotation),
           appearanceDict(
@@ -121,13 +155,12 @@ Uint8List applyAnnotationEdits(
         StickyNote() || Stamp() => throw StateError('unreachable'),
       };
       apNum = nextObj++;
-      emit(apNum, '$dict\nstream\n${stream}endstream');
+      emit(apNum, '$apDict\nstream\n${stream}endstream');
     }
 
-    emit(
-      target.objectNumber,
-      _restyledDictionary(target.rawDictionary, entry.value, apNum),
-    );
+    // The TRANSFORMED dictionary, so a move and a restyle compose into one
+    // override rather than two that overwrite each other.
+    emit(objectNumber, _restyledDictionary(dict, requestedStyle, apNum));
   }
 
   // Delete: override each affected page with the surviving references.

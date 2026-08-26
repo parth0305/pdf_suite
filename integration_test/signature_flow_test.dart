@@ -223,6 +223,7 @@ void main() {
         documentId: out.id,
         deleted: {target.objectNumber},
         restyled: const {},
+        moved: const {},
       );
 
       expect(

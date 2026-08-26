@@ -77,7 +77,8 @@ void main() {
   group('pages mode', () {
     testWidgets('shows one row per page', (tester) async {
       await tester.pumpWidget(harness(await seed()));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.dashboard_customize));
       await tester.pumpAndSettle();
@@ -89,7 +90,8 @@ void main() {
 
     testWidgets('selecting a page enables the operations', (tester) async {
       await tester.pumpWidget(harness(await seed()));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.dashboard_customize));
       await tester.pumpAndSettle();
 
@@ -119,7 +121,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(harness(await seed()));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.dashboard_customize));
       await tester.pumpAndSettle();
 
@@ -143,7 +146,8 @@ void main() {
       final sourceBytes = await File(sourcePath).readAsBytes();
 
       await tester.pumpWidget(harness(doc));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.dashboard_customize));
       await tester.pumpAndSettle();
 
@@ -185,7 +189,8 @@ void main() {
 
     testWidgets('deleting every page is refused', (tester) async {
       await tester.pumpWidget(harness(await seed()));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.dashboard_customize));
       await tester.pumpAndSettle();
 

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/pdf_annotation_editor.dart';
+import 'package:folio/domain/engine/pdf_types.dart';
 
 Uint8List annotated() => Uint8List.fromList(
   latin1.encode(
@@ -27,7 +28,12 @@ void main() {
   group('deleting', () {
     test('drops the reference from an overridden page dictionary', () {
       final text = latin1.decode(
-        applyAnnotationEdits(annotated(), deleted: {7}, restyled: const {}),
+        applyAnnotationEdits(
+          annotated(),
+          deleted: {7},
+          restyled: const {},
+          moved: const {},
+        ),
       );
 
       final overrides = RegExp(
@@ -45,6 +51,7 @@ void main() {
         original,
         deleted: {7},
         restyled: const {},
+        moved: const {},
       );
 
       expect(out.sublist(0, original.length), original);
@@ -52,7 +59,12 @@ void main() {
 
     test('deleting every annotation leaves an empty /Annots', () {
       final text = latin1.decode(
-        applyAnnotationEdits(annotated(), deleted: {7, 8}, restyled: const {}),
+        applyAnnotationEdits(
+          annotated(),
+          deleted: {7, 8},
+          restyled: const {},
+          moved: const {},
+        ),
       );
       expect(text, contains('/Annots []'));
     });
@@ -67,6 +79,7 @@ void main() {
           restyled: {
             8: const AnnotationStyle(colorArgb: 0xFFFF0000, strokeWidth: 6),
           },
+          moved: const {},
         ),
       );
 
@@ -81,6 +94,7 @@ void main() {
           restyled: {
             8: const AnnotationStyle(colorArgb: 0xFFFF0000, strokeWidth: 6),
           },
+          moved: const {},
         ),
       );
 
@@ -103,6 +117,7 @@ void main() {
           restyled: {
             7: const AnnotationStyle(colorArgb: 0xFF00FF00, strokeWidth: 2),
           },
+          moved: const {},
         ),
       );
 
@@ -126,6 +141,7 @@ void main() {
           restyled: {
             8: const AnnotationStyle(colorArgb: 0xFFFF0000, strokeWidth: 6),
           },
+          moved: const {},
         ),
       );
 
@@ -147,6 +163,7 @@ void main() {
           restyled: {
             8: const AnnotationStyle(colorArgb: 0xFFFF0000, strokeWidth: 6),
           },
+          moved: const {},
         ),
       );
 
@@ -158,7 +175,12 @@ void main() {
     test('nothing staged returns the input unchanged', () {
       final original = annotated();
       expect(
-        applyAnnotationEdits(original, deleted: const {}, restyled: const {}),
+        applyAnnotationEdits(
+          original,
+          deleted: const {},
+          restyled: const {},
+          moved: const {},
+        ),
         original,
       );
     });
@@ -174,7 +196,12 @@ void main() {
       );
 
       expect(
-        () => applyAnnotationEdits(modern, deleted: {7}, restyled: const {}),
+        () => applyAnnotationEdits(
+          modern,
+          deleted: {7},
+          restyled: const {},
+          moved: const {},
+        ),
         throwsA(isA<UnsupportedPdfStructure>()),
       );
     });
@@ -196,7 +223,12 @@ void main() {
       );
 
       final text = latin1.decode(
-        applyAnnotationEdits(withInfo, deleted: {7}, restyled: const {}),
+        applyAnnotationEdits(
+          withInfo,
+          deleted: {7},
+          restyled: const {},
+          moved: const {},
+        ),
       );
 
       final trailers = RegExp(
@@ -207,7 +239,12 @@ void main() {
 
     test('a document with no /Info gains none', () {
       final text = latin1.decode(
-        applyAnnotationEdits(annotated(), deleted: {7}, restyled: const {}),
+        applyAnnotationEdits(
+          annotated(),
+          deleted: {7},
+          restyled: const {},
+          moved: const {},
+        ),
       );
       expect(text, isNot(contains('/Info')));
     });
@@ -245,6 +282,7 @@ void main() {
           withNote(),
           deleted: const {},
           restyled: {7: corrected},
+          moved: const {},
         ),
       );
 
@@ -258,6 +296,7 @@ void main() {
           withNote(),
           deleted: const {},
           restyled: {7: corrected},
+          moved: const {},
         ),
       );
 
@@ -272,6 +311,7 @@ void main() {
           withNote(),
           deleted: const {},
           restyled: {7: corrected},
+          moved: const {},
         ),
       );
 
@@ -293,6 +333,106 @@ void main() {
       );
 
       expect(a, isNot(b));
+    });
+  });
+
+  group('moving', () {
+    Uint8List withInk() => Uint8List.fromList(
+      latin1.encode(
+        '%PDF-1.4\n'
+        '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n'
+        '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n'
+        '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] '
+        '/Annots [7 0 R] >>\nendobj\n'
+        '7 0 obj\n<< /Type /Annot /Subtype /Ink /Rect [0 0 100 100] '
+        '/InkList [[0 0 100 100]] /C [1 0 0] /CA 1 /F 4 /BS << /W 3 >> '
+        '/AP << /N 6 0 R >> >>\nendobj\n'
+        'xref\n0 8\n0000000000 65535 f \n'
+        'trailer\n<< /Size 8 /Root 1 0 R >>\nstartxref\n9\n%%EOF\n',
+      ),
+    );
+
+    const target = TextRect(left: 200, bottom: 300, right: 300, top: 400);
+
+    String overrideOf(Uint8List out) => RegExp(
+      r'7 0 obj\s*(<<.*?>>)\s*endobj',
+      dotAll: true,
+    ).allMatches(latin1.decode(out)).last.group(1)!;
+
+    test('rewrites /Rect and /InkList together', () {
+      final o = overrideOf(
+        applyAnnotationEdits(
+          withInk(),
+          deleted: const {},
+          restyled: const {},
+          moved: {7: target},
+        ),
+      );
+
+      expect(o, contains('/Rect [200 300 300 400]'));
+      expect(o, contains('/InkList [[200 300 300 400]]'));
+    });
+
+    // The appearance follows /Rect, so regenerating it would be wasted work
+    // and a chance to disagree with what is already there.
+    test('emits no new appearance stream', () {
+      final out = applyAnnotationEdits(
+        withInk(),
+        deleted: const {},
+        restyled: const {},
+        moved: {7: target},
+      );
+
+      expect(latin1.decode(out), isNot(contains('/Subtype /Form')));
+      expect(overrideOf(out), contains('/AP << /N 6 0 R >>'));
+    });
+
+    test('nothing staged returns the input unchanged', () {
+      final original = withInk();
+      expect(
+        applyAnnotationEdits(
+          original,
+          deleted: const {},
+          restyled: const {},
+          moved: const {},
+        ),
+        original,
+      );
+    });
+
+    // Two overrides of one object mean the later wins and the earlier vanishes.
+    test('a moved AND restyled annotation emits exactly one override', () {
+      final out = applyAnnotationEdits(
+        withInk(),
+        deleted: const {},
+        restyled: {
+          7: const AnnotationStyle(colorArgb: 0xFF0000FF, strokeWidth: 8),
+        },
+        moved: {7: target},
+      );
+      final text = latin1.decode(out);
+
+      // Original plus exactly one override.
+      expect(RegExp(r'7 0 obj').allMatches(text).length, 2);
+
+      final o = overrideOf(out);
+      expect(o, contains('/Rect [200 300 300 400]'), reason: 'the move');
+      expect(o, contains('/C [0 0 1]'), reason: 'the restyle');
+      expect(o, contains('/W 8'), reason: 'the restyle');
+    });
+
+    test('a move alone leaves colour and width untouched', () {
+      final o = overrideOf(
+        applyAnnotationEdits(
+          withInk(),
+          deleted: const {},
+          restyled: const {},
+          moved: {7: target},
+        ),
+      );
+
+      expect(o, contains('/C [1 0 0]'));
+      expect(o, contains('/BS << /W 3 >>'));
     });
   });
 }

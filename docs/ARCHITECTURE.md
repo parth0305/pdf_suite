@@ -146,10 +146,31 @@ with no flip. The canvas-to-PDF flip happens once, at capture.
 
 Placement fits the signature inside the dragged box rather than filling it.
 
+## Moving is a rect rewrite, and the appearance follows
+
+Probed on device: changing only `/Rect` moved a mark from columns 20..59 to
+200..239, and enlarging `/Rect` scaled it from 40 to 120 columns. PDFium
+implements the ISO 32000-1 §12.5.5 mapping of an appearance `/BBox` onto its
+`/Rect`, so **no appearance is regenerated when an annotation moves**.
+
+The geometry keys are rewritten by the same affine anyway, so `/Rect` and
+`/InkList`, `/L` and `/QuadPoints` never disagree. That is *not* because a
+stale geometry would render wrongly — it would not, since the BBox mapping
+rescues it — but because the file would be internally inconsistent for viewers
+that do not honour `/AP` and for any code that reads geometry positionally.
+
+The consequence for testing is sharp: **this class of bug is invisible to
+rendering**. It can only be caught by reading the geometry back.
+
+Because the transform works on the raw dictionary, it needs no reconstruction —
+which is why a stamp can be moved even though Folio cannot rebuild one well
+enough to restyle it.
+
 ## An edit may never move what it did not compute
 
 Restyling copies every geometry key out of the source dictionary as a raw
-substring. Only `/C`, `/BS` and `/AP` are rewritten.
+substring. Only `/C`, `/BS` and `/AP` are rewritten. Moving is the one
+operation that *is* a request to change geometry, and is the stated exception.
 
 `pdfNumber` formats to two decimals, so re-emitting geometry from parsed
 doubles would shift an annotation by up to 0.005pt — invisible in review,

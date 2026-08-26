@@ -36,18 +36,37 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-3e.
+Last measured on 2026-08-26, after SP-3f.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 526 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 87 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 86 passed, 2 skipped |
+| Unit (host) | 556 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 94 passed, 1 skipped |
+| Android emulator (API 35, x86_64) | 93 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
 Android SAF-URI contract, and Android skips the two filesystem-path handle
 tests that cannot apply there.
+
+## Wait for a signal, never for a duration
+
+`pumpAndSettle(Duration)` takes the pump **interval**, not a timeout. It
+settles as soon as no frame is scheduled, which on a slow device happens long
+before an async document load has finished.
+
+Five pages-mode tests hoped a document would load within
+`pumpAndSettle(const Duration(seconds: 3))`, then tapped a button that stays
+disabled until the page count arrives. On a degraded emulator the tap hit a
+disabled button and did nothing — a failure that looked like a regression from
+an unrelated slice.
+
+`pumpUntilFound` in `fixture_helper.dart` waits for the widget the load
+actually produces, with a 30-second pathology bound. Note the finder matters:
+`find.byIcon` matches a **disabled** button too, so waiting for the icon proved
+nothing. Waiting for the page indicator — which only appears once the page
+count is known — is what made it deterministic. The Android suite went from 22
+minutes to 1:39.
 
 ## The runner's own timeout is a benchmark too
 
@@ -123,6 +142,16 @@ clipped label draws pixels just as a complete one does. Pixel counts cannot
 detect clipping, so the box-sizing rule has its own unit test asserting that a
 longer label gives a wider box. Knowing which assertion is blind to what is
 worth more than adding another that is blind the same way.
+
+**A third, from SP-3f: the fixture can hide the bug too.** The end-to-end
+assertion that geometry follows a moved annotation took three attempts. The
+first asserted on `/Rect`, which a restyle preserves either way. The second
+asserted on the render — but a viewer maps the appearance `/BBox` onto `/Rect`,
+so stale geometry still draws in the right place, and the whole justification
+for the feature turned out to be wrong. The third reads the geometry back, and
+uses an **ink** annotation: a `/Square`'s geometry *is* its `/Rect`, so a
+rectangle fixture leaves the bug nowhere to live. Every version passed until
+the last one.
 
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:

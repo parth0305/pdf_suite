@@ -42,9 +42,14 @@ cross-reference table. Documents using PDF 1.5+ cross-reference streams are
 **refused with a clear message** rather than silently producing a file whose
 annotations never appear.
 
-Saved annotations can be deleted, and their colour and thickness changed, but
-their **geometry cannot be edited** — nothing can be moved, resized or
-reshaped. Delete and redraw instead.
+Saved annotations can be deleted, restyled, moved and resized, but individual
+ink points **cannot be reshaped** — delete and redraw for that. Text markup
+cannot be moved at all, because its quads are anchored to the words it covers,
+and sticky notes cannot be resized, because every viewer draws the icon at a
+fixed size.
+
+Coordinates are written with two decimals, so each move can shift a point by up
+to 0.005pt. A hundred moves stays under a single point.
 
 Restyling is offered only for annotations whose geometry Folio can read back:
 markup, ink, squares, circles and lines. Any other subtype is delete-only,

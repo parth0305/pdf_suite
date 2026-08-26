@@ -1,3 +1,4 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -64,3 +65,25 @@ List<int> _encrypted(String password, int permissions) => buildEncryptedPdf(
   rc4: rc4,
   hexString: hexString,
 );
+
+/// Pumps until [finder] matches, or gives up after [timeout].
+///
+/// `pumpAndSettle(Duration)` takes the pump INTERVAL, not a timeout, so it
+/// settles as soon as no frame is scheduled - which on a slow device happens
+/// long before an async document load has finished. Waiting for the widget
+/// that the load produces is the only thing that actually means "ready".
+///
+/// The timeout is a pathology bound: 30 seconds means something is wrong, not
+/// that the device is busy.
+Future<void> pumpUntilFound(
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 30),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    if (finder.evaluate().isNotEmpty) return;
+  }
+  throw StateError('timed out waiting for a widget to appear');
+}
