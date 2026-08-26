@@ -168,7 +168,7 @@ class AnnotationStyle {
 
 Uint8List applyAnnotationEdits(
   Uint8List pdf, {
-  required List<int> deletedObjectNumbers,
+  required Set<int> deleted,
   required Map<int, AnnotationStyle> restyled,
 });
 ```
