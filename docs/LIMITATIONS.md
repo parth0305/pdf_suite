@@ -32,6 +32,11 @@ is what writes rotation to a file.
 
 ## 3. Markup cannot be added to newer PDFs, and cannot be edited once saved
 
+A page whose `/Annots` is an **indirect reference** (`/Annots 9 0 R`, common
+from other producers) is refused rather than annotated. Folio's merge emits an
+inline array, which would replace that reference and orphan every annotation it
+holds. Resolving indirect arrays would lift this.
+
 Annotations are attached by a PDF **incremental update**, which assumes a classic
 cross-reference table. Documents using PDF 1.5+ cross-reference streams are
 **refused with a clear message** rather than silently producing a file whose
