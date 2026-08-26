@@ -135,7 +135,7 @@ class SavedAnnotation {
   final int objectNumber;
   final int pageIndex;
   final String subtype;        // without the leading slash
-  final PdfRect rectPt;
+  final TextRect rectPt;      // PDF user space; the name is historical
   final int? colorArgb;        // null when /C is absent
   final double? strokeWidth;   // null when /BS /W is absent
   final bool restylable;
@@ -150,13 +150,22 @@ class PdfAnnotationReader {
 
 Resolves each `/Annots` reference through the index and reads five fields.
 `/C` is a PDF colour array of components in 0..1; it converts to ARGB with full
-opacity. An annotation whose reference resolves to nothing is skipped rather
+opacity. `TextRect` is the existing PDF-space rectangle from `pdf_types.dart` —
+`TextMarkup.boundingRect` already returns one, so annotations of every kind
+share a single rectangle type rather than gaining a near-duplicate. An annotation whose reference resolves to nothing is skipped rather
 than throwing — a dangling reference is a damaged document, not a reason to
 refuse the whole page.
 
 ### `pdf_annotation_editor.dart` — new
 
 ```dart
+/// The only things a restyle may change.
+class AnnotationStyle {
+  const AnnotationStyle({required this.colorArgb, required this.strokeWidth});
+  final int colorArgb;
+  final double strokeWidth;
+}
+
 Uint8List applyAnnotationEdits(
   Uint8List pdf, {
   required List<int> deletedObjectNumbers,
