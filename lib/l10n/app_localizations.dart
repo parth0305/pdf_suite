@@ -1041,6 +1041,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discard this signature placement? The document is unchanged either way.'**
   String get signDiscardPrompt;
+
+  /// No description provided for @noteMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Sticky note'**
+  String get noteMode;
+
+  /// No description provided for @noteText.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get noteText;
+
+  /// No description provided for @noteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to say?'**
+  String get noteHint;
+
+  /// No description provided for @notePlaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap where the note should go.'**
+  String get notePlaceHint;
+
+  /// No description provided for @noteEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'A note needs some text.'**
+  String get noteEmpty;
+
+  /// No description provided for @stampMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamp'**
+  String get stampMode;
+
+  /// No description provided for @stampPlaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap where the stamp should go.'**
+  String get stampPlaceHint;
+
+  /// No description provided for @stampApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get stampApproved;
+
+  /// No description provided for @stampRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get stampRejected;
+
+  /// No description provided for @stampDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get stampDraft;
+
+  /// No description provided for @stampConfidential.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidential'**
+  String get stampConfidential;
+
+  /// No description provided for @stampReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get stampReviewed;
+
+  /// No description provided for @stampUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get stampUrgent;
 }
 
 class _AppLocalizationsDelegate

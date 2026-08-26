@@ -129,6 +129,16 @@ class PdfAnnotationReader {
     required int colorArgb,
     required double strokeWidth,
   }) {
+    if (subtype == 'Text') {
+      return StickyNote(
+        pageIndex: pageIndex,
+        // /Rect is [left bottom right top]; the anchor is the top-left.
+        anchorPt: PdfPoint(rectPt.left, rectPt.top),
+        contents: _contentsOf(dict) ?? '',
+        colorArgb: colorArgb,
+      );
+    }
+
     final markupKind = switch (subtype) {
       'Highlight' => MarkupKind.highlight,
       'Underline' => MarkupKind.underline,
@@ -245,6 +255,35 @@ class PdfAnnotationReader {
           r'-?\d+(?:\.\d+)?',
         ).allMatches(g).map((m) => double.parse(m.group(0)!)).toList(),
     ];
+  }
+
+  /// The `/Contents` literal string, with PDF escapes undone.
+  static String? _contentsOf(String dict) {
+    final start = dict.indexOf('/Contents');
+    if (start < 0) return null;
+    final open = dict.indexOf('(', start);
+    if (open < 0) return null;
+
+    final buffer = StringBuffer();
+    var depth = 0;
+    for (var i = open; i < dict.length; i++) {
+      final c = dict[i];
+      if (c == r'\' && i + 1 < dict.length) {
+        buffer.write(dict[i + 1]);
+        i++;
+        continue;
+      }
+      if (c == '(') {
+        depth++;
+        if (depth == 1) continue;
+      }
+      if (c == ')') {
+        depth--;
+        if (depth == 0) return buffer.toString();
+      }
+      buffer.write(c);
+    }
+    return null;
   }
 
   /// Every number inside the bracketed value of [key], nesting flattened.

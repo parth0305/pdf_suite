@@ -136,11 +136,28 @@ A placed signature is a normal `/Ink` annotation, so it can be deleted or
 restyled like anything else, and it renders in any viewer that reads
 annotations. It is vector, so it stays sharp at any zoom.
 
+## SP-3e — Sticky notes and stamps
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Place a sticky note | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Edit a saved note's text | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Six preset stamps | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Delete notes and stamps | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+A note is a PDF `/Text` annotation: viewers draw the icon and show the text in
+a popup. It carries **no appearance stream** — PDFium draws the icon itself —
+so the text stays searchable and copyable and never covers the page.
+
+Stamps are Approved, Rejected, Draft, Confidential, Reviewed and Urgent, drawn
+with a non-embedded standard-14 Helvetica. No font data is shipped.
+
 ## Not built yet
 
-Sticky notes, stamps, photographed signatures, moving or resizing annotations, scanner, OCR,
+Photographed signatures, custom or date stamps, moving or resizing annotations, scanner, OCR,
 compression, encryption authoring, redaction, watermarks, metadata editing,
 batch processing, automation rules, and printing are all ❌.
 
 Freehand ink and shapes shipped in SP-3b, editing and deleting saved
-annotations in SP-3c, and drawn signatures in SP-3d.
+annotations in SP-3c, drawn signatures in SP-3d, and notes and stamps in
+SP-3e.

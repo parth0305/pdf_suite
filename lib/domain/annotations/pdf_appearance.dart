@@ -72,3 +72,14 @@ String pdfNumber(double v) {
   }
   return s;
 }
+
+/// Wraps [text] as a PDF literal string, escaping the characters that would
+/// otherwise end it early. Shared so every writer escapes identically - three
+/// private copies of an escaping rule is how one of them ends up wrong.
+String pdfString(String text) {
+  final escaped = text
+      .replaceAll(r'\', r'\\')
+      .replaceAll('(', r'\(')
+      .replaceAll(')', r'\)');
+  return '($escaped)';
+}

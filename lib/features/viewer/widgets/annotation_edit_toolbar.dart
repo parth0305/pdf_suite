@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/domain/annotations/pdf_annotation_editor.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/features/viewer/annotation_edit_providers.dart';
+import 'package:folio/features/viewer/widgets/note_dialog.dart';
 import 'package:folio/features/viewer/widgets/annotation_list_panel.dart';
 import 'package:folio/features/viewer/widgets/drawing_toolbar.dart'
     show drawingColours;
@@ -31,6 +33,8 @@ class AnnotationEditToolbar extends ConsumerWidget {
               .firstOrNull;
 
     final canRestyle = selected?.restylable ?? false;
+    // A /Text icon has no stroke, so a thickness control would do nothing.
+    final isNote = selected?.subtype == 'Text';
     final staged = selectedNumber == null
         ? null
         : state.session.styleOf(selectedNumber);
@@ -83,6 +87,26 @@ class AnnotationEditToolbar extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  if (isNote)
+                    IconButton(
+                      tooltip: l10n.noteText,
+                      icon: const Icon(Icons.edit_outlined),
+                      onPressed: () async {
+                        final note = selected!.reconstructed! as StickyNote;
+                        final text = await showNoteDialog(
+                          context,
+                          initial: staged?.contents ?? note.contents,
+                        );
+                        if (text == null) return;
+                        controller.restyleSelected(
+                          AnnotationStyle(
+                            colorArgb: colour,
+                            strokeWidth: width,
+                            contents: text,
+                          ),
+                        );
+                      },
+                    ),
                   IconButton(
                     tooltip: l10n.annotationsUndo,
                     icon: const Icon(Icons.undo),

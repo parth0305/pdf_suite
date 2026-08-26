@@ -219,4 +219,86 @@ void main() {
       expect(RegExp(r'3 0 obj').allMatches(text).length, 2);
     });
   });
+
+  group('notes and stamps', () {
+    const note = StickyNote(
+      pageIndex: 0,
+      anchorPt: PdfPoint(100, 700),
+      contents: 'Check this clause',
+    );
+    const approved = Stamp(
+      preset: StampPreset.approved,
+      pageIndex: 0,
+      anchorPt: PdfPoint(100, 600),
+    );
+
+    test('a note is written as /Text with its contents', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [note]));
+
+      expect(text, contains('/Subtype /Text'));
+      expect(text, contains('(Check this clause)'));
+      expect(text, contains('/Name /Note'));
+    });
+
+    test('a note is anchored at an icon-sized /Rect', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [note]));
+      expect(text, contains('/Rect [100 680 120 700]'));
+    });
+
+    // PDFium draws the icon itself. An /AP we generated could only disagree
+    // with what other viewers draw.
+    test('a note carries NO appearance stream', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [note]));
+
+      expect(text, isNot(contains('/AP')));
+      expect(text, isNot(contains('/Subtype /Form')));
+    });
+
+    test('a stamp is written with an appearance stream', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [approved]));
+
+      expect(text, contains('/Subtype /Stamp'));
+      expect(text, contains('/AP'));
+      expect(text, contains('(APPROVED) Tj'));
+    });
+
+    test('a stamp names its preset', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [approved]));
+      expect(text, contains('/Name /Approved'));
+    });
+
+    // One font object per save, not one per stamp.
+    test('several stamps share one font object', () {
+      final text = latin1.decode(
+        writeAnnotations(classicPdf(), [
+          approved,
+          const Stamp(
+            preset: StampPreset.draft,
+            pageIndex: 0,
+            anchorPt: PdfPoint(300, 600),
+          ),
+        ]),
+      );
+
+      expect(RegExp(r'/BaseFont /Helvetica').allMatches(text).length, 1);
+    });
+
+    test('a document with no stamps emits no font object', () {
+      final text = latin1.decode(writeAnnotations(classicPdf(), [note]));
+      expect(text, isNot(contains('/BaseFont')));
+    });
+
+    // The point of the sealed type: every kind in one pass.
+    test('all four annotation kinds write together', () {
+      final text = latin1.decode(
+        writeAnnotations(classicPdf(), [markup(), note, approved]),
+      );
+
+      expect(text, contains('/Subtype /Highlight'));
+      expect(text, contains('/Subtype /Text'));
+      expect(text, contains('/Subtype /Stamp'));
+      // Still exactly one page override.
+      expect(RegExp(r'3 0 obj').allMatches(text).length, 2);
+    });
+  });
 }

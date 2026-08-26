@@ -171,4 +171,60 @@ void main() {
       expect(PdfAnnotationReader.parse(plain).onPage(0), isEmpty);
     });
   });
+
+  group('notes and stamps', () {
+    const noteObj =
+        '7 0 obj\n<< /Type /Annot /Subtype /Text /Rect [100 680 120 700] '
+        '/Contents (Check this clause) /Name /Note /C [1 0.76 0.03] >>\n'
+        'endobj\n';
+    const stampObj =
+        '8 0 obj\n<< /Type /Annot /Subtype /Stamp /Rect [100 560 220 600] '
+        '/Name /Approved /C [0.22 0.56 0.24] >>\nendobj\n';
+
+    test('a note is reconstructed with its text', () {
+      final a = PdfAnnotationReader.parse(
+        docWith('7 0 R', noteObj),
+      ).onPage(0).single;
+
+      expect(a.restylable, isTrue);
+      final note = a.reconstructed! as StickyNote;
+      expect(note.contents, 'Check this clause');
+    });
+
+    test('a note keeps its anchor', () {
+      final a = PdfAnnotationReader.parse(
+        docWith('7 0 R', noteObj),
+      ).onPage(0).single;
+
+      final note = a.reconstructed! as StickyNote;
+      expect(note.anchorPt.x, 100);
+      expect(note.anchorPt.y, 700);
+    });
+
+    // Scoped out of SP-3e: reconstructing a stamp is possible but not built,
+    // and a control that does nothing is worse than an honest label.
+    test('a stamp is delete-only', () {
+      final a = PdfAnnotationReader.parse(
+        docWith('8 0 R', stampObj),
+      ).onPage(0).single;
+
+      expect(a.subtype, 'Stamp');
+      expect(a.restylable, isFalse);
+    });
+
+    test('an escaped parenthesis in the text survives', () {
+      const escaped =
+          '7 0 obj\n<< /Type /Annot /Subtype /Text /Rect [100 680 120 700] '
+          r'/Contents (see \(b\) below) /Name /Note >>'
+          '\nendobj\n';
+
+      final note =
+          PdfAnnotationReader.parse(
+                docWith('7 0 R', escaped),
+              ).onPage(0).single.reconstructed!
+              as StickyNote;
+
+      expect(note.contents, 'see (b) below');
+    });
+  });
 }

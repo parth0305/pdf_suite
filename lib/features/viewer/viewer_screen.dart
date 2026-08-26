@@ -19,7 +19,10 @@ import 'package:folio/features/viewer/widgets/annotation_selection_overlay.dart'
 import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
+import 'package:folio/features/viewer/widgets/note_dialog.dart';
 import 'package:folio/features/viewer/widgets/signature_sheet.dart';
+import 'package:folio/features/viewer/widgets/stamp_picker.dart';
+import 'package:folio/features/viewer/widgets/tap_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/drawing_toolbar.dart';
 import 'package:folio/features/viewer/widgets/markup_toolbar.dart';
 import 'package:folio/features/pages/widgets/page_grid.dart';
@@ -33,9 +36,18 @@ import 'package:pdfrx/pdfrx.dart';
 
 enum _SidePanel { none, thumbnails, outline }
 
-enum _ViewerMode { read, pages, markup, draw, annotations, signature }
+enum _ViewerMode {
+  read,
+  pages,
+  markup,
+  draw,
+  annotations,
+  signature,
+  note,
+  stamp,
+}
 
-enum _AnnotateTool { markup, draw, annotations, signature }
+enum _AnnotateTool { markup, draw, annotations, signature, note, stamp }
 
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
@@ -66,6 +78,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   DrawingKind _tool = DrawingKind.ink;
   int _drawColour = drawingColours.first;
   double _drawStrokeWidth = 2;
+  StampPreset _stampPreset = StampPreset.approved;
   int _currentPage = 1;
   int _totalPages = 0;
 
@@ -294,6 +307,45 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
 
   Future<void> _leaveDrawMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (ref.read(annotationSessionProvider).session.isDirty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.drawDiscardPrompt),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.pagesDiscard),
+            ),
+          ],
+        ),
+      );
+      if (discard != true) return;
+    }
+    if (!mounted) return;
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.read);
+  }
+
+  void _enterNoteMode() {
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.note);
+  }
+
+  void _enterStampMode() {
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() {
+      _stampPreset = StampPreset.approved;
+      _mode = _ViewerMode.stamp;
+    });
+  }
+
+  Future<void> _leaveStagingMode() async {
     final l10n = AppLocalizations.of(context)!;
     if (ref.read(annotationSessionProvider).session.isDirty) {
       final discard = await showDialog<bool>(
@@ -625,14 +677,45 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         pageOverlaysBuilder:
             (_mode != _ViewerMode.draw &&
                 _mode != _ViewerMode.annotations &&
-                _mode != _ViewerMode.signature)
+                _mode != _ViewerMode.signature &&
+                _mode != _ViewerMode.note &&
+                _mode != _ViewerMode.stamp)
             ? null
             : (context, pageRect, page) => [
                 // The overlay is positioned at the page, so its own local
                 // space starts at the page's top-left. Passing the viewer
                 // space rect would offset every stroke and every hit test by
                 // the page origin.
-                if (_mode == _ViewerMode.signature)
+                if (_mode == _ViewerMode.note || _mode == _ViewerMode.stamp)
+                  TapPlacementSurface(
+                    pageRect: Offset.zero & pageRect.size,
+                    pageWidthPt: page.width,
+                    pageHeightPt: page.height,
+                    pageIndex: page.pageNumber - 1,
+                    onTap: (pt) async {
+                      final pageIndex = page.pageNumber - 1;
+                      if (_mode == _ViewerMode.stamp) {
+                        ref
+                            .read(annotationSessionProvider.notifier)
+                            .addStamp(
+                              preset: _stampPreset,
+                              pageIndex: pageIndex,
+                              anchorPt: pt,
+                            );
+                        return;
+                      }
+                      final text = await showNoteDialog(context);
+                      if (text == null || !mounted) return;
+                      ref
+                          .read(annotationSessionProvider.notifier)
+                          .addNote(
+                            pageIndex: pageIndex,
+                            anchorPt: pt,
+                            contents: text,
+                          );
+                    },
+                  )
+                else if (_mode == _ViewerMode.signature)
                   SignaturePlacementSurface(
                     pageRect: Offset.zero & pageRect.size,
                     pageWidthPt: page.width,
@@ -698,6 +781,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ],
                   ),
           ),
+          if (_mode == _ViewerMode.note || _mode == _ViewerMode.stamp)
+            _stagingToolbar(l10n),
           if (_mode == _ViewerMode.signature) _signatureToolbar(l10n),
           if (_mode == _ViewerMode.annotations)
             AnnotationEditToolbar(
@@ -747,6 +832,61 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: const Icon(Icons.fullscreen_exit),
             )
           : null,
+    );
+  }
+
+  Widget _stagingToolbar(AppLocalizations l10n) {
+    final state = ref.watch(annotationSessionProvider);
+    final controller = ref.read(annotationSessionProvider.notifier);
+    final isStamp = _mode == _ViewerMode.stamp;
+
+    return Material(
+      elevation: 3,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      state.session.isEmpty
+                          ? (isStamp ? l10n.stampPlaceHint : l10n.notePlaceHint)
+                          : l10n.markupCount(state.session.annotations.length),
+                      style: Theme.of(context).textTheme.labelLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    tooltip: l10n.drawUndo,
+                    icon: const Icon(Icons.undo),
+                    onPressed: state.session.canUndo ? controller.undo : null,
+                  ),
+                  // Pinned, never inside a scrolling row.
+                  FilledButton.icon(
+                    onPressed: state.session.isDirty && !state.busy
+                        ? _saveAnnotations
+                        : null,
+                    icon: const Icon(Icons.save_outlined),
+                    label: Text(l10n.drawSave),
+                  ),
+                ],
+              ),
+              if (isStamp) ...[
+                const SizedBox(height: 4),
+                StampPicker(
+                  selected: _stampPreset,
+                  onSelected: (p) => setState(() => _stampPreset = p),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -820,6 +960,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         icon: const Icon(Icons.arrow_back),
         onPressed: _leaveSignatureMode,
       ),
+      _ViewerMode.note || _ViewerMode.stamp => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _leaveStagingMode,
+      ),
       _ViewerMode.read => null,
     },
     actions: [
@@ -850,6 +994,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.draw => _enterDrawMode(),
             _AnnotateTool.annotations => _enterAnnotationsMode(),
             _AnnotateTool.signature => _enterSignatureMode(),
+            _AnnotateTool.note => _enterNoteMode(),
+            _AnnotateTool.stamp => _enterStampMode(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -865,6 +1011,22 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.draw_outlined),
                 title: Text(l10n.drawMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.note,
+              child: ListTile(
+                leading: const Icon(Icons.sticky_note_2_outlined),
+                title: Text(l10n.noteMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.stamp,
+              child: ListTile(
+                leading: const Icon(Icons.approval_outlined),
+                title: Text(l10n.stampMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

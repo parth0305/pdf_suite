@@ -5,6 +5,7 @@ import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/drawing_appearance.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
+import 'package:folio/domain/annotations/stamp_appearance.dart';
 import 'package:folio/domain/annotations/annotation.dart';
 
 /// Writes [annotations] into [pdf] as real annotation objects, by appending a
@@ -61,6 +62,14 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
     byPage.putIfAbsent(a.pageIndex, () => []).add(a);
   }
 
+  // One font object per save, shared by every stamp. Standard-14: referenced,
+  // never embedded.
+  int? fontObjNum;
+  if (annotations.any((a) => a is Stamp)) {
+    fontObjNum = nextObj++;
+    emit(fontObjNum, helveticaFontObject());
+  }
+
   for (final entry in byPage.entries) {
     final page = reader.pageAt(entry.key);
     if (page == null) {
@@ -71,7 +80,8 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
 
     final newRefs = <String>[];
     for (final annotation in entry.value) {
-      final (stream, dict) = switch (annotation) {
+      // Nullable: a /Text note has no appearance stream at all.
+      final (String, String)? appearance = switch (annotation) {
         TextMarkup() => (
           appearanceStream(annotation),
           appearanceDict(annotation, appearanceStream(annotation).length),
@@ -83,10 +93,23 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
             drawingAppearanceStream(annotation).length,
           ),
         ),
+        Stamp() => (
+          stampAppearanceStream(annotation),
+          stampAppearanceDict(
+            annotation,
+            stampAppearanceStream(annotation).length,
+            fontObjNum!,
+          ),
+        ),
+        StickyNote() => null,
       };
 
-      final apNum = nextObj++;
-      emit(apNum, '$dict\nstream\n${stream}endstream');
+      int? apNum;
+      if (appearance != null) {
+        final (stream, dict) = appearance;
+        apNum = nextObj++;
+        emit(apNum, '$dict\nstream\n${stream}endstream');
+      }
 
       final annotNum = nextObj++;
       emit(annotNum, _annotationDict(annotation, apNum));
@@ -120,8 +143,8 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
 
 /// The annotation dictionary. Geometry differs per subtype: markup uses
 /// /QuadPoints, ink uses /InkList, a line uses /L, and shapes use /Rect alone.
-String _annotationDict(Annotation annotation, int apNum) {
-  final ap = '/AP << /N $apNum 0 R >>';
+String _annotationDict(Annotation annotation, int? apNum) {
+  final ap = apNum == null ? '' : ' /AP << /N $apNum 0 R >>';
 
   switch (annotation) {
     case TextMarkup():
@@ -130,7 +153,29 @@ String _annotationDict(Annotation annotation, int apNum) {
           '/Rect [${pdfNumber(b.left)} ${pdfNumber(b.bottom)} '
           '${pdfNumber(b.right)} ${pdfNumber(b.top)}] '
           '/QuadPoints [${annotation.quadPoints.map(pdfNumber).join(' ')}] '
-          '/C [${annotation.pdfColour}] /CA 1 /F 4 $ap >>';
+          '/C [${annotation.pdfColour}] /CA 1 /F 4$ap >>';
+
+    case StickyNote():
+      final r = annotation.anchorPt;
+      const size = StickyNote.iconSizePt;
+      return '<< /Type /Annot /Subtype /Text '
+          '/Rect [${pdfNumber(r.x)} ${pdfNumber(r.y - size)} '
+          '${pdfNumber(r.x + size)} ${pdfNumber(r.y)}] '
+          '/Contents ${pdfString(annotation.contents)} '
+          '/Name /Note /C [${_colourOf(annotation.colorArgb)}] /CA 1 /F 4'
+          '$ap >>';
+
+    case Stamp():
+      final r = annotation.anchorPt;
+      // /Name records the preset so a reader can tell them apart.
+      final name = annotation.preset.name;
+      final capitalised = name[0].toUpperCase() + name.substring(1);
+      return '<< /Type /Annot /Subtype /Stamp '
+          '/Rect [${pdfNumber(r.x)} ${pdfNumber(r.y - annotation.heightPt)} '
+          '${pdfNumber(r.x + annotation.widthPt)} ${pdfNumber(r.y)}] '
+          '/Name /$capitalised '
+          '/C [${_colourOf(annotation.colorArgb)}] /CA 1 /F 4'
+          '$ap >>';
 
     case DrawingAnnotation():
       final b = annotation.boundsPt;
@@ -161,6 +206,11 @@ String _annotationDict(Annotation annotation, int apNum) {
         DrawingKind.rectangle || DrawingKind.ellipse => '',
       };
 
-      return '<< $common$geometry $ap >>';
+      return '<< $common$geometry$ap >>';
   }
+}
+
+String _colourOf(int argb) {
+  String channel(int shift) => pdfNumber(((argb >> shift) & 0xFF) / 255);
+  return '${channel(16)} ${channel(8)} ${channel(0)}';
 }

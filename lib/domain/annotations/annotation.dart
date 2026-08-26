@@ -2,6 +2,8 @@ import 'package:folio/domain/annotations/pdf_point.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 
 part 'drawing_annotation.dart';
+part 'stamp.dart';
+part 'sticky_note.dart';
 part 'text_markup.dart';
 
 /// Anything that can be staged and written into a PDF as an annotation object.

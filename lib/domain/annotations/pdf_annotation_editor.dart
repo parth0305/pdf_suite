@@ -10,19 +10,27 @@ import 'package:folio/domain/annotations/pdf_object_reader.dart';
 
 /// The only properties a restyle may change.
 class AnnotationStyle {
-  const AnnotationStyle({required this.colorArgb, required this.strokeWidth});
+  const AnnotationStyle({
+    required this.colorArgb,
+    required this.strokeWidth,
+    this.contents,
+  });
 
   final int colorArgb;
   final double strokeWidth;
+
+  /// New text for a sticky note. Null leaves the existing text alone.
+  final String? contents;
 
   @override
   bool operator ==(Object other) =>
       other is AnnotationStyle &&
       other.colorArgb == colorArgb &&
-      other.strokeWidth == strokeWidth;
+      other.strokeWidth == strokeWidth &&
+      other.contents == contents;
 
   @override
-  int get hashCode => Object.hash(colorArgb, strokeWidth);
+  int get hashCode => Object.hash(colorArgb, strokeWidth, contents);
 }
 
 /// Applies deletions and restyles as one PDF incremental update.
@@ -91,25 +99,31 @@ Uint8List applyAnnotationEdits(
 
     final restyledAnnotation = _withStyle(target!.reconstructed!, entry.value);
 
-    final (stream, dict) = switch (restyledAnnotation) {
-      TextMarkup() => (
-        appearanceStream(restyledAnnotation),
-        appearanceDict(
-          restyledAnnotation,
-          appearanceStream(restyledAnnotation).length,
+    // A note has no appearance stream; adding one would disagree with the icon
+    // every viewer already draws.
+    int? apNum;
+    if (restyledAnnotation is! StickyNote) {
+      final (stream, dict) = switch (restyledAnnotation) {
+        TextMarkup() => (
+          appearanceStream(restyledAnnotation),
+          appearanceDict(
+            restyledAnnotation,
+            appearanceStream(restyledAnnotation).length,
+          ),
         ),
-      ),
-      DrawingAnnotation() => (
-        drawingAppearanceStream(restyledAnnotation),
-        drawingAppearanceDict(
-          restyledAnnotation,
-          drawingAppearanceStream(restyledAnnotation).length,
+        DrawingAnnotation() => (
+          drawingAppearanceStream(restyledAnnotation),
+          drawingAppearanceDict(
+            restyledAnnotation,
+            drawingAppearanceStream(restyledAnnotation).length,
+          ),
         ),
-      ),
-    };
+        StickyNote() || Stamp() => throw StateError('unreachable'),
+      };
+      apNum = nextObj++;
+      emit(apNum, '$dict\nstream\n${stream}endstream');
+    }
 
-    final apNum = nextObj++;
-    emit(apNum, '$dict\nstream\n${stream}endstream');
     emit(
       target.objectNumber,
       _restyledDictionary(target.rawDictionary, entry.value, apNum),
@@ -182,22 +196,37 @@ Annotation _withStyle(Annotation annotation, AnnotationStyle style) =>
         colorArgb: style.colorArgb,
         strokeWidth: style.strokeWidth,
       ),
+      StickyNote() => StickyNote(
+        pageIndex: annotation.pageIndex,
+        anchorPt: annotation.anchorPt,
+        contents: style.contents ?? annotation.contents,
+        colorArgb: style.colorArgb,
+      ),
+      Stamp() => annotation,
     };
 
 /// Rewrites only `/C`, `/BS` and `/AP`, leaving every other key - including
 /// all geometry - exactly as it was in the source dictionary.
-String _restyledDictionary(String source, AnnotationStyle style, int apNum) {
+String _restyledDictionary(String source, AnnotationStyle style, int? apNum) {
   String colour(int shift) =>
       pdfNumber(((style.colorArgb >> shift) & 0xFF) / 255);
   final c = '/C [${colour(16)} ${colour(8)} ${colour(0)}]';
-  final bs = '/BS << /W ${pdfNumber(style.strokeWidth)} >>';
-  final ap = '/AP << /N $apNum 0 R >>';
+  // A /Text icon has no stroke, so /BS would describe nothing.
+  final isNote = RegExp(r'/Subtype\s*/Text\b').hasMatch(source);
+  final bs = isNote ? '' : ' /BS << /W ${pdfNumber(style.strokeWidth)} >>';
+  final ap = apNum == null ? '' : ' /AP << /N $apNum 0 R >>';
 
   var body = source.substring(2, source.length - 2).trim();
   body = body.replaceAll(RegExp(r'/C\s*\[[^\]]*\]'), '');
   body = body.replaceAll(RegExp(r'/BS\s*<<[^>]*>>'), '');
   body = body.replaceAll(RegExp(r'/AP\s*<<[^>]*>>'), '');
+  if (style.contents != null) {
+    body = body.replaceAll(
+      RegExp(r'/Contents\s*\([^)]*\)'),
+      '/Contents ${pdfString(style.contents!)}',
+    );
+  }
   body = body.replaceAll(RegExp(r'\s+'), ' ').trim();
 
-  return '<< $body $c $bs $ap >>';
+  return '<< $body $c$bs$ap >>';
 }
