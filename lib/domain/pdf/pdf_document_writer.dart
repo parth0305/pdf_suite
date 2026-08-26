@@ -2,19 +2,49 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:folio/core/errors/app_failure.dart';
+import 'dart:math';
+
 import 'package:folio/domain/pdf/pdf_encryption.dart';
+import 'package:folio/domain/pdf/pdf_encryption_aes.dart';
 import 'package:folio/domain/pdf/pdf_encryption_dictionary.dart';
 import 'package:folio/domain/pdf/pdf_object.dart';
 
+/// Which standard security handler to write.
+enum PdfSecurityHandler {
+  /// Revision 2, RC4-40. Kept because it is the reference the pipeline was
+  /// proven against; NOT offered to users, because it is not real protection.
+  rc4Revision2,
+
+  /// Revision 6, AES-256. What "password protected" means today.
+  aesRevision6,
+}
+
 /// How to encrypt a document on the way out.
 class PdfEncryption {
-  const PdfEncryption({required this.userPassword, this.permissions = -44});
+  const PdfEncryption({
+    required this.userPassword,
+    this.permissions = -44,
+    this.handler = PdfSecurityHandler.aesRevision6,
+    this.randomBytes,
+  });
 
   final String userPassword;
 
   /// The /P bit field. -44 is the value the existing fixtures use.
   final int permissions;
+
+  final PdfSecurityHandler handler;
+
+  /// Injected so tests are deterministic. Null means a secure generator.
+  final List<int> Function(int count)? randomBytes;
+
+  List<int> Function(int) get random => randomBytes ?? _secureRandomBytes;
 }
+
+final _secure = Random.secure();
+
+List<int> _secureRandomBytes(int count) =>
+    List<int>.generate(count, (_) => _secure.nextInt(256));
 
 /// Rebuilds a complete PDF: header, every object, a fresh cross-reference
 /// table, a trailer.
@@ -56,7 +86,16 @@ Uint8List writePdfDocument(
 
   List<int>? fileKey;
   List<int>? ownerValue;
-  if (encryption != null) {
+  AesEncryptionValues? aes;
+
+  if (encryption?.handler == PdfSecurityHandler.aesRevision6) {
+    aes = buildAesValues(
+      password: encryption!.userPassword,
+      permissions: encryption.permissions,
+      randomBytes: encryption.random,
+    );
+    fileKey = aes.fileKey;
+  } else if (encryption != null) {
     ownerValue = computeOwnerValue(
       ownerPassword: encryption.userPassword,
       userPassword: encryption.userPassword,
@@ -76,9 +115,23 @@ Uint8List writePdfDocument(
     offsets[o.number] = out.length;
     // Each object gets its OWN key. Reusing the file key produces a document
     // that opens in some readers and not others.
-    final body = fileKey == null
-        ? o.body
-        : encryptObjectBody(o.body, objectKey(fileKey, o.number, o.generation));
+    final List<int> body;
+    if (fileKey == null) {
+      body = o.body;
+    } else if (aes != null) {
+      // V5 uses the file key DIRECTLY. There are no per-object keys.
+      body = encryptObjectBodyAes(
+        o.body,
+        fileKey,
+        encryption!.random,
+        aesEncrypt,
+      );
+    } else {
+      body = encryptObjectBody(
+        o.body,
+        objectKey(fileKey, o.number, o.generation),
+      );
+    }
     out
       ..addAll(latin1.encode('${o.number} ${o.generation} obj'))
       ..addAll(body)
@@ -92,7 +145,7 @@ Uint8List writePdfDocument(
     out.addAll(
       latin1.encode(
         '$encryptNumber 0 obj\n'
-        '${encryptionDictionary(ownerValue: ownerValue!, userValue: computeUserValue(fileKey!), permissions: encryption.permissions)}\n'
+        '${aes != null ? aesEncryptionDictionary(u: aes.u, ue: aes.ue, o: aes.o, oe: aes.oe, perms: aes.perms, permissions: encryption.permissions) : encryptionDictionary(ownerValue: ownerValue!, userValue: computeUserValue(fileKey!), permissions: encryption.permissions)}\n'
         'endobj\n',
       ),
     );

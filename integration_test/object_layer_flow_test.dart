@@ -203,4 +203,72 @@ void main() {
       await engine.close(h);
     });
   });
+
+  group('AES-256', () {
+    Future<(List<int> plain, List<int> secured)> build() async {
+      final original = await File(
+        await fixturePath('sample_3page.pdf'),
+      ).readAsBytes();
+      final objects = parsePdfObjects(original);
+
+      return (
+        writePdfDocument(original, objects),
+        writePdfDocument(
+          original,
+          objects,
+          encryption: const PdfEncryption(userPassword: 'folio-test'),
+        ),
+      );
+    }
+
+    // THE assertion for this slice. R6 has a lot of moving parts - the 2.B
+    // hash, /U, /UE, /O, /OE, /Perms, and AES-CBC per value - and every one of
+    // them being right is the only way this passes.
+    test(
+      'an AES-256 document opens with its password and renders the same',
+      () async {
+        final (plain, secured) = await build();
+        final expected = await renderBytes(plain, 'aes-plain');
+
+        final f = File('${root.path}/aes.pdf')..writeAsBytesSync(secured);
+        final h = await engine.open(
+          FileSource(f.path),
+          onPasswordRequired: () async => 'folio-test',
+        );
+        final actual = (await engine.renderPage(
+          h,
+          0,
+          targetWidthPx: 400,
+          targetHeightPx: 566,
+        )).bgraPixels;
+        await engine.close(h);
+
+        expect(diff(expected, actual), 0);
+      },
+    );
+
+    test('it declares AES-256 rather than RC4', () async {
+      final (_, secured) = await build();
+      final text = latin1.decode(secured, allowInvalid: true);
+
+      expect(text, contains('/AESV3'));
+      expect(text, contains('/V 5'));
+      expect(text, contains('/R 6'));
+    });
+
+    test('the wrong password fails cleanly', () async {
+      final (_, secured) = await build();
+      final f = File('${root.path}/aes-wrong.pdf')..writeAsBytesSync(secured);
+
+      var attempts = 0;
+      await expectLater(
+        engine.open(
+          FileSource(f.path),
+          onPasswordRequired: () async =>
+              attempts++ == 0 ? 'not-the-password' : null,
+        ),
+        throwsA(isA<AppFailure>()),
+      );
+    });
+  });
 }

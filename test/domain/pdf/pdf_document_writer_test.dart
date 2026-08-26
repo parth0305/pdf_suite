@@ -93,7 +93,10 @@ void main() {
       writePdfDocument(
         bytesOf(source),
         parsePdfObjects(bytesOf(source)),
-        encryption: const PdfEncryption(userPassword: 'folio-test'),
+        encryption: const PdfEncryption(
+          userPassword: 'folio-test',
+          handler: PdfSecurityHandler.rc4Revision2,
+        ),
       ),
     );
 
@@ -123,5 +126,48 @@ void main() {
     test('an unencrypted rewrite has no /Encrypt', () {
       expect(rewritten(), isNot(contains('/Encrypt')));
     });
+  });
+
+  // Two IDENTICAL strings inside ONE document must encrypt differently. This
+  // is the only thing that observes a reused initialisation vector: a repeated
+  // IV still decrypts correctly, so no render assertion can ever see it.
+  test('identical strings in one document encrypt differently', () {
+    var counter = 0;
+    const twins =
+        '%PDF-1.4\n'
+        '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n'
+        '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n'
+        '3 0 obj\n<< /Type /Page /Parent 2 0 R /T (repeated value) >>\n'
+        'endobj\n'
+        '4 0 obj\n<< /Type /Annot /Contents (repeated value) >>\nendobj\n'
+        'trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n9\n%%EOF\n';
+
+    final out = latin1.decode(
+      writePdfDocument(
+        bytesOf(twins),
+        parsePdfObjects(bytesOf(twins)),
+        // A VARYING source, as production uses. A constant one would make
+        // collisions correct behaviour and prove nothing.
+        encryption: PdfEncryption(
+          userPassword: 'folio-test',
+          randomBytes: (n) => List<int>.generate(n, (_) => counter++ & 0xFF),
+        ),
+      ),
+      allowInvalid: true,
+    );
+
+    // Objects only. The trailer's /ID deliberately writes the same value
+    // twice, which would otherwise read as a collision.
+    final objectsOnly = out.substring(0, out.indexOf('\ntrailer'));
+    final ciphertexts = RegExp(
+      r'<([0-9a-f]{32,})>',
+    ).allMatches(objectsOnly).map((m) => m.group(1)!).toList();
+
+    expect(ciphertexts.length, greaterThanOrEqualTo(2));
+    expect(
+      ciphertexts.toSet().length,
+      ciphertexts.length,
+      reason: 'identical plaintext must not produce identical ciphertext',
+    );
   });
 }
