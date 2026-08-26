@@ -165,6 +165,26 @@ A protected document carries no re-attached metadata. `PdfMetadata` appends an
 incremental update, and an unencrypted update sitting after an encrypted
 document would defeat the encryption.
 
+### Two passwords, and permissions that are only a request
+
+Revision 6 stores two independent key wrappings of the same file key: `/UE`
+under the user password and `/OE` under the owner password. Either recovers the
+same 32 bytes, which is why either opens the document. The owner entry hashes
+the 48-byte `/U` as extra data, binding both passwords to one file. Omit the
+owner password and Folio wraps the key under the user password twice, because
+a restriction nobody can lift restricts the author too.
+
+Permissions live in `/P`, written in the clear so a reader can act on them
+before it has a key, and again inside `/Perms`, encrypted with the file key so
+a reader can tell whether `/P` was edited. The two must agree: PDFium treats a
+mismatch as tampering and rejects **every** password, which is exactly what a
+mutation of this code demonstrated.
+
+`PdfPermissions` is the only place that knows bit numbering, and it clears
+dependent bits together — denying printing also denies high-quality printing,
+denying modification also denies assembly, denying annotation also denies form
+filling. Nothing downstream reasons about individual bits.
+
 ## Two write models, and when each applies
 
 Folio writes documents two ways.
@@ -215,15 +235,17 @@ Three rules make it safe:
   than in `PdfObjectReader`: following `/Parent` means reading a node that is
   not a page dictionary, which that reader's own documentation forbids.
 
-## Why compression and encryption are not here
+## Why compression and encryption needed the object layer
 
-Both were probed alongside watermarks. Neither can be done by appending: an
-incremental update only ever *grows* a file, so compressing by appending is
+Both were probed alongside watermarks and neither could be done by appending:
+an incremental update only ever *grows* a file, so compressing by appending is
 self-defeating, and encrypting a document means every string and stream in it
-must be encrypted. Both need a full-file rewrite, which is a separate decision.
+must be encrypted. Both needed a full-file rewrite, which SP-5a built and
+SP-5b/5c used.
 
 `dart:io`'s `ZLibCodec` is available with no dependency and PDFium accepts a
-stream we compressed, so Flate itself is not the obstacle — the write model is.
+stream we compressed, so Flate itself was never the obstacle — the write model
+was.
 
 ## Moving is a rect rewrite, and the appearance follows
 

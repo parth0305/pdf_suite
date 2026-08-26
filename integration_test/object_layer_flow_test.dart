@@ -132,9 +132,10 @@ void main() {
         final expected = await renderBytes(plain, 'plain');
 
         final f = File('${root.path}/secured.pdf')..writeAsBytesSync(secured);
+        var attempts = 0;
         final h = await engine.open(
           FileSource(f.path),
-          onPasswordRequired: () async => 'folio-test',
+          onPasswordRequired: () async => attempts++ < 2 ? 'folio-test' : null,
         );
         final actual = (await engine.renderPage(
           h,
@@ -169,12 +170,18 @@ void main() {
         );
       }
 
+      // pdfrx retries the callback until it succeeds or the caller returns
+      // null, so a CORRECT password that a reader rejects loops forever. That
+      // is not hypothetical: writing a /Perms that disagrees with /P makes
+      // PDFium reject every password, and an unbounded callback turns the
+      // resulting test failure into a hung CI job. Give up after one retry.
       Future<List<int>> renderWith(String password, String name) async {
         final f = File('${root.path}/$name.pdf')
           ..writeAsBytesSync(await restricted());
+        var attempts = 0;
         final h = await engine.open(
           FileSource(f.path),
-          onPasswordRequired: () async => password,
+          onPasswordRequired: () async => attempts++ < 2 ? password : null,
         );
         final pixels = (await engine.renderPage(
           h,
@@ -219,9 +226,10 @@ void main() {
       test('the reader reports the restrictions that were asked for', () async {
         final f = File('${root.path}/perm-readback.pdf')
           ..writeAsBytesSync(await restricted());
+        var attempts = 0;
         final h = await engine.open(
           FileSource(f.path),
-          onPasswordRequired: () async => 'reader-pw',
+          onPasswordRequired: () async => attempts++ < 2 ? 'reader-pw' : null,
         );
         final bits = h.permissionBits;
         await engine.close(h);
@@ -285,9 +293,10 @@ void main() {
       final (_, secured) = await build();
       final f = File('${root.path}/pages.pdf')..writeAsBytesSync(secured);
 
+      var attempts = 0;
       final h = await engine.open(
         FileSource(f.path),
-        onPasswordRequired: () async => 'folio-test',
+        onPasswordRequired: () async => attempts++ < 2 ? 'folio-test' : null,
       );
       expect(h.pageCount, 3);
       await engine.close(h);
@@ -321,9 +330,10 @@ void main() {
         final expected = await renderBytes(plain, 'aes-plain');
 
         final f = File('${root.path}/aes.pdf')..writeAsBytesSync(secured);
+        var attempts = 0;
         final h = await engine.open(
           FileSource(f.path),
-          onPasswordRequired: () async => 'folio-test',
+          onPasswordRequired: () async => attempts++ < 2 ? 'folio-test' : null,
         );
         final actual = (await engine.renderPage(
           h,
