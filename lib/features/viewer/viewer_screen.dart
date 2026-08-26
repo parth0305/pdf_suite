@@ -13,6 +13,10 @@ import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/pages/split_sheet.dart';
 import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/features/viewer/annotation_providers.dart';
+import 'package:folio/features/viewer/annotation_edit_providers.dart';
+import 'package:folio/features/viewer/widgets/annotation_edit_toolbar.dart';
+import 'package:folio/features/viewer/widgets/annotation_list_panel.dart';
+import 'package:folio/features/viewer/widgets/annotation_selection_overlay.dart';
 import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/drawing_toolbar.dart';
 import 'package:folio/features/viewer/widgets/markup_toolbar.dart';
@@ -27,9 +31,9 @@ import 'package:pdfrx/pdfrx.dart';
 
 enum _SidePanel { none, thumbnails, outline }
 
-enum _ViewerMode { read, pages, markup, draw }
+enum _ViewerMode { read, pages, markup, draw, annotations }
 
-enum _AnnotateTool { markup, draw }
+enum _AnnotateTool { markup, draw, annotations }
 
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
@@ -313,6 +317,92 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     setState(() => _mode = _ViewerMode.read);
   }
 
+  Future<void> _enterAnnotationsMode() async {
+    final controller = ref.read(annotationEditProvider.notifier);
+    controller.reset();
+    try {
+      await controller.load(widget.document.id);
+    } on Exception {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.annotationsEmpty)));
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _mode = _ViewerMode.annotations);
+  }
+
+  Future<void> _leaveAnnotationsMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (ref.read(annotationEditProvider).session.isDirty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.annotationsDiscardPrompt),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.pagesDiscard),
+            ),
+          ],
+        ),
+      );
+      if (discard != true) return;
+    }
+    if (!mounted) return;
+    ref.read(annotationEditProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.read);
+  }
+
+  Future<void> _saveAnnotationEdits() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = ref.read(annotationEditProvider.notifier);
+    final session = ref.read(annotationEditProvider).session;
+
+    controller.setBusy(true);
+    try {
+      final saved = await ref
+          .read(annotationEditRepositoryProvider)
+          .save(
+            documentId: widget.document.id,
+            deleted: session.deleted,
+            restyled: session.restyled,
+          );
+      await ref.read(libraryControllerProvider.notifier).refresh();
+
+      if (!mounted) return;
+      // An in-place save keeps this document's row but gives it new content at
+      // a new content-addressed path. Re-resolving rebuilds PdfViewer.file;
+      // without it the viewer keeps rendering the superseded file.
+      final path = await ref
+          .read(libraryRepositoryProvider)
+          .resolveReadablePath(saved);
+      if (!mounted) return;
+
+      controller.reset();
+      setState(() {
+        _path = path;
+        _mode = _ViewerMode.read;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.annotationsSaved(saved.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    } finally {
+      controller.setBusy(false);
+    }
+  }
+
   /// Turns the live selection into staged markup.
   ///
   /// Each selected range carries its page and a character span; the matching
@@ -490,21 +580,31 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         pagePaintCallbacks: [_paintSearchMatches],
         // Only present in draw mode: in read mode there is no overlay at all,
         // so it cannot compete with the viewer for scroll or pinch gestures.
-        pageOverlaysBuilder: _mode != _ViewerMode.draw
+        pageOverlaysBuilder:
+            (_mode != _ViewerMode.draw && _mode != _ViewerMode.annotations)
             ? null
             : (context, pageRect, page) => [
-                DrawingSurface(
-                  tool: _tool,
-                  colorArgb: _drawColour,
-                  strokeWidth: _drawStrokeWidth,
-                  // The overlay is positioned at the page, so its own local
-                  // space starts at the page's top-left. Passing the viewer
-                  // space rect would offset every stroke by the page origin.
-                  pageRect: Offset.zero & pageRect.size,
-                  pageWidthPt: page.width,
-                  pageHeightPt: page.height,
-                  pageIndex: page.pageNumber - 1,
-                ),
+                // The overlay is positioned at the page, so its own local
+                // space starts at the page's top-left. Passing the viewer
+                // space rect would offset every stroke and every hit test by
+                // the page origin.
+                if (_mode == _ViewerMode.draw)
+                  DrawingSurface(
+                    tool: _tool,
+                    colorArgb: _drawColour,
+                    strokeWidth: _drawStrokeWidth,
+                    pageRect: Offset.zero & pageRect.size,
+                    pageWidthPt: page.width,
+                    pageHeightPt: page.height,
+                    pageIndex: page.pageNumber - 1,
+                  )
+                else
+                  AnnotationSelectionOverlay(
+                    pageRect: Offset.zero & pageRect.size,
+                    pageWidthPt: page.width,
+                    pageHeightPt: page.height,
+                    pageIndex: page.pageNumber - 1,
+                  ),
               ],
         onViewerReady: _onReady,
         onDocumentChanged: (doc) {
@@ -547,6 +647,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ],
                   ),
           ),
+          if (_mode == _ViewerMode.annotations)
+            AnnotationEditToolbar(
+              onSave: _saveAnnotationEdits,
+              pageIndex: _currentPage - 1,
+            ),
           if (_mode == _ViewerMode.draw)
             DrawingToolbar(
               tool: _tool,
@@ -612,6 +717,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         icon: const Icon(Icons.arrow_back),
         onPressed: _leaveDrawMode,
       ),
+      _ViewerMode.annotations => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _leaveAnnotationsMode,
+      ),
       _ViewerMode.read => null,
     },
     actions: [
@@ -640,6 +749,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           onSelected: (tool) => switch (tool) {
             _AnnotateTool.markup => _enterMarkupMode(),
             _AnnotateTool.draw => _enterDrawMode(),
+            _AnnotateTool.annotations => _enterAnnotationsMode(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -655,6 +765,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.draw_outlined),
                 title: Text(l10n.drawMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.annotations,
+              child: ListTile(
+                leading: const Icon(Icons.edit_note),
+                title: Text(l10n.annotationsMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

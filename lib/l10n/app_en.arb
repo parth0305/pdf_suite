@@ -203,5 +203,21 @@
   "drawUndo": "Undo",
   "drawSave": "Save with drawings",
   "drawDiscardPrompt": "Discard your drawings? The original document is untouched either way.",
-  "annotateMode": "Annotate"
+  "annotateMode": "Annotate",
+  "annotationsMode": "Edit annotations",
+  "annotationsEmpty": "This page has no annotations.",
+  "annotationsDeleteOnly": "Delete only",
+  "annotationsDelete": "Delete",
+  "annotationsUndo": "Undo",
+  "annotationsSave": "Save changes",
+  "annotationsSaved": "Saved {name}",
+  "@annotationsSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "annotationsSelectFirst": "Tap an annotation to select it.",
+  "annotationsDiscardPrompt": "Discard your changes? The document is unchanged either way."
 }

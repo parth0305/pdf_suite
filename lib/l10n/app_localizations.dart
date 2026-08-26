@@ -903,6 +903,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Annotate'**
   String get annotateMode;
+
+  /// No description provided for @annotationsMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit annotations'**
+  String get annotationsMode;
+
+  /// No description provided for @annotationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This page has no annotations.'**
+  String get annotationsEmpty;
+
+  /// No description provided for @annotationsDeleteOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete only'**
+  String get annotationsDeleteOnly;
+
+  /// No description provided for @annotationsDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get annotationsDelete;
+
+  /// No description provided for @annotationsUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get annotationsUndo;
+
+  /// No description provided for @annotationsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get annotationsSave;
+
+  /// No description provided for @annotationsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {name}'**
+  String annotationsSaved(String name);
+
+  /// No description provided for @annotationsSelectFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an annotation to select it.'**
+  String get annotationsSelectFirst;
+
+  /// No description provided for @annotationsDiscardPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your changes? The document is unchanged either way.'**
+  String get annotationsDiscardPrompt;
 }
 
 class _AppLocalizationsDelegate
