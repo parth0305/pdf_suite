@@ -22,7 +22,9 @@ import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
 import 'package:folio/features/viewer/widgets/signature_sheet.dart';
 import 'package:folio/features/viewer/widgets/stamp_picker.dart';
+import 'package:folio/features/viewer/watermark_providers.dart';
 import 'package:folio/features/viewer/widgets/tap_placement_surface.dart';
+import 'package:folio/features/viewer/widgets/watermark_sheet.dart';
 import 'package:folio/features/viewer/widgets/drawing_toolbar.dart';
 import 'package:folio/features/viewer/widgets/markup_toolbar.dart';
 import 'package:folio/features/pages/widgets/page_grid.dart';
@@ -47,7 +49,15 @@ enum _ViewerMode {
   stamp,
 }
 
-enum _AnnotateTool { markup, draw, annotations, signature, note, stamp }
+enum _AnnotateTool {
+  markup,
+  draw,
+  annotations,
+  signature,
+  note,
+  stamp,
+  watermark,
+}
 
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
@@ -330,6 +340,36 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (!mounted) return;
     ref.read(annotationSessionProvider.notifier).reset();
     setState(() => _mode = _ViewerMode.read);
+  }
+
+  Future<void> _applyWatermark() async {
+    final l10n = AppLocalizations.of(context)!;
+    final mark = await showWatermarkSheet(context);
+    if (mark == null || !mounted) return;
+
+    try {
+      final marked = await ref
+          .read(watermarkRepositoryProvider)
+          .apply(widget.document.id, mark);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      // Show the result rather than the document we started from.
+      final path = await ref
+          .read(libraryRepositoryProvider)
+          .resolveReadablePath(marked);
+      if (!mounted) return;
+
+      setState(() => _path = path);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.watermarkApplied(marked.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
   }
 
   void _enterNoteMode() {
@@ -997,6 +1037,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.signature => _enterSignatureMode(),
             _AnnotateTool.note => _enterNoteMode(),
             _AnnotateTool.stamp => _enterStampMode(),
+            _AnnotateTool.watermark => _applyWatermark(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -1028,6 +1069,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.approval_outlined),
                 title: Text(l10n.stampMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.watermark,
+              child: ListTile(
+                leading: const Icon(Icons.branding_watermark_outlined),
+                title: Text(l10n.watermarkMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

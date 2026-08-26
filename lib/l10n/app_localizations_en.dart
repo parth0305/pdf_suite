@@ -558,4 +558,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stampUrgent => 'Urgent';
+
+  @override
+  String get watermarkMode => 'Watermark';
+
+  @override
+  String get watermarkText => 'Watermark text';
+
+  @override
+  String get watermarkHint => 'DRAFT, CONFIDENTIAL…';
+
+  @override
+  String get watermarkSize => 'Size';
+
+  @override
+  String get watermarkOpacity => 'Opacity';
+
+  @override
+  String get watermarkDiagonal => 'Diagonal';
+
+  @override
+  String get watermarkHorizontal => 'Horizontal';
+
+  @override
+  String get watermarkApply => 'Apply to every page';
+
+  @override
+  String watermarkApplied(String name) {
+    return 'Watermarked $name';
+  }
+
+  @override
+  String get watermarkEmpty => 'A watermark needs some text.';
 }
