@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/domain/annotations/annotation_edit_session.dart';
 import 'package:folio/domain/annotations/pdf_annotation_editor.dart';
 import 'package:folio/domain/annotations/pdf_annotation_reader.dart';
+import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/repositories/annotation_edit_repository.dart';
 
 /// Overridden at app start; reading it unoverridden is a programming error.
@@ -83,6 +84,15 @@ class AnnotationEditController extends Notifier<AnnotationEditState> {
     final selected = state.selectedObjectNumber;
     if (selected == null) return;
     state.session.restyle(selected, style);
+    _touch();
+  }
+
+  /// Stages a new rect for the selection. The selection is kept: the outline
+  /// must follow the annotation, or the user cannot tell the move registered.
+  void moveSelected(TextRect rect) {
+    final selected = state.selectedObjectNumber;
+    if (selected == null) return;
+    state.session.moveTo(selected, rect);
     _touch();
   }
 

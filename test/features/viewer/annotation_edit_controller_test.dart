@@ -154,4 +154,36 @@ void main() {
       expect(hit, 8);
     });
   });
+
+  group('moving', () {
+    const target = TextRect(left: 200, bottom: 300, right: 300, top: 400);
+
+    test('moving the selection stages a rect', () {
+      c()
+        ..loadInto([saved(7)])
+        ..select(7)
+        ..moveSelected(target);
+
+      expect(s().session.moved[7], target);
+    });
+
+    test('moving with nothing selected does nothing', () {
+      c()
+        ..loadInto([saved(7)])
+        ..moveSelected(target);
+
+      expect(s().session.isDirty, isFalse);
+    });
+
+    // The selection outline must follow the annotation to its new home, or the
+    // user cannot tell the move registered.
+    test('the annotation stays selected after a move', () {
+      c()
+        ..loadInto([saved(7)])
+        ..select(7)
+        ..moveSelected(target);
+
+      expect(s().selectedObjectNumber, 7);
+    });
+  });
 }
