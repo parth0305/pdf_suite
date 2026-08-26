@@ -128,6 +128,24 @@ imports it rather than owning it. Its existing tests move with it. The
 algorithms are proven; relocating them must not alter a single vector, which
 the moved tests assert.
 
+**Three files import it today, and one of them runs on device:**
+
+| Importer | Why it matters |
+|---|---|
+| `scripts/make_fixtures.dart` | host-side fixture generation |
+| `test/scripts/pdf_encrypt_test.dart` | the vectors that prove the move is behaviour-preserving |
+| `integration_test/fixture_helper.dart` | **builds encrypted fixtures on the device** |
+
+The third is the one to be careful with: integration tests generate their own
+fixtures at runtime rather than shipping 2.5 MB of them in the bundle, so this
+code already executes on iOS and Android. Moving it into `lib/` makes that
+honest — device code should not be reaching into `scripts/` — but it means the
+move is verified by the integration suite, not only by unit tests.
+
+`buildEncryptedPdf` takes the algorithms as injected function parameters, so
+the fixture builder itself needs no change at all. Only the three import sites
+move.
+
 Adds one thing the script never needed:
 
 ```dart
