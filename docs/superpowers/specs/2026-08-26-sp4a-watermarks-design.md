@@ -145,13 +145,35 @@ ExtGState object are emitted **once** and shared by every page.
 Refuses a cross-reference-stream document with `UnsupportedPdfStructure`,
 consistent with every other writer.
 
+### `lib/domain/watermark/page_geometry.dart` — new
+
+```dart
+/// The page's /MediaBox, resolved through inheritance.
+TextRect mediaBoxOf(PdfObjectIndex index, PdfPageObject page);
+```
+
+**`/MediaBox` inheritance is why this is a new file rather than a method on
+`PdfObjectReader`.** Resolving it means following `/Parent` up to the `/Pages`
+node, which is not a page dictionary — and `PdfObjectReader`'s own
+documentation says a caller needing more than page dictionaries should
+reconsider scope rather than grow that file. This is the second time that guard
+has been honoured with a sibling instead of a violation; the first was
+`PdfAnnotationReader` in SP-3c.
+
+It reads through `PdfObjectIndex`, which already resolves any object number.
+
+Falls back to US Letter (612 × 792) if no `/MediaBox` is found anywhere, rather
+than throwing: a document that malformed will still render, and a watermark
+placed on a guessed page size is better than a refused save.
+
 ### `lib/domain/annotations/pdf_object_reader.dart` — modify
 
-Gains `String? mediaBoxOf(PdfPageObject page)` resolving `/MediaBox` with
-inheritance, and `String withContentsAndResources(PdfPageObject page, {required int contentObjectNumber, required int fontObjectNumber, required int extGStateObjectNumber})`.
+Gains `String withContentsAndResources(PdfPageObject page, {required int contentObjectNumber, required int fontObjectNumber, required int extGStateObjectNumber})`.
 
-This stays within its page-dictionary mandate: it reads and re-emits page
-dictionaries, which is exactly what it already does for `/Annots`.
+This *is* within its mandate — re-emitting a page dictionary with added entries
+is exactly what `withAnnots` already does — but its doc comment currently says
+"with an added `/Annots`, and does nothing else". The comment is updated to
+name both, so the file's stated scope matches what it does.
 
 ### `lib/domain/repositories/watermark_repository.dart` and impl — new
 
@@ -184,6 +206,7 @@ Unit:
 - `/Contents` in all three forms;
 - `/Resources` merging preserves an existing `/Font` entry;
 - `/MediaBox` inherited from `/Pages` is found;
+- a document with no `/MediaBox` anywhere falls back rather than throwing;
 - a cross-reference-stream document is refused.
 
 Integration, all verified by rendering:
