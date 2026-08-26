@@ -17,10 +17,12 @@ import 'package:folio/engine/pdfrx_page_editor.dart';
 import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/pages/providers.dart';
 import 'package:folio/data/repositories/signature_repository_impl.dart';
+import 'package:folio/data/repositories/protection_repository_impl.dart';
 import 'package:folio/data/repositories/watermark_repository_impl.dart';
 import 'package:folio/features/viewer/annotation_edit_providers.dart';
 import 'package:folio/features/viewer/annotation_providers.dart';
 import 'package:folio/features/viewer/signature_providers.dart';
+import 'package:folio/features/viewer/protection_providers.dart';
 import 'package:folio/features/viewer/watermark_providers.dart';
 import 'package:pdfrx/pdfrx.dart';
 
@@ -48,6 +50,10 @@ Future<void> main() async {
     documents: documentWriter,
   );
   final signatures = SignatureRepositoryImpl(dao: SignatureDao(db));
+  final protection = ProtectionRepositoryImpl(
+    library: library,
+    documents: documentWriter,
+  );
   final watermarks = WatermarkRepositoryImpl(
     library: library,
     documents: documentWriter,
@@ -79,6 +85,7 @@ Future<void> main() async {
         annotationEditRepositoryProvider.overrideWithValue(annotationEdits),
         signatureRepositoryProvider.overrideWithValue(signatures),
         watermarkRepositoryProvider.overrideWithValue(watermarks),
+        protectionRepositoryProvider.overrideWithValue(protection),
       ],
       child: const FolioApp(),
     ),
