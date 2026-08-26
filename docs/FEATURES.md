@@ -120,11 +120,27 @@ Editing a document Folio created updates it in place, so fixing one colour
 three times leaves one document rather than four. Editing an imported document
 produces a new one and leaves the imported copy byte-identical.
 
+## SP-3d — Signatures
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Draw and save a signature | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Several signatures, labelled | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Place by dragging a box | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Rename and delete signatures | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Draw a signature once and reuse it. Placement fits it inside the box you drag,
+preserving its aspect ratio — a stretched signature looks forged.
+
+A placed signature is a normal `/Ink` annotation, so it can be deleted or
+restyled like anything else, and it renders in any viewer that reads
+annotations. It is vector, so it stays sharp at any zoom.
+
 ## Not built yet
 
-Sticky notes, stamps, signatures, moving or resizing annotations, scanner, OCR,
+Sticky notes, stamps, photographed signatures, moving or resizing annotations, scanner, OCR,
 compression, encryption authoring, redaction, watermarks, metadata editing,
 batch processing, automation rules, and printing are all ❌.
 
-Freehand ink and shapes shipped in SP-3b; editing and deleting saved
-annotations shipped in SP-3c.
+Freehand ink and shapes shipped in SP-3b, editing and deleting saved
+annotations in SP-3c, and drawn signatures in SP-3d.
