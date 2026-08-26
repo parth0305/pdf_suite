@@ -10,6 +10,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'annotation_edit_flow_test.dart' as annotation_edit_flow;
 import 'drawing_flow_test.dart' as drawing_flow;
 import 'library_flow_test.dart' as library_flow;
 import 'markup_flow_test.dart' as markup_flow;
@@ -32,4 +33,5 @@ void main() {
   group('pages_mode', pages_mode.main);
   group('markup_flow', markup_flow.main);
   group('drawing_flow', drawing_flow.main);
+  group('annotation_edit_flow', annotation_edit_flow.main);
 }

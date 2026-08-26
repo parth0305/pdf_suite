@@ -179,4 +179,37 @@ void main() {
       );
     });
   });
+
+  group('metadata', () {
+    // The newest trailer wins. One that omits /Info discards the document's
+    // title and author - the same silent loss SP-2b fixed for page operations.
+    test('an existing /Info reference is carried into the new trailer', () {
+      final withInfo = Uint8List.fromList(
+        latin1.encode(
+          latin1
+              .decode(annotated())
+              .replaceFirst(
+                '<< /Size 9 /Root 1 0 R >>',
+                '<< /Size 9 /Root 1 0 R /Info 4 0 R >>',
+              ),
+        ),
+      );
+
+      final text = latin1.decode(
+        applyAnnotationEdits(withInfo, deleted: {7}, restyled: const {}),
+      );
+
+      final trailers = RegExp(
+        r'trailer\s*(<<[^>]*(?:>[^>]*)*?>>)',
+      ).allMatches(text).toList();
+      expect(trailers.last.group(1), contains('/Info 4 0 R'));
+    });
+
+    test('a document with no /Info gains none', () {
+      final text = latin1.decode(
+        applyAnnotationEdits(annotated(), deleted: {7}, restyled: const {}),
+      );
+      expect(text, isNot(contains('/Info')));
+    });
+  });
 }

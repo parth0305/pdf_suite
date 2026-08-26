@@ -15,7 +15,6 @@ import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/features/viewer/annotation_providers.dart';
 import 'package:folio/features/viewer/annotation_edit_providers.dart';
 import 'package:folio/features/viewer/widgets/annotation_edit_toolbar.dart';
-import 'package:folio/features/viewer/widgets/annotation_list_panel.dart';
 import 'package:folio/features/viewer/widgets/annotation_selection_overlay.dart';
 import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/drawing_toolbar.dart';

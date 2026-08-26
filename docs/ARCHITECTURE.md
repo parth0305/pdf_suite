@@ -85,6 +85,42 @@ Both kinds share one `AnnotationSession`, and therefore one undo stack and one
 Save. Two parallel sessions would have given the user two undo stacks and
 produced two documents from a single editing sitting.
 
+## One object index, two narrow readers
+
+`PdfObjectIndex` maps an object number to its latest dictionary. It owns the
+two mechanics any object lookup needs: dictionaries matched by brace balance,
+and **the last definition of an object number wins**, which is what a reader
+walking the trailer chain backwards sees.
+
+That second rule is not a detail. Reading a superseded page dictionary merges
+into a stale `/Annots` and orphans every annotation saved before it — a
+data-loss bug that shipped in SP-3a and was found only when a spike compared
+rendered pixels rather than bytes.
+
+`PdfObjectReader` still handles page dictionaries and nothing else;
+`PdfAnnotationReader` resolves `/Annots` references through the same index.
+Two bounded readers, rather than one file growing toward a PDF parser.
+
+## An edit may never move what it did not compute
+
+Restyling copies every geometry key out of the source dictionary as a raw
+substring. Only `/C`, `/BS` and `/AP` are rewritten.
+
+`pdfNumber` formats to two decimals, so re-emitting geometry from parsed
+doubles would shift an annotation by up to 0.005pt — invisible in review,
+invisible in every byte assertion, and permanent. A mutation test enforces it.
+
+The appearance stream is regenerated from parsed values, which is fine: an
+appearance is derived, and the error is orders of magnitude below visibility.
+
+## In-place editing repoints a row; it does not overwrite a file
+
+Managed files are content-addressed, so editing a document's bytes changes
+where it lives. Rewriting in place means writing the new file, repointing the
+library row, and deleting the old file **only when no other row references
+it** — identical documents are stored once, so deleting on one document's
+behalf would break every other document sharing it.
+
 ## Screen coordinates are converted at one tested boundary
 
 A drawing is captured in canvas pixels and must be written in PDF user space,

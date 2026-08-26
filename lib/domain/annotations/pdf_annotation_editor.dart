@@ -63,6 +63,13 @@ Uint8List applyAnnotationEdits(
     );
   }
 
+  // The newest trailer wins, so one that omits /Info silently discards the
+  // document's title and author. Carry the existing reference forward.
+  final info = RegExp(r'/Info\s+(\d+)\s+(\d+)\s+R').allMatches(text);
+  final infoEntry = info.isEmpty
+      ? ''
+      : ' /Info ${info.last.group(1)} ${info.last.group(2)} R';
+
   final saved = PdfAnnotationReader.parse(text);
   final prevOffset = int.parse(startxref.group(1)!);
   final root = roots.last;
@@ -142,8 +149,8 @@ Uint8List applyAnnotationEdits(
   }
   buffer.writeln('trailer');
   buffer.writeln(
-    '<< /Size $nextObj /Root ${root.group(1)} ${root.group(2)} R '
-    '/Prev $prevOffset >>',
+    '<< /Size $nextObj /Root ${root.group(1)} ${root.group(2)} R'
+    '$infoEntry /Prev $prevOffset >>',
   );
   buffer.writeln('startxref');
   buffer.writeln('$xrefOffset');
