@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
 
 String pdfWith(String pageDict) =>
@@ -135,6 +136,90 @@ void main() {
           '4 0 obj\n<< /Type /XRef /Size 5 /W [1 2 1] >>\nstream\n\nendstream\nendobj\n'
           'startxref\n9\n%%EOF\n';
       expect(PdfObjectReader.parse(xrefStreamPdf).usesXrefStream, isTrue);
+    });
+  });
+
+  group('incremental updates', () {
+    // A document annotated once, then annotated again. The original page
+    // dictionary comes FIRST in the file and the override carrying /Annots is
+    // appended after it. Reading the original means merging into an empty
+    // /Annots, which orphans the first annotation - it stays in the file but
+    // stops rendering. That is silent data loss.
+    const annotatedTwice =
+        '%PDF-1.4\n'
+        '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n'
+        '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n'
+        '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] >>\n'
+        'endobj\n'
+        'xref\n0 4\n0000000000 65535 f \n'
+        'trailer\n<< /Size 4 /Root 1 0 R >>\n'
+        'startxref\n9\n%%EOF\n'
+        // --- incremental update: page 3 now carries an annotation ---
+        '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] '
+        '/Annots [7 0 R] >>\nendobj\n'
+        'xref\n3 1\n0000000200 00000 n \n'
+        'trailer\n<< /Size 8 /Root 1 0 R /Prev 9 >>\n'
+        'startxref\n300\n%%EOF\n';
+
+    test('the LAST definition of a page object wins', () {
+      final page = PdfObjectReader.parse(annotatedTwice).pageAt(0)!;
+
+      expect(
+        page.existingAnnotRefs,
+        ['7 0 R'],
+        reason:
+            'reading the superseded dictionary orphans the first annotation',
+      );
+    });
+
+    test('an override does not add a phantom extra page', () {
+      final reader = PdfObjectReader.parse(annotatedTwice);
+
+      expect(reader.pageAt(0), isNotNull);
+      expect(
+        reader.pageAt(1),
+        isNull,
+        reason: 'one page defined twice is still one page',
+      );
+    });
+
+    test('merging preserves the earlier annotation', () {
+      final reader = PdfObjectReader.parse(annotatedTwice);
+      final merged = reader.withAnnots(reader.pageAt(0)!, ['9 0 R']);
+
+      expect(merged, contains('7 0 R'));
+      expect(merged, contains('9 0 R'));
+    });
+  });
+
+  group('annotation arrays this reader cannot safely merge', () {
+    // Other producers commonly write /Annots as an indirect reference. Our
+    // merge emits an inline array, which would REPLACE that reference and
+    // orphan every annotation the other tool wrote. Refusing is the only safe
+    // answer until the reader can resolve indirect arrays.
+    test('an indirect /Annots is refused, not silently replaced', () {
+      const indirect =
+          '%PDF-1.4\n'
+          '3 0 obj\n<< /Type /Page /Parent 2 0 R /Annots 9 0 R >>\nendobj\n'
+          '9 0 obj\n[7 0 R 8 0 R]\nendobj\n'
+          'trailer\n<< /Size 10 /Root 1 0 R >>\nstartxref\n9\n%%EOF\n';
+
+      expect(
+        () => PdfObjectReader.parse(indirect),
+        throwsA(isA<UnsupportedPdfStructure>()),
+      );
+    });
+
+    test('a page with no /Annots at all is still fine', () {
+      const plain =
+          '%PDF-1.4\n'
+          '3 0 obj\n<< /Type /Page /Parent 2 0 R >>\nendobj\n'
+          'trailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n9\n%%EOF\n';
+
+      expect(
+        PdfObjectReader.parse(plain).pageAt(0)!.existingAnnotRefs,
+        isEmpty,
+      );
     });
   });
 }

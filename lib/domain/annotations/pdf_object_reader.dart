@@ -1,3 +1,5 @@
+import 'package:folio/core/errors/app_failure.dart';
+
 /// A page object located in a PDF's text.
 class PdfPageObject {
   const PdfPageObject({
@@ -18,6 +20,11 @@ class PdfPageObject {
 /// A deliberately minimal PDF reader: it finds page dictionaries and re-emits
 /// them with an added `/Annots`, and does nothing else.
 ///
+/// It honours incremental updates: when an object number is defined more than
+/// once, the LAST definition wins, which is what a reader walking the trailer
+/// chain backwards would see. Reading a superseded dictionary would merge into
+/// a stale `/Annots` and orphan every annotation saved before it.
+///
 /// This is not a general PDF parser and must not become one. If a caller needs
 /// more than page dictionaries, that is a signal to reconsider scope rather
 /// than to grow this file.
@@ -31,7 +38,10 @@ class PdfObjectReader {
   final bool usesXrefStream;
 
   static PdfObjectReader parse(String pdfText) {
-    final pages = <PdfPageObject>[];
+    // Object number -> its latest dictionary, plus the order object numbers
+    // first appear, so page order survives the de-duplication.
+    final latest = <int, String>{};
+    final order = <int>[];
 
     // Dictionaries are matched by brace balance rather than a regex, so nested
     // << >> cannot terminate one early - the spike's regex broke on exactly
@@ -46,14 +56,19 @@ class PdfObjectReader {
       // /Type /Page but not /Pages: the next character must not be a letter.
       if (!RegExp(r'/Type\s*/Page(?![a-zA-Z])').hasMatch(dict)) continue;
 
-      pages.add(
-        PdfPageObject(
-          objectNumber: int.parse(start.group(1)!),
-          rawDictionary: dict,
-          existingAnnotRefs: _readAnnotRefs(dict),
-        ),
-      );
+      final number = int.parse(start.group(1)!);
+      if (!latest.containsKey(number)) order.add(number);
+      latest[number] = dict;
     }
+
+    final pages = [
+      for (final number in order)
+        PdfPageObject(
+          objectNumber: number,
+          rawDictionary: latest[number]!,
+          existingAnnotRefs: _readAnnotRefs(latest[number]!),
+        ),
+    ];
 
     return PdfObjectReader._(pages, RegExp(r'/Type\s*/XRef').hasMatch(pdfText));
   }
@@ -76,7 +91,17 @@ class PdfObjectReader {
 
   static List<String> _readAnnotRefs(String dict) {
     final match = RegExp(r'/Annots\s*\[([^\]]*)\]').firstMatch(dict);
-    if (match == null) return const [];
+    if (match == null) {
+      // `/Annots 9 0 R` - the array lives in its own object. Merging emits an
+      // inline array, which would REPLACE that reference and orphan every
+      // annotation it holds. Refuse rather than destroy another tool's work.
+      if (RegExp(r'/Annots\s+\d+\s+\d+\s+R').hasMatch(dict)) {
+        throw const UnsupportedPdfStructure(
+          technicalDetail: '/Annots is an indirect reference',
+        );
+      }
+      return const [];
+    }
     return RegExp(r'\d+\s+\d+\s+R')
         .allMatches(match.group(1)!)
         .map((m) => m.group(0)!.replaceAll(RegExp(r'\s+'), ' '))

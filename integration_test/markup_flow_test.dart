@@ -63,6 +63,20 @@ void main() {
       .convert(await File(await library.resolveReadablePath(d)).readAsBytes())
       .toString();
 
+  Future<List<int>> pixelsOf(LibraryDocument d) async {
+    final h = await engine.open(
+      FileSource(await library.resolveReadablePath(d)),
+    );
+    final px = (await engine.renderPage(
+      h,
+      0,
+      targetWidthPx: 400,
+      targetHeightPx: 566,
+    )).bgraPixels;
+    await engine.close(h);
+    return px;
+  }
+
   /// Quads over real text, taken from the engine's own char rects.
   Future<List<TextRect>> quadsOver(LibraryDocument doc, String needle) async {
     final handle = await engine.open(
@@ -222,9 +236,13 @@ void main() {
       expect(meta?.title, 'FOLIO-PROBE-TITLE');
     });
 
-    test('marking up twice keeps both annotations', () async {
+    // Asserting the objects are PRESENT is not enough: an annotation can sit
+    // in the file and never render because nothing references it. That is how
+    // an orphaning bug shipped. Compare rendered pixels instead.
+    test('marking up twice keeps both annotations rendering', () async {
       final src = await seed('sample_3page.pdf', 'Contract.pdf');
       final quads = await quadsOver(src, 'Confidential');
+      final base = await pixelsOf(src);
 
       final once = await annotations.saveAnnotations(
         sourceDocumentId: src.id,
@@ -232,11 +250,20 @@ void main() {
           TextMarkup(kind: MarkupKind.highlight, pageIndex: 0, quads: quads),
         ],
       );
+      final onceChanged = _diff(base, await pixelsOf(once));
+
       final twice = await annotations.saveAnnotations(
         sourceDocumentId: once.id,
         annotations: [
           TextMarkup(kind: MarkupKind.underline, pageIndex: 0, quads: quads),
         ],
+      );
+      final twiceChanged = _diff(base, await pixelsOf(twice));
+
+      expect(
+        twiceChanged,
+        greaterThanOrEqualTo(onceChanged),
+        reason: 'the highlight must still render after the underline is added',
       );
 
       final text = await File(
@@ -277,4 +304,12 @@ void main() {
       );
     });
   });
+}
+
+int _diff(List<int> a, List<int> b) {
+  var n = 0;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) n++;
+  }
+  return n;
 }
