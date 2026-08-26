@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -255,11 +256,14 @@ void main() {
     });
 
     test('a stamp is written with an appearance stream', () {
-      final text = latin1.decode(writeAnnotations(classicPdf(), [approved]));
+      final out = writeAnnotations(classicPdf(), [approved]);
+      final text = latin1.decode(out);
 
       expect(text, contains('/Subtype /Stamp'));
       expect(text, contains('/AP'));
-      expect(text, contains('(APPROVED) Tj'));
+      // Streams are compressed when that helps, so the label is not visible
+      // in the raw bytes. Inflate before looking for it.
+      expect(inflatedStreams(out).join('\n'), contains('(APPROVED) Tj'));
     });
 
     test('a stamp names its preset', () {
@@ -301,4 +305,28 @@ void main() {
       expect(RegExp(r'3 0 obj').allMatches(text).length, 2);
     });
   });
+}
+
+/// Every stream in [pdf], inflated when it declares /FlateDecode.
+///
+/// Folio compresses its own streams when that makes them smaller, so a
+/// byte-level assertion on stream content has to decompress first rather than
+/// be weakened to something that no longer checks what it meant to.
+List<String> inflatedStreams(Uint8List pdf) {
+  final text = latin1.decode(pdf, allowInvalid: true);
+  final streams = <String>[];
+
+  for (final m in RegExp(
+    r'/Length\s+(\d+)([^>]*)>>\s*stream\r?\n',
+    dotAll: true,
+  ).allMatches(text)) {
+    final length = int.parse(m.group(1)!);
+    final data = pdf.sublist(m.end, m.end + length);
+    streams.add(
+      m.group(2)!.contains('/FlateDecode')
+          ? latin1.decode(ZLibCodec().decode(data))
+          : latin1.decode(data),
+    );
+  }
+  return streams;
 }

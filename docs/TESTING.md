@@ -68,6 +68,21 @@ nothing. Waiting for the page indicator — which only appears once the page
 count is known — is what made it deterministic. The Android suite went from 22
 minutes to 1:39.
 
+**And the page indicator is not always late enough.** The viewer's search
+button waits for the *searcher*, which arrives after the page count. Waiting
+for the indicator got the document loaded but still tapped a disabled button.
+`pumpUntilEnabled` waits for the `IconButton` wrapping a given icon to have a
+non-null `onPressed` — tappability, not presence. Use it whenever a test taps a
+toolbar button whose enablement depends on async work.
+
+**When the bound fires, suspect the machine before the bound.** A long session
+degraded the emulator to the point where opening a 1,539-byte PDF took 31,256
+ms; the same load takes about 50 ms fresh. `pumpUntilFound` timed out and the
+run took over twelve minutes. Cold-restarting the emulator brought the whole
+suite back to 53 seconds with zero failures and page loads of 124–241 ms. Do
+not raise a pathology bound to accommodate a sick machine — that is exactly the
+signal it exists to give.
+
 ## The runner's own timeout is a benchmark too
 
 Integration suites carry `@Timeout(Duration(minutes: 5))`. The runner's default

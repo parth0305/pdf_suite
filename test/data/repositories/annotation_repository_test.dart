@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/native.dart';
@@ -88,9 +89,10 @@ void main() {
       annotations: [markup()],
     );
 
-    final text = await File(
-      await library.resolveReadablePath(out),
-    ).readAsString();
+    final text = latin1.decode(
+      await File(await library.resolveReadablePath(out)).readAsBytes(),
+      allowInvalid: true,
+    );
     expect(text, contains('/Subtype /Highlight'));
   });
 

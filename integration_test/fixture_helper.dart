@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:io';
 
@@ -86,4 +87,32 @@ Future<void> pumpUntilFound(
     if (finder.evaluate().isNotEmpty) return;
   }
   throw StateError('timed out waiting for a widget to appear');
+}
+
+/// Pumps until the `IconButton` wrapping [icon] is actually tappable.
+///
+/// `find.byIcon` matches a DISABLED button just as happily as an enabled one,
+/// so waiting for the icon to exist proves nothing: the tap lands on a button
+/// whose onPressed is null and silently does nothing. A toolbar button can
+/// stay disabled long after the page count arrives - the viewer's search
+/// button waits for the searcher, not the document.
+Future<void> pumpUntilEnabled(
+  WidgetTester tester,
+  IconData icon, {
+  Duration timeout = const Duration(seconds: 30),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  final buttons = find.ancestor(
+    of: find.byIcon(icon),
+    matching: find.byType(IconButton),
+  );
+
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    if (buttons.evaluate().isNotEmpty &&
+        tester.widget<IconButton>(buttons.first).onPressed != null) {
+      return;
+    }
+  }
+  throw StateError('timed out waiting for a button to become enabled');
 }
