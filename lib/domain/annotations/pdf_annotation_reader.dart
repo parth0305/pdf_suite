@@ -162,13 +162,22 @@ class PdfAnnotationReader {
 
     switch (subtype) {
       case 'Ink':
-        final flat = _numbersIn(dict, 'InkList');
-        if (flat.length < 4) return null;
-        kind = DrawingKind.ink;
-        points = [
-          for (var i = 0; i + 1 < flat.length; i += 2)
-            PdfPoint(flat[i], flat[i + 1]),
-        ];
+        final groups = _subArraysIn(dict, 'InkList');
+        final built = [
+          for (final flat in groups)
+            [
+              for (var i = 0; i + 1 < flat.length; i += 2)
+                PdfPoint(flat[i], flat[i + 1]),
+            ],
+        ].where((s) => s.length >= 2).toList();
+        if (built.isEmpty) return null;
+        return DrawingAnnotation(
+          kind: DrawingKind.ink,
+          pageIndex: pageIndex,
+          strokes: built,
+          colorArgb: colorArgb,
+          strokeWidth: strokeWidth,
+        );
       case 'Square':
         kind = DrawingKind.rectangle;
         points = [
@@ -194,10 +203,48 @@ class PdfAnnotationReader {
     return DrawingAnnotation(
       kind: kind,
       pageIndex: pageIndex,
-      points: points,
+      strokes: [points],
       colorArgb: colorArgb,
       strokeWidth: strokeWidth,
     );
+  }
+
+  /// The bracketed sub-arrays of [key], each as its own number list.
+  ///
+  /// /InkList is an array of stroke arrays. Flattening it joins the strokes,
+  /// so a regenerated appearance draws a line through every gap.
+  static List<List<double>> _subArraysIn(String dict, String key) {
+    final open = dict.indexOf('/$key');
+    if (open < 0) return const [];
+    final start = dict.indexOf('[', open);
+    if (start < 0) return const [];
+
+    var depth = 0;
+    var end = -1;
+    for (var i = start; i < dict.length; i++) {
+      if (dict[i] == '[') depth++;
+      if (dict[i] == ']') {
+        depth--;
+        if (depth == 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    if (end < 0) return const [];
+
+    final inner = dict.substring(start + 1, end);
+    final groups = RegExp(r'\[([^\]]*)\]').allMatches(inner).toList();
+    final source = groups.isEmpty
+        ? [inner]
+        : groups.map((m) => m.group(1)!).toList();
+
+    return [
+      for (final g in source)
+        RegExp(
+          r'-?\d+(?:\.\d+)?',
+        ).allMatches(g).map((m) => double.parse(m.group(0)!)).toList(),
+    ];
   }
 
   /// Every number inside the bracketed value of [key], nesting flattened.

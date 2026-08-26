@@ -117,7 +117,7 @@ class AnnotationController extends Notifier<AnnotationState> {
       DrawingAnnotation(
         kind: tool,
         pageIndex: pageIndex,
-        points: tool == DrawingKind.ink ? thinSamples(pdfPoints) : pdfPoints,
+        strokes: [tool == DrawingKind.ink ? thinSamples(pdfPoints) : pdfPoints],
         colorArgb: colorArgb,
         strokeWidth: strokeWidth,
       ),

@@ -144,7 +144,7 @@ String _annotationDict(Annotation annotation, int apNum) {
 
       final geometry = switch (annotation.kind) {
         DrawingKind.ink =>
-          ' /InkList [[${annotation.points.map((p) => '${pdfNumber(p.x)} ${pdfNumber(p.y)}').join(' ')}]]',
+          ' /InkList [${annotation.strokes.map((stroke) => '[${stroke.map((p) => '${pdfNumber(p.x)} ${pdfNumber(p.y)}').join(' ')}]').join(' ')}]',
         DrawingKind.line =>
           ' /L [${pdfNumber(annotation.points.first.x)} '
               '${pdfNumber(annotation.points.first.y)} '

@@ -103,7 +103,9 @@ void main() {
           const DrawingAnnotation(
             kind: DrawingKind.ink,
             pageIndex: 0,
-            points: [PdfPoint(0, 0), PdfPoint(10, 10)],
+            strokes: [
+              [PdfPoint(0, 0), PdfPoint(10, 10)],
+            ],
           ),
         );
 
@@ -119,7 +121,9 @@ void main() {
           const DrawingAnnotation(
             kind: DrawingKind.rectangle,
             pageIndex: 0,
-            points: [PdfPoint(0, 0), PdfPoint(10, 10)],
+            strokes: [
+              [PdfPoint(0, 0), PdfPoint(10, 10)],
+            ],
           ),
         );
 
@@ -138,7 +142,9 @@ void main() {
           const DrawingAnnotation(
             kind: DrawingKind.ink,
             pageIndex: 0,
-            points: [PdfPoint(0, 0), PdfPoint(1, 1)],
+            strokes: [
+              [PdfPoint(0, 0), PdfPoint(1, 1)],
+            ],
           ),
         )
         ..add(markup(page: 3));

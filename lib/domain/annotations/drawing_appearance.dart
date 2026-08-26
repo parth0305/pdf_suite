@@ -22,16 +22,20 @@ String drawingAppearanceStream(DrawingAnnotation drawing) {
 
   switch (drawing.kind) {
     case DrawingKind.ink:
-      if (drawing.points.length < 2) return buffer.toString();
-      final first = drawing.points.first;
-      buffer.writeln('${pdfNumber(first.x)} ${pdfNumber(first.y)} m');
-      for (final s in fitCurve(drawing.points)) {
-        buffer.writeln(
-          '${pdfNumber(s.control1.x)} ${pdfNumber(s.control1.y)} '
-          '${pdfNumber(s.control2.x)} ${pdfNumber(s.control2.y)} '
-          '${pdfNumber(s.end.x)} ${pdfNumber(s.end.y)} c',
-        );
+      for (final stroke in drawing.strokes) {
+        if (stroke.length < 2) continue;
+        final first = stroke.first;
+        buffer.writeln('${pdfNumber(first.x)} ${pdfNumber(first.y)} m');
+        for (final s in fitCurve(stroke)) {
+          buffer.writeln(
+            '${pdfNumber(s.control1.x)} ${pdfNumber(s.control1.y)} '
+            '${pdfNumber(s.control2.x)} ${pdfNumber(s.control2.y)} '
+            '${pdfNumber(s.end.x)} ${pdfNumber(s.end.y)} c',
+          );
+        }
       }
+      // One S strokes every subpath. A moveto starts a new subpath, so the
+      // gaps between strokes stay gaps.
       buffer.writeln('S');
 
     case DrawingKind.rectangle:

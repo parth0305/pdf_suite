@@ -7,7 +7,9 @@ DrawingAnnotation drawing(DrawingKind kind, [List<PdfPoint>? points]) =>
     DrawingAnnotation(
       kind: kind,
       pageIndex: 0,
-      points: points ?? const [PdfPoint(10, 20), PdfPoint(50, 80)],
+      strokes: [
+        points ?? const [PdfPoint(10, 20), PdfPoint(50, 80)],
+      ],
     );
 
 void main() {
@@ -83,7 +85,9 @@ void main() {
       const red = DrawingAnnotation(
         kind: DrawingKind.ink,
         pageIndex: 0,
-        points: [PdfPoint(0, 0), PdfPoint(1, 1)],
+        strokes: [
+          [PdfPoint(0, 0), PdfPoint(1, 1)],
+        ],
         colorArgb: 0xFFFF0000,
       );
       expect(red.pdfColour, '1 0 0');

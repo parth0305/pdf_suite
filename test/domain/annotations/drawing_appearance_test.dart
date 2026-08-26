@@ -7,7 +7,9 @@ DrawingAnnotation of(DrawingKind kind, [List<PdfPoint>? pts]) =>
     DrawingAnnotation(
       kind: kind,
       pageIndex: 0,
-      points: pts ?? const [PdfPoint(10, 20), PdfPoint(50, 80)],
+      strokes: [
+        pts ?? const [PdfPoint(10, 20), PdfPoint(50, 80)],
+      ],
       strokeWidth: 3,
     );
 
