@@ -168,12 +168,25 @@ cover. Sticky notes move but do not resize, because every viewer draws a
 `/Text` icon at a fixed size. A stamp can be moved even though it cannot be
 restyled: moving needs no understanding of what the annotation is.
 
+## SP-4a — Watermarks
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Text watermark on every page | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Size, colour, opacity, rotation | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+A watermark is **page content**, not an annotation — that is the difference
+between it and a stamp, which any viewer can delete. It applies to every page
+and produces a new document; your original is untouched as always.
+
+Drawn with the non-embedded standard-14 Helvetica, so no font data is shipped.
+
 ## Not built yet
 
-Photographed signatures, custom or date stamps, reshaping individual ink points, scanner, OCR,
+Photographed signatures, custom or date stamps, image watermarks, reshaping individual ink points, scanner, OCR,
 compression, encryption authoring, redaction, watermarks, metadata editing,
 batch processing, automation rules, and printing are all ❌.
 
 Freehand ink and shapes shipped in SP-3b, editing and deleting saved
 annotations in SP-3c, drawn signatures in SP-3d, notes and stamps in SP-3e,
-and moving and resizing in SP-3f.
+moving and resizing in SP-3f, and watermarks in SP-4a.

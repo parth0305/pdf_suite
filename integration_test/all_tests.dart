@@ -31,6 +31,7 @@ import 'signature_flow_test.dart' as signature_flow;
 import 'pdfrx_engine_test.dart' as pdfrx_engine;
 import 'platform_handles_test.dart' as platform_handles;
 import 'viewer_flow_test.dart' as viewer_flow;
+import 'watermark_flow_test.dart' as watermark_flow;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -48,4 +49,5 @@ void main() {
   group('signature_flow', signature_flow.main);
   group('notes_stamps_flow', notes_stamps_flow.main);
   group('move_resize_flow', move_resize_flow.main);
+  group('watermark_flow', watermark_flow.main);
 }

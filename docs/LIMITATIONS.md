@@ -56,6 +56,15 @@ markup, ink, squares, circles and lines. Any other subtype is delete-only,
 because regenerating an appearance for a subtype Folio does not model would
 change how another tool's annotation renders.
 
+Watermarks are **text only** and apply to **every page** — there is no image
+watermark and no page range. A watermark **cannot be removed** once applied,
+because it is page content rather than an annotation; removing it would mean
+rewriting content, which needs an object layer Folio does not have.
+
+A watermark drawn as text joins the page's text layer, so search and extraction
+find it on every page. That is how most PDF tools behave; avoiding it means
+drawing glyph outlines as paths.
+
 Stamps are a **fixed preset set** — Approved, Rejected, Draft, Confidential,
 Reviewed, Urgent. There are no custom stamps and no date stamps, and a saved
 stamp can be deleted but not restyled: Folio does not reconstruct one well
