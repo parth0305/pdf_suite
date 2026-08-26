@@ -56,6 +56,13 @@ markup, ink, squares, circles and lines. Any other subtype is delete-only,
 because regenerating an appearance for a subtype Folio does not model would
 change how another tool's annotation renders.
 
+A protected document has **one password**, which opens it. There is no separate
+owner password and no permission flags — printing, copying and editing are not
+restricted. Those are advisory in PDF anyway: any viewer may ignore them.
+
+Folio does not **remove** protection from a document, and cannot recover one
+whose password is lost.
+
 Watermarks are **text only** and apply to **every page** — there is no image
 watermark and no page range. A watermark **cannot be removed** once applied,
 because it is page content rather than an annotation; removing it would mean

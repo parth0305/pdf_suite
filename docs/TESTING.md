@@ -92,6 +92,15 @@ unit test caught it; the end-to-end one could not. A second assertion using
 `with_metadata.pdf`, which carries `/Title` and `/Author`, now fails on exactly
 that mutation. When choosing a fixture, ask what it makes observable.
 
+**Some properties resist mutation testing, and saying so beats pretending.**
+SP-5b guards two things about AES initialisation vectors: that `aesEncrypt`
+prepends the IV it is given, and that identical plaintexts inside one document
+produce different ciphertext. Neither could be made to fail by a mutation that
+fixes the IV, and no render assertion can ever see IV reuse - a repeated IV
+still decrypts correctly, so the document looks perfect. The tests are worth
+having; they are not proven guards, and this note exists so nobody later
+assumes they are.
+
 **When the bound fires, suspect the machine before the bound.** A long session
 degraded the emulator to the point where opening a 1,539-byte PDF took 31,256
 ms; the same load takes about 50 ms fresh. `pumpUntilFound` timed out and the

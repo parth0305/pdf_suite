@@ -270,5 +270,20 @@
       }
     }
   },
-  "watermarkEmpty": "A watermark needs some text."
+  "watermarkEmpty": "A watermark needs some text.",
+  "protectMode": "Protect with password",
+  "protectPassword": "Password",
+  "protectConfirm": "Confirm password",
+  "protectMismatch": "The passwords do not match.",
+  "protectEmpty": "A password is required.",
+  "protectApply": "Protect",
+  "protectWarning": "Keep this password safe. Folio cannot recover a protected document without it.",
+  "protectDone": "Protected {name}",
+  "@protectDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

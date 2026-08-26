@@ -590,4 +590,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get watermarkEmpty => 'A watermark needs some text.';
+
+  @override
+  String get protectMode => 'Protect with password';
+
+  @override
+  String get protectPassword => 'Password';
+
+  @override
+  String get protectConfirm => 'Confirm password';
+
+  @override
+  String get protectMismatch => 'The passwords do not match.';
+
+  @override
+  String get protectEmpty => 'A password is required.';
+
+  @override
+  String get protectApply => 'Protect';
+
+  @override
+  String get protectWarning =>
+      'Keep this password safe. Folio cannot recover a protected document without it.';
+
+  @override
+  String protectDone(String name) {
+    return 'Protected $name';
+  }
 }

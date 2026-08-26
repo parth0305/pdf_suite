@@ -1179,6 +1179,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A watermark needs some text.'**
   String get watermarkEmpty;
+
+  /// No description provided for @protectMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect with password'**
+  String get protectMode;
+
+  /// No description provided for @protectPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get protectPassword;
+
+  /// No description provided for @protectConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get protectConfirm;
+
+  /// No description provided for @protectMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The passwords do not match.'**
+  String get protectMismatch;
+
+  /// No description provided for @protectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'A password is required.'**
+  String get protectEmpty;
+
+  /// No description provided for @protectApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect'**
+  String get protectApply;
+
+  /// No description provided for @protectWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this password safe. Folio cannot recover a protected document without it.'**
+  String get protectWarning;
+
+  /// No description provided for @protectDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Protected {name}'**
+  String protectDone(String name);
 }
 
 class _AppLocalizationsDelegate

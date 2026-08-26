@@ -199,3 +199,76 @@ List<int> _fromHex(String hex) => [
   for (var i = 0; i + 1 < hex.length; i += 2)
     int.parse(hex.substring(i, i + 2), radix: 16),
 ];
+
+/// Encrypts every string and stream in an object body with AES, using the file
+/// key directly.
+///
+/// V5 has no per-object keys - that is revision 2's scheme, and applying it
+/// here produces a document nothing can open. Each value gets its own random
+/// initialisation vector.
+List<int> encryptObjectBodyAes(
+  List<int> body,
+  List<int> fileKey,
+  List<int> Function(int count) randomBytes,
+  List<int> Function(List<int> key, List<int> data, List<int> iv) encrypt,
+) {
+  final text = latin1.decode(body, allowInvalid: true);
+
+  final streamAt = text.indexOf('stream');
+  if (streamAt >= 0) {
+    var dataStart = streamAt + 'stream'.length;
+    if (text.startsWith('\r\n', dataStart)) {
+      dataStart += 2;
+    } else if (text.startsWith('\n', dataStart)) {
+      dataStart += 1;
+    }
+    final dataEnd = text.lastIndexOf('endstream');
+    if (dataEnd > dataStart) {
+      final cipher = encrypt(
+        fileKey,
+        body.sublist(dataStart, dataEnd),
+        randomBytes(16),
+      );
+      // /Length must describe the ciphertext, IV included.
+      final head = _aesStrings(
+        text.substring(0, streamAt),
+        fileKey,
+        randomBytes,
+        encrypt,
+      ).replaceAll(RegExp(r'/Length\s+\d+'), '/Length ${cipher.length}');
+
+      return <int>[
+        ...latin1.encode(head),
+        ...latin1.encode(text.substring(streamAt, dataStart)),
+        ...cipher,
+        ...latin1.encode(text.substring(dataEnd)),
+      ];
+    }
+  }
+
+  return latin1.encode(_aesStrings(text, fileKey, randomBytes, encrypt));
+}
+
+String _aesStrings(
+  String text,
+  List<int> fileKey,
+  List<int> Function(int) randomBytes,
+  List<int> Function(List<int>, List<int>, List<int>) encrypt,
+) {
+  var out = text.replaceAllMapped(RegExp(r'\(([^()]*)\)'), (m) {
+    final cipher = encrypt(
+      fileKey,
+      latin1.encode(m.group(1)!),
+      randomBytes(16),
+    );
+    // Hexadecimal, because ciphertext is binary and would need escaping.
+    return hexString(cipher);
+  });
+
+  out = out.replaceAllMapped(
+    RegExp(r'<([0-9A-Fa-f]+)>'),
+    (m) => hexString(encrypt(fileKey, _fromHex(m.group(1)!), randomBytes(16))),
+  );
+
+  return out;
+}

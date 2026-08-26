@@ -181,6 +181,18 @@ and produces a new document; your original is untouched as always.
 
 Drawn with the non-embedded standard-14 Helvetica, so no font data is shipped.
 
+## SP-5b — Password protection
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Protect a document with a password | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+AES-256, the PDF 2.0 standard security handler (revision 6). The protected
+document is a **new** document; your original stays as it was.
+
+Folio cannot recover a protected document without its password. There is no
+back door and no reset — that is what makes it protection.
+
 ## Not built yet
 
 **Behind the object layer** (each needs a full-file rewrite, which Folio does

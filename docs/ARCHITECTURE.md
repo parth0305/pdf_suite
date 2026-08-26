@@ -146,6 +146,25 @@ with no flip. The canvas-to-PDF flip happens once, at capture.
 
 Placement fits the signature inside the dragged box rather than filling it.
 
+## Encryption: two handlers, one reachable
+
+Folio implements both PDF standard security handlers it needs:
+
+| Handler | Cipher | Reachable |
+|---|---|---|
+| Revision 2 | RC4-40 | **No.** It is the reference the pipeline was proven against, and it is not protection worth offering. |
+| Revision 6 | AES-256 | Yes — "Protect with password". |
+
+They differ in a way that is easy to get wrong by analogy: revision 2 derives a
+**per-object key** from the file key and the object number, while revision 6
+uses the file key **directly** for every string and stream. Applying R2's
+scheme under V5 produces a document nothing can open — mutation-tested at
+7,308 pixels.
+
+A protected document carries no re-attached metadata. `PdfMetadata` appends an
+incremental update, and an unencrypted update sitting after an encrypted
+document would defeat the encryption.
+
 ## Two write models, and when each applies
 
 Folio writes documents two ways.

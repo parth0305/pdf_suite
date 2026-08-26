@@ -92,3 +92,8 @@ paid OCR or analytics SDK.
 - **License:** BSD-3-Clause (Flutter team)
 - **Source:** https://github.com/flutter/packages
 - **Copyleft obligations:** none
+
+## pointycastle
+
+MIT (Bouncy Castle). Provides AES-256 for PDF 2.0 encryption; the Dart SDK
+ships no AES implementation.

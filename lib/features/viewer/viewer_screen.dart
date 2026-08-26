@@ -20,8 +20,10 @@ import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
+import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/widgets/signature_sheet.dart';
 import 'package:folio/features/viewer/widgets/stamp_picker.dart';
+import 'package:folio/features/viewer/protection_providers.dart';
 import 'package:folio/features/viewer/watermark_providers.dart';
 import 'package:folio/features/viewer/widgets/tap_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/watermark_sheet.dart';
@@ -57,6 +59,7 @@ enum _AnnotateTool {
   note,
   stamp,
   watermark,
+  protect,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -340,6 +343,29 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (!mounted) return;
     ref.read(annotationSessionProvider.notifier).reset();
     setState(() => _mode = _ViewerMode.read);
+  }
+
+  Future<void> _protectDocument() async {
+    final l10n = AppLocalizations.of(context)!;
+    final password = await showProtectDialog(context);
+    if (password == null || !mounted) return;
+
+    try {
+      final protected = await ref
+          .read(protectionRepositoryProvider)
+          .protect(widget.document.id, password);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.protectDone(protected.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
   }
 
   Future<void> _applyWatermark() async {
@@ -1038,6 +1064,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.note => _enterNoteMode(),
             _AnnotateTool.stamp => _enterStampMode(),
             _AnnotateTool.watermark => _applyWatermark(),
+            _AnnotateTool.protect => _protectDocument(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -1069,6 +1096,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.approval_outlined),
                 title: Text(l10n.stampMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.protect,
+              child: ListTile(
+                leading: const Icon(Icons.lock_outline),
+                title: Text(l10n.protectMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
