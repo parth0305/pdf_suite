@@ -212,4 +212,87 @@ void main() {
       expect(text, isNot(contains('/Info')));
     });
   });
+
+  group('editing note text', () {
+    Uint8List withNote() => Uint8List.fromList(
+      latin1.encode(
+        '%PDF-1.4\n'
+        '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n'
+        '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n'
+        '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] '
+        '/Annots [7 0 R] >>\nendobj\n'
+        '7 0 obj\n<< /Type /Annot /Subtype /Text /Rect [100 680 120 700] '
+        '/Contents (Original text) /Name /Note /C [1 0.76 0.03] >>\nendobj\n'
+        'xref\n0 8\n0000000000 65535 f \n'
+        'trailer\n<< /Size 8 /Root 1 0 R >>\nstartxref\n9\n%%EOF\n',
+      ),
+    );
+
+    const corrected = AnnotationStyle(
+      colorArgb: 0xFFFFC107,
+      strokeWidth: 2,
+      contents: 'Corrected text',
+    );
+
+    String overrideOf(Uint8List out) => RegExp(
+      r'7 0 obj\s*(<<.*?>>)\s*endobj',
+      dotAll: true,
+    ).allMatches(latin1.decode(out)).last.group(1)!;
+
+    test('rewrites /Contents', () {
+      final o = overrideOf(
+        applyAnnotationEdits(
+          withNote(),
+          deleted: const {},
+          restyled: {7: corrected},
+        ),
+      );
+
+      expect(o, contains('(Corrected text)'));
+      expect(o, isNot(contains('(Original text)')));
+    });
+
+    test('leaves /Rect untouched', () {
+      final o = overrideOf(
+        applyAnnotationEdits(
+          withNote(),
+          deleted: const {},
+          restyled: {7: corrected},
+        ),
+      );
+
+      expect(o, contains('/Rect [100 680 120 700]'));
+    });
+
+    // A note has no appearance stream; adding one would disagree with the icon
+    // every viewer already draws.
+    test('emits no appearance stream for a note', () {
+      final text = latin1.decode(
+        applyAnnotationEdits(
+          withNote(),
+          deleted: const {},
+          restyled: {7: corrected},
+        ),
+      );
+
+      expect(text, isNot(contains('/Subtype /Form')));
+    });
+
+    // The session keeps one style per object. If contents were left out of
+    // equality, two different edits would compare equal and one would vanish.
+    test('two styles differing only in contents are not equal', () {
+      const a = AnnotationStyle(
+        colorArgb: 0xFF000000,
+        strokeWidth: 2,
+        contents: 'one',
+      );
+      const b = AnnotationStyle(
+        colorArgb: 0xFF000000,
+        strokeWidth: 2,
+        contents: 'two',
+      );
+
+      expect(a, isNot(b));
+    });
+  });
 }
