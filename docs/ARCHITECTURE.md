@@ -101,6 +101,28 @@ rendered pixels rather than bytes.
 `PdfAnnotationReader` resolves `/Annots` references through the same index.
 Two bounded readers, rather than one file growing toward a PDF parser.
 
+## Ink carries strokes, not points
+
+`/InkList` is defined as an array of stroke arrays. SP-3b only ever emitted one,
+so a drawing was a single polyline — a shape that cannot represent a signature
+without drawing lines through the gaps between pen strokes.
+
+Geometry is therefore `strokes: List<List<PdfPoint>>`, with `points` kept as
+`strokes.first` so the fourteen non-ink uses are untouched.
+
+This corrected a live defect: the reader flattened `/InkList`, so restyling a
+multi-stroke ink annotation from another tool regenerated its appearance with
+the strokes joined. `boundsPt` had the same blind spot and would have bounded
+only the first stroke, clipping the rest away via the `/BBox`.
+
+## Signatures are stored normalised, y-up
+
+A saved signature holds its strokes in a unit box with y increasing upward, the
+same orientation as PDF user space, so placement is a multiply and an offset
+with no flip. The canvas-to-PDF flip happens once, at capture.
+
+Placement fits the signature inside the dragged box rather than filling it.
+
 ## An edit may never move what it did not compute
 
 Restyling copies every geometry key out of the source dictionary as a raw

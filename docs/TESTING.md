@@ -36,13 +36,13 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-3c.
+Last measured on 2026-08-26, after SP-3d.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 457 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 74 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 73 passed, 2 skipped |
+| Unit (host) | 491 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 80 passed, 1 skipped |
+| Android emulator (API 35, x86_64) | 79 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
@@ -89,6 +89,17 @@ Real performance measurement needs a stable device and a dedicated run. Do not
 tighten these bounds to make them meaningful; move the measurement instead.
 
 ## Verifying a test actually tests something
+
+A worked example from SP-3d. The end-to-end assertion that a two-stroke
+signature leaves a gap between its strokes originally sampled a single pixel
+column at the midpoint. It passed — and it still passed when the strokes were
+deliberately joined, because the spurious joining line dipped below the
+appearance stream's `/BBox` and was clipped away.
+
+The fix was to make the instrument sensitive rather than to tune a threshold:
+the strokes now meet at mid-height, so a joining line crosses open space, and
+the assertion counts untouched columns across the whole gap. Measured on device,
+68 of 74 columns stay untouched when correct and 0 when joined.
 
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
