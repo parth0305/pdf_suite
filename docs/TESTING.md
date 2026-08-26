@@ -75,6 +75,15 @@ for the indicator got the document loaded but still tapped a disabled button.
 non-null `onPressed` — tappability, not presence. Use it whenever a test taps a
 toolbar button whose enablement depends on async work.
 
+**A mutation has to be OBSERVABLE to prove anything.** The object layer's
+round-trip test asserts zero pixels differ. The first mutation tried against it
+— dropping the last object — did not fail, which looked like a blind
+assertion. It was not: the last object is the Helvetica font, and PDFium
+substitutes standard-14 fonts, so removing it changes nothing on screen.
+Dropping the content streams instead fails at 7,308 pixels. When a mutation
+does not fire, establish whether the assertion is blind or the mutation is
+invisible before changing either.
+
 **When the bound fires, suspect the machine before the bound.** A long session
 degraded the emulator to the point where opening a 1,539-byte PDF took 31,256
 ms; the same load takes about 50 ms fresh. `pumpUntilFound` timed out and the
