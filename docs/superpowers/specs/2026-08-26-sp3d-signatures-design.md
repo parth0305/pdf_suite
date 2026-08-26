@@ -114,7 +114,13 @@ List<List<PdfPoint>> placeSignature(
 ### Changes to existing files
 
 - `drawing_annotation.dart` — `strokes` replaces `points` as the stored
-  geometry; `points` becomes `strokes.first`.
+  geometry; `points` becomes `strokes.first`. **`boundsPt` must span every
+  stroke**: it currently iterates `points`, which with multiple strokes would
+  bound only the first, giving a wrong `/Rect` and a `/BBox` that clips most of
+  the signature away.
+- `drawing_surface.dart` — the staged-drawing preview paints `points`; for ink
+  it must paint every stroke, or a placed signature previews as its first
+  stroke alone.
 - `drawing_appearance.dart` — one `m` … `c` … subpath per stroke, still a
   single `S`.
 - `pdf_annotation_writer.dart` — `/InkList` emits one array per stroke.
@@ -159,6 +165,7 @@ Unit:
   tall capture; a single-point stroke does not divide by zero.
 - `placeSignature`: fits inside the box; centred; aspect preserved for both a
   box wider than the signature and one taller; y-up is not flipped.
+- `boundsPt` spans every stroke, not just the first.
 - `/InkList` emits one array per stroke; the appearance stream contains N `m`
   operators for N strokes.
 - The reader preserves sub-paths — the SP-3c regression test.
@@ -172,7 +179,13 @@ Integration, all verified by rendering:
 - deleting a placed signature removes it entirely, not one stroke;
 - the source document stays byte-identical.
 
-Mutations: flatten strokes back into one path; drop aspect preservation.
+Mutations: flatten strokes back into one path; drop aspect preservation; bound
+only the first stroke.
+
+The 18 existing uses of `.points` across the codebase are why `points` survives
+as a getter: only the ink-specific sites — the writer's `/InkList`, the ink
+case of the appearance generator, the preview painter, and `boundsPt` — need to
+change at all.
 
 ## Definition of done
 
