@@ -36,13 +36,13 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-3f.
+Last measured on 2026-08-26, after SP-4a.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 556 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 94 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 93 passed, 2 skipped |
+| Unit (host) | 591 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 100 passed, 1 skipped |
+| Android emulator (API 35, x86_64) | 99 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
@@ -152,6 +152,13 @@ for the feature turned out to be wrong. The third reads the geometry back, and
 uses an **ink** annotation: a `/Square`'s geometry *is* its `/Rect`, so a
 rectangle fixture leaves the bug nowhere to live. Every version passed until
 the last one.
+
+**A fourth, from SP-4a: `contains` cannot count.** The assertion that a page's
+existing `/Resources` survive a merge checked that both the page's font and
+ours appear in the output. It passed against a writer that appended a **second**
+`/Resources` — the original is still in the string, so a contains-check sees it,
+while a PDF reader takes only one of the two. It now asserts there is exactly
+one `/Resources` and one `/Font`, and fails 2-against-1.
 
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:

@@ -253,5 +253,22 @@
   "stampDraft": "Draft",
   "stampConfidential": "Confidential",
   "stampReviewed": "Reviewed",
-  "stampUrgent": "Urgent"
+  "stampUrgent": "Urgent",
+  "watermarkMode": "Watermark",
+  "watermarkText": "Watermark text",
+  "watermarkHint": "DRAFT, CONFIDENTIAL…",
+  "watermarkSize": "Size",
+  "watermarkOpacity": "Opacity",
+  "watermarkDiagonal": "Diagonal",
+  "watermarkHorizontal": "Horizontal",
+  "watermarkApply": "Apply to every page",
+  "watermarkApplied": "Watermarked {name}",
+  "@watermarkApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watermarkEmpty": "A watermark needs some text."
 }

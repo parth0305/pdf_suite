@@ -1,5 +1,7 @@
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/pdf_object_index.dart';
+import 'package:folio/domain/watermark/watermark_content.dart'
+    show watermarkFontName, watermarkGStateName;
 
 /// A page object located in a PDF's text.
 class PdfPageObject {
@@ -19,7 +21,8 @@ class PdfPageObject {
 }
 
 /// A deliberately minimal PDF reader: it finds page dictionaries and re-emits
-/// them with an added `/Annots`, and does nothing else.
+/// them with an added `/Annots`, or with an added `/Contents` entry and merged
+/// `/Resources`, and does nothing else.
 ///
 /// It honours incremental updates: when an object number is defined more than
 /// once, the LAST definition wins, which is what a reader walking the trailer
@@ -96,5 +99,78 @@ class PdfObjectReader {
     }
 
     return dict.replaceFirst(RegExp(r'/Annots\s*\[[^\]]*\]'), annots);
+  }
+
+  /// Re-emits [page]'s dictionary with a watermark's content stream appended
+  /// to `/Contents` and its resources merged into `/Resources`.
+  ///
+  /// `/Contents` may be a single reference, an array, or absent, and all three
+  /// occur in real documents. `/Resources` is MERGED: replacing it strips the
+  /// fonts the page's own content depends on, and the page renders blank.
+  String withContentsAndResources(
+    PdfPageObject page, {
+    required int contentObjectNumber,
+    required int fontObjectNumber,
+    required int extGStateObjectNumber,
+  }) {
+    var body = page.rawDictionary;
+    body = body.substring(2, body.length - 2).trim();
+
+    final contents = RegExp(
+      r'/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)',
+    ).firstMatch(body);
+    final existing = contents == null
+        ? ''
+        : contents.group(1)!.startsWith('[')
+        ? contents.group(1)!.substring(1, contents.group(1)!.length - 1).trim()
+        : contents.group(1)!.trim();
+
+    final merged = existing.isEmpty
+        ? '/Contents [$contentObjectNumber 0 R]'
+        : '/Contents [$existing $contentObjectNumber 0 R]';
+
+    body = contents == null
+        ? '$body $merged'
+        : body.replaceRange(contents.start, contents.end, merged);
+
+    body = _withResources(body, fontObjectNumber, extGStateObjectNumber);
+    return '<< $body >>';
+  }
+
+  /// Merges the watermark's font and graphics state into `/Resources`,
+  /// preserving whatever is already there.
+  static String _withResources(String body, int fontNum, int gsNum) {
+    final font = '/$watermarkFontName $fontNum 0 R';
+    final gs = '/$watermarkGStateName $gsNum 0 R';
+
+    final resources = RegExp(r'/Resources\s*<<').firstMatch(body);
+    if (resources == null) {
+      return '$body /Resources << /Font << $font >> /ExtGState << $gs >> >>';
+    }
+
+    final open = body.indexOf('<<', resources.start + '/Resources'.length);
+    final close = PdfObjectIndex.matchingClose(body, open);
+    if (close < 0) {
+      return '$body /Resources << /Font << $font >> /ExtGState << $gs >> >>';
+    }
+
+    var inner = body.substring(open + 2, close).trim();
+    inner = _mergeSub(inner, 'Font', font);
+    inner = _mergeSub(inner, 'ExtGState', gs);
+
+    return body.replaceRange(open, close + 2, '<< $inner >>');
+  }
+
+  /// Adds [entry] to the named sub-dictionary, creating it if absent.
+  static String _mergeSub(String inner, String key, String entry) {
+    final match = RegExp('/$key\\s*<<').firstMatch(inner);
+    if (match == null) return '$inner /$key << $entry >>';
+
+    final open = inner.indexOf('<<', match.start + key.length);
+    final close = PdfObjectIndex.matchingClose(inner, open);
+    if (close < 0) return '$inner /$key << $entry >>';
+
+    final existing = inner.substring(open + 2, close).trim();
+    return inner.replaceRange(open, close + 2, '<< $existing $entry >>');
   }
 }

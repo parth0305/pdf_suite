@@ -1119,6 +1119,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Urgent'**
   String get stampUrgent;
+
+  /// No description provided for @watermarkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Watermark'**
+  String get watermarkMode;
+
+  /// No description provided for @watermarkText.
+  ///
+  /// In en, this message translates to:
+  /// **'Watermark text'**
+  String get watermarkText;
+
+  /// No description provided for @watermarkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'DRAFT, CONFIDENTIAL…'**
+  String get watermarkHint;
+
+  /// No description provided for @watermarkSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get watermarkSize;
+
+  /// No description provided for @watermarkOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Opacity'**
+  String get watermarkOpacity;
+
+  /// No description provided for @watermarkDiagonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagonal'**
+  String get watermarkDiagonal;
+
+  /// No description provided for @watermarkHorizontal.
+  ///
+  /// In en, this message translates to:
+  /// **'Horizontal'**
+  String get watermarkHorizontal;
+
+  /// No description provided for @watermarkApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to every page'**
+  String get watermarkApply;
+
+  /// No description provided for @watermarkApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Watermarked {name}'**
+  String watermarkApplied(String name);
+
+  /// No description provided for @watermarkEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'A watermark needs some text.'**
+  String get watermarkEmpty;
 }
 
 class _AppLocalizationsDelegate

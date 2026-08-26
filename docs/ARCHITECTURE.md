@@ -146,6 +146,36 @@ with no flip. The canvas-to-PDF flip happens once, at capture.
 
 Placement fits the signature inside the dragged box rather than filling it.
 
+## Writing page content, and what it costs
+
+SP-4a is the first slice that writes page **content** rather than annotations.
+It appends a content stream to each page's `/Contents` and overrides the page
+dictionary — proved on device at 3,075 pixels changed with the original bytes
+byte-identical.
+
+Three rules make it safe:
+
+- **The stream is `q`/`Q` balanced.** It runs after the page's own content, and
+  an unbalanced stream leaks graphics state into everything appended after it.
+- **`/Resources` is merged, never replaced.** Replacing strips the fonts the
+  page's own content depends on and the page renders blank. Asserting both
+  entries are merely *present* is not enough — a writer that appends a second
+  `/Resources` passes that check while a reader takes only one of them, so the
+  test asserts there is exactly one.
+- **`/MediaBox` is resolved through inheritance**, in a sibling file rather
+  than in `PdfObjectReader`: following `/Parent` means reading a node that is
+  not a page dictionary, which that reader's own documentation forbids.
+
+## Why compression and encryption are not here
+
+Both were probed alongside watermarks. Neither can be done by appending: an
+incremental update only ever *grows* a file, so compressing by appending is
+self-defeating, and encrypting a document means every string and stream in it
+must be encrypted. Both need a full-file rewrite, which is a separate decision.
+
+`dart:io`'s `ZLibCodec` is available with no dependency and PDFium accepts a
+stream we compressed, so Flate itself is not the obstacle — the write model is.
+
 ## Moving is a rect rewrite, and the appearance follows
 
 Probed on device: changing only `/Rect` moved a mark from columns 20..59 to
