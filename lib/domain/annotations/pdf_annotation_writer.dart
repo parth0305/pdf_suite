@@ -55,6 +55,27 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
     out.addAll(latin1.encode('$number 0 obj\n$body\nendobj\n'));
   }
 
+  /// Emits a stream object, compressed when that actually helps.
+  ///
+  /// The bytes are appended directly rather than spliced into a string:
+  /// deflate output is binary and would not survive latin1 round-tripping.
+  /// [dictWithoutLength] must not carry /Length or /Filter - both are derived
+  /// from the bytes actually written.
+  void emitStream(int number, String dictWithoutLength, String content) {
+    final body = pdfStreamBody(content);
+    offsets[number] = out.length;
+    out
+      ..addAll(
+        latin1.encode(
+          '$number 0 obj\n'
+          '$dictWithoutLength /Length ${body.bytes.length}${body.filter} >>\n'
+          'stream\n',
+        ),
+      )
+      ..addAll(body.bytes)
+      ..addAll(latin1.encode('\nendstream\nendobj\n'));
+  }
+
   // Group by page: each page is overridden once, however many annotations it
   // has.
   final byPage = <int, List<Annotation>>{};
@@ -108,7 +129,7 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
       if (appearance != null) {
         final (stream, dict) = appearance;
         apNum = nextObj++;
-        emit(apNum, '$dict\nstream\n${stream}endstream');
+        emitStream(apNum, _withoutLength(dict), stream);
       }
 
       final annotNum = nextObj++;
@@ -213,4 +234,14 @@ String _annotationDict(Annotation annotation, int? apNum) {
 String _colourOf(int argb) {
   String channel(int shift) => pdfNumber(((argb >> shift) & 0xFF) / 255);
   return '${channel(16)} ${channel(8)} ${channel(0)}';
+}
+
+/// Strips the trailing `>>` and any `/Length` from an appearance dictionary,
+/// so the stream emitter can derive both from the bytes it actually writes.
+String _withoutLength(String dict) {
+  var body = dict.trimRight();
+  if (body.endsWith('>>')) {
+    body = body.substring(0, body.length - 2).trimRight();
+  }
+  return body.replaceAll(RegExp(r'/Length\s+\d+'), '').trimRight();
 }

@@ -6,6 +6,7 @@
 @Timeout(Duration(minutes: 5))
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -274,9 +275,10 @@ void main() {
         reason: 'the highlight must still render after the underline is added',
       );
 
-      final text = await File(
-        await library.resolveReadablePath(twice),
-      ).readAsString();
+      final text = latin1.decode(
+        await File(await library.resolveReadablePath(twice)).readAsBytes(),
+        allowInvalid: true,
+      );
       expect(text, contains('/Subtype /Highlight'));
       expect(text, contains('/Subtype /Underline'));
 

@@ -60,7 +60,11 @@ void main() {
       );
 
       await tester.pumpWidget(harness(doc));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      // Wait for the page indicator, which only exists once the document
+      // has loaded. pumpAndSettle(Duration) is a pump INTERVAL, not a wait,
+      // and the toolbar buttons stay disabled until the page count arrives.
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
 
       expect(find.byType(PdfViewer), findsOneWidget);
       expect(find.text('1 of 3'), findsOneWidget);
@@ -75,7 +79,11 @@ void main() {
       expect(await repo.recents(), isEmpty);
 
       await tester.pumpWidget(harness(doc));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      // Wait for the page indicator, which only exists once the document
+      // has loaded. pumpAndSettle(Duration) is a pump INTERVAL, not a wait,
+      // and the toolbar buttons stay disabled until the page count arrives.
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
 
       expect(await repo.recents(), hasLength(1));
     });
@@ -106,8 +114,15 @@ void main() {
       );
 
       await tester.pumpWidget(harness(doc));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      // Wait for the page indicator, which only exists once the document
+      // has loaded. pumpAndSettle(Duration) is a pump INTERVAL, not a wait,
+      // and the toolbar buttons stay disabled until the page count arrives.
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
 
+      // The search button stays disabled until the searcher exists, which is
+      // later than the page count arriving.
+      await pumpUntilEnabled(tester, Icons.search);
       await tester.tap(find.byIcon(Icons.search));
       await tester.pumpAndSettle();
       expect(find.text('Search in document'), findsOneWidget);
@@ -126,7 +141,11 @@ void main() {
       );
 
       await tester.pumpWidget(harness(doc));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      // Wait for the page indicator, which only exists once the document
+      // has loaded. pumpAndSettle(Duration) is a pump INTERVAL, not a wait,
+      // and the toolbar buttons stay disabled until the page count arrives.
+      await pumpUntilFound(tester, find.text('1 of 3'));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.fullscreen));
       await tester.pumpAndSettle();

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -71,9 +72,10 @@ void main() {
       bytes: bytes('%PDF-1.4 one edited'),
     );
 
-    final onDisk = await File(
-      await library.resolveReadablePath(updated),
-    ).readAsString();
+    final onDisk = latin1.decode(
+      await File(await library.resolveReadablePath(updated)).readAsBytes(),
+      allowInvalid: true,
+    );
     expect(onDisk, '%PDF-1.4 one edited');
   });
 
@@ -110,7 +112,10 @@ void main() {
 
     expect(File(shared).existsSync(), isTrue);
     expect(
-      await File(await library.resolveReadablePath(second)).readAsString(),
+      latin1.decode(
+        await File(await library.resolveReadablePath(second)).readAsBytes(),
+        allowInvalid: true,
+      ),
       '%PDF-1.4 same',
     );
   });

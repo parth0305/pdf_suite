@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:folio/domain/annotations/annotation.dart';
 
 /// Content stream for a markup annotation's appearance.
@@ -82,4 +85,21 @@ String pdfString(String text) {
       .replaceAll('(', r'\(')
       .replaceAll(')', r'\)');
   return '($escaped)';
+}
+
+/// A stream's bytes and the dictionary entries describing them.
+///
+/// Compressed ONLY when compression actually helps. Deflate has overhead, so a
+/// forty-byte appearance stream comes out bigger - compressing unconditionally
+/// would make Folio's output larger, which is the opposite of the point.
+///
+/// zlib comes from dart:io, so this costs no dependency.
+({List<int> bytes, String filter}) pdfStreamBody(String content) {
+  final raw = latin1.encode(content);
+  if (raw.isEmpty) return (bytes: raw, filter: '');
+
+  final deflated = ZLibCodec(level: 9).encode(raw);
+  if (deflated.length >= raw.length) return (bytes: raw, filter: '');
+
+  return (bytes: deflated, filter: ' /Filter /FlateDecode');
 }

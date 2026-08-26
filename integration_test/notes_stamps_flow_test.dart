@@ -6,6 +6,7 @@
 @Timeout(Duration(minutes: 5))
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -168,9 +169,10 @@ void main() {
         ],
       );
 
-      final text = await File(
-        await library.resolveReadablePath(out),
-      ).readAsString();
+      final text = latin1.decode(
+        await File(await library.resolveReadablePath(out)).readAsBytes(),
+        allowInvalid: true,
+      );
       expect(text, contains('/Subtype /Text'));
       expect(text, contains('/Subtype /Stamp'));
 

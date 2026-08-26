@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -127,9 +128,10 @@ void main() {
       moved: const {},
     );
 
-    final text = await File(
-      await library.resolveReadablePath(saved),
-    ).readAsString();
+    final text = latin1.decode(
+      await File(await library.resolveReadablePath(saved)).readAsBytes(),
+      allowInvalid: true,
+    );
     expect(text.lastIndexOf('/Annots [8 0 R]'), greaterThan(0));
   });
 
