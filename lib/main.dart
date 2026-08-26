@@ -6,6 +6,7 @@ import 'package:folio/core/storage/safe_file_writer.dart';
 import 'package:folio/data/local/app_database.dart';
 import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
+import 'package:folio/data/local/signature_dao.dart';
 import 'package:folio/data/repositories/annotation_edit_repository_impl.dart';
 import 'package:folio/data/repositories/annotation_repository_impl.dart';
 import 'package:folio/data/repositories/document_writer.dart';
@@ -15,8 +16,10 @@ import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:folio/engine/pdfrx_page_editor.dart';
 import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/pages/providers.dart';
+import 'package:folio/data/repositories/signature_repository_impl.dart';
 import 'package:folio/features/viewer/annotation_edit_providers.dart';
 import 'package:folio/features/viewer/annotation_providers.dart';
+import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 Future<void> main() async {
@@ -42,6 +45,7 @@ Future<void> main() async {
     library: library,
     documents: documentWriter,
   );
+  final signatures = SignatureRepositoryImpl(dao: SignatureDao(db));
   final annotationEdits = AnnotationEditRepositoryImpl(
     library: library,
     documents: documentWriter,
@@ -67,6 +71,7 @@ Future<void> main() async {
         pageOperationsRepositoryProvider.overrideWithValue(pageOperations),
         annotationRepositoryProvider.overrideWithValue(annotations),
         annotationEditRepositoryProvider.overrideWithValue(annotationEdits),
+        signatureRepositoryProvider.overrideWithValue(signatures),
       ],
       child: const FolioApp(),
     ),
