@@ -1216,6 +1216,54 @@ abstract class AppLocalizations {
   /// **'Protect'**
   String get protectApply;
 
+  /// No description provided for @protectPermissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restrict what readers can do'**
+  String get protectPermissionsTitle;
+
+  /// No description provided for @protectAllowPrinting.
+  ///
+  /// In en, this message translates to:
+  /// **'Printing'**
+  String get protectAllowPrinting;
+
+  /// No description provided for @protectAllowCopying.
+  ///
+  /// In en, this message translates to:
+  /// **'Copying text'**
+  String get protectAllowCopying;
+
+  /// No description provided for @protectAllowModifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing the document'**
+  String get protectAllowModifying;
+
+  /// No description provided for @protectAllowAnnotating.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding comments and filling forms'**
+  String get protectAllowAnnotating;
+
+  /// No description provided for @protectOwnerPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner password (optional)'**
+  String get protectOwnerPassword;
+
+  /// No description provided for @protectOwnerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the document with every right, ignoring the restrictions above. Leave it empty to reuse the password above.'**
+  String get protectOwnerHint;
+
+  /// No description provided for @protectAdvisory.
+  ///
+  /// In en, this message translates to:
+  /// **'Restrictions are recorded in the document. Most readers honour them, and any reader is free to ignore them.'**
+  String get protectAdvisory;
+
   /// No description provided for @protectWarning.
   ///
   /// In en, this message translates to:

@@ -610,6 +610,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get protectApply => 'Protect';
 
   @override
+  String get protectPermissionsTitle => 'Restrict what readers can do';
+
+  @override
+  String get protectAllowPrinting => 'Printing';
+
+  @override
+  String get protectAllowCopying => 'Copying text';
+
+  @override
+  String get protectAllowModifying => 'Changing the document';
+
+  @override
+  String get protectAllowAnnotating => 'Adding comments and filling forms';
+
+  @override
+  String get protectOwnerPassword => 'Owner password (optional)';
+
+  @override
+  String get protectOwnerHint =>
+      'Opens the document with every right, ignoring the restrictions above. Leave it empty to reuse the password above.';
+
+  @override
+  String get protectAdvisory =>
+      'Restrictions are recorded in the document. Most readers honour them, and any reader is free to ignore them.';
+
+  @override
   String get protectWarning =>
       'Keep this password safe. Folio cannot recover a protected document without it.';
 

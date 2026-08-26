@@ -193,11 +193,31 @@ document is a **new** document; your original stays as it was.
 Folio cannot recover a protected document without its password. There is no
 back door and no reset — that is what makes it protection.
 
+## SP-5c — Owner password and restrictions
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Restrict printing, copying, changing, commenting | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Separate owner password | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Under **Protect with password → Restrict what readers can do**. Restrictions
+are folded away by default, because most people protecting a document want it
+unreadable rather than partly readable.
+
+**Restrictions are advisory.** They are recorded in the document, most readers
+honour them, and any reader is free to ignore them. Folio says so in the
+dialog rather than implying a guarantee it cannot make. The password is the
+part that actually protects the document.
+
+The owner password opens the document with every right, ignoring the
+restrictions. Leave it empty and the reader password does both jobs — a
+restriction nobody can lift restricts the author too.
+
 ## Not built yet
 
-**Behind the object layer** (each needs a full-file rewrite, which Folio does
-not yet do): encryption authoring, redaction, and compressing documents Folio
-did not write.
+**Behind the object layer:** redaction, and compressing documents Folio did
+not write. The object layer itself landed in SP-5a, so these are now a matter
+of building them rather than of missing foundations.
 
 **Independent of it:** scanner, OCR, printing and sharing, batch processing,
 automation rules, metadata editing, image watermarks, photographed signatures,

@@ -45,7 +45,11 @@ class PdfrxEngine implements PdfEngine {
 
       final id = 'pdfrx-${_nextHandle++}';
       _open[id] = doc;
-      return PdfDocumentHandle(id: id, pageCount: doc.pages.length);
+      return PdfDocumentHandle(
+        id: id,
+        pageCount: doc.pages.length,
+        permissionBits: doc.permissions?.permissions,
+      );
     } on rx.PdfPasswordException catch (e) {
       // Because pdfrx loops, reaching here means the user cancelled. One prompt
       // means they simply declined; more than one means at least one supplied

@@ -126,11 +126,23 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 8. Encryption is generated, not authored by the app
+## 8. Permissions are advisory, and readers disagree about the bits
 
-The RC4 standard-security-handler implementation in `scripts/` exists solely to
-produce encrypted test fixtures. The application cannot apply encryption to a
-document; it can only read encrypted documents. Authoring encryption is SP-5.
+Folio writes the `/P` bit field a document asks for, and `/Perms` so a reader
+can tell it was not tampered with. Nothing beyond that is possible: a
+permission is a request a reader may decline, and several readers decline
+routinely. The protect dialog says this in the UI rather than implying a
+guarantee. The password is the only part that actually protects a document.
+
+Readers also disagree about which bit means what. pdfrx names bit 4
+`allowsCopying` and bit 16 `allowsPrinting`, the reverse of ISO 32000-1
+Table 22. Folio follows the standard and the integration test compares the raw
+integer rather than any reader's named getters, because those names would make
+a swapped-bits bug invisible.
+
+Re-protecting a document Folio already protected is not supported: Folio does
+not decrypt, so the second pass would encrypt ciphertext. Protect the original
+instead.
 
 ## 9. Test fixtures are generated, not committed
 

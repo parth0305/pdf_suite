@@ -201,9 +201,33 @@ ours appear in the output. It passed against a writer that appended a **second**
 while a PDF reader takes only one of the two. It now asserts there is exactly
 one `/Resources` and one `/Font`, and fails 2-against-1.
 
+**A fifth, from SP-5c: a caught mutation can present as a hung job.** Making
+the writer send a `/Perms` that disagrees with the `/P` it wrote should fail
+the permission-readback test. Instead it hung the whole file for five minutes.
+PDFium treats a `/Perms` mismatch as tampering and rejects **every** password,
+pdfrx retries `onPasswordRequired` until it succeeds or the callback returns
+null, and every encryption test here handed back a correct password forever.
+The tests were detecting the mutation; the callback was hiding the detection
+behind a timeout.
+
+Every password callback in the integration suite now gives up after one retry.
+The rule: a callback that supplies a **correct** password must still be
+bounded, because the failure it has to survive is the reader refusing a
+password that is right.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 
 - Adding an `AppFailure` variant without a message must fail compilation with
   `non_exhaustive_switch_expression`.
 - RC4 is checked against published test vectors, not merely exercised.
+- The owner password and `/Perms` are verified by an independent implementation
+  of ISO 32000-2 Algorithm 2.A in `test/domain/pdf/pdf_owner_password_test.dart`,
+  which recovers the file key the way a reader does rather than re-reading what
+  the writer wrote. Five mutations fire against it, including hashing the user
+  password into `/O` and dropping `/U` from the owner hash.
+- Permission bits are read back through PDFium as a **raw integer**. pdfrx's
+  own `allowsCopying`/`allowsPrinting` getters name bits 4 and 16 the reverse
+  of ISO 32000-1 Table 22, so asserting through them would make a swapped-bit
+  bug invisible. The restricted fixture is deliberately asymmetric for the same
+  reason: denying everything passes even when two bits are swapped.
