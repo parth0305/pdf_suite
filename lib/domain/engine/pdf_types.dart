@@ -2,9 +2,21 @@ import 'dart:typed_data';
 
 /// Opaque handle to an open document. Only the engine that produced it may use it.
 class PdfDocumentHandle {
-  const PdfDocumentHandle({required this.id, required this.pageCount});
+  const PdfDocumentHandle({
+    required this.id,
+    required this.pageCount,
+    this.permissionBits,
+  });
+
   final String id;
   final int pageCount;
+
+  /// The raw /P bit field, or null when the document is not protected.
+  ///
+  /// Kept as the integer the reader parsed rather than a set of booleans:
+  /// engines disagree about which bit means what, and the value is only ever
+  /// compared against what Folio wrote.
+  final int? permissionBits;
 }
 
 class PdfPageInfo {

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/pdf/pdf_document_writer.dart';
 import 'package:folio/domain/pdf/pdf_object.dart';
+import 'package:folio/domain/pdf/pdf_permissions.dart';
 
 const source =
     '%PDF-1.4\n'
@@ -125,6 +126,52 @@ void main() {
 
     test('an unencrypted rewrite has no /Encrypt', () {
       expect(rewritten(), isNot(contains('/Encrypt')));
+    });
+
+    // /P is the only permissions value a reader sees in the clear, so a
+    // restriction the caller asked for must actually reach the dictionary.
+    test('the /Encrypt dictionary carries the requested /P', () {
+      final out = latin1.decode(
+        writePdfDocument(
+          bytesOf(source),
+          parsePdfObjects(bytesOf(source)),
+          encryption: PdfEncryption(
+            userPassword: 'pw',
+            permissions: const PdfPermissions(copying: false).bits,
+          ),
+        ),
+      );
+
+      expect(out, contains('/P ${const PdfPermissions(copying: false).bits}'));
+      expect(
+        out,
+        isNot(contains('/P ${PdfPermissions.all.bits}')),
+        reason: 'the default must not be substituted for the request',
+      );
+    });
+
+    test('a distinct owner password changes /O without changing /U', () {
+      List<int> bytes({String? owner}) => writePdfDocument(
+        bytesOf(source),
+        parsePdfObjects(bytesOf(source)),
+        encryption: PdfEncryption(
+          userPassword: 'reader',
+          ownerPassword: owner,
+          randomBytes: (n) => List<int>.generate(n, (i) => (i * 7) & 0xFF),
+        ),
+      );
+
+      String entry(String key, List<int> raw) {
+        final text = latin1.decode(raw);
+        final at = text.indexOf('$key <');
+        return text.substring(at, text.indexOf('>', at));
+      }
+
+      final without = bytes();
+      final with_ = bytes(owner: 'author');
+
+      expect(entry('/U', with_), entry('/U', without));
+      expect(entry('/O', with_), isNot(entry('/O', without)));
     });
   });
 

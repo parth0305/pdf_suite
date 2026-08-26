@@ -347,13 +347,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
   Future<void> _protectDocument() async {
     final l10n = AppLocalizations.of(context)!;
-    final password = await showProtectDialog(context);
-    if (password == null || !mounted) return;
+    final request = await showProtectDialog(context);
+    if (request == null || !mounted) return;
 
     try {
       final protected = await ref
           .read(protectionRepositoryProvider)
-          .protect(widget.document.id, password);
+          .protect(widget.document.id, request);
       await ref.read(libraryControllerProvider.notifier).refresh();
       if (!mounted) return;
 

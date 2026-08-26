@@ -86,8 +86,12 @@ AesEncryptionValues buildAesValues({
   required String password,
   required int permissions,
   required List<int> Function(int count) randomBytes,
+  String? ownerPassword,
 }) {
   final pw = utf8.encode(password);
+  // Without a separate owner password the two are the same, which is what a
+  // document with no permissions story wants.
+  final ownerPw = utf8.encode(ownerPassword ?? password);
   final fileKey = randomBytes(32);
 
   // The user entry: a validation salt and a key salt, both 8 bytes.
@@ -105,17 +109,17 @@ AesEncryptionValues buildAesValues({
     encrypt: true,
   );
 
-  // The owner entry hashes the 48-byte /U as extra data. This slice uses the
-  // same password for both; SP-5c separates them.
+  // The owner entry hashes the 48-byte /U as extra data, which is what binds
+  // the two passwords to one document.
   final ownerValidationSalt = randomBytes(8);
   final ownerKeySalt = randomBytes(8);
   final o = <int>[
-    ...hash2B(pw, ownerValidationSalt, u),
+    ...hash2B(ownerPw, ownerValidationSalt, u),
     ...ownerValidationSalt,
     ...ownerKeySalt,
   ];
   final oe = _aesCbcNoPadding(
-    key: hash2B(pw, ownerKeySalt, u),
+    key: hash2B(ownerPw, ownerKeySalt, u),
     iv: List<int>.filled(16, 0),
     data: fileKey,
     encrypt: true,

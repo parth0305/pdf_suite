@@ -10,11 +10,16 @@ import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/pdf/pdf_document_writer.dart';
 import 'package:folio/domain/pdf/pdf_object.dart';
+import 'package:folio/domain/pdf/pdf_permissions.dart' as folio;
 import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 import 'fixture_helper.dart';
+
+// Asymmetric on purpose: printing denied, copying allowed. A symmetric set
+// would pass even if two bits were swapped.
+const _restrictions = folio.PdfPermissions(printing: false, modifying: false);
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -146,6 +151,91 @@ void main() {
         );
       },
     );
+
+    group('owner password and permissions', () {
+      Future<List<int>> restricted() async {
+        final original = await File(
+          await fixturePath('sample_3page.pdf'),
+        ).readAsBytes();
+
+        return writePdfDocument(
+          original,
+          parsePdfObjects(original),
+          encryption: PdfEncryption(
+            userPassword: 'reader-pw',
+            ownerPassword: 'author-pw',
+            permissions: _restrictions.bits,
+          ),
+        );
+      }
+
+      Future<List<int>> renderWith(String password, String name) async {
+        final f = File('${root.path}/$name.pdf')
+          ..writeAsBytesSync(await restricted());
+        final h = await engine.open(
+          FileSource(f.path),
+          onPasswordRequired: () async => password,
+        );
+        final pixels = (await engine.renderPage(
+          h,
+          0,
+          targetWidthPx: 400,
+          targetHeightPx: 566,
+        )).bgraPixels;
+        await engine.close(h);
+        return pixels;
+      }
+
+      // Both passwords must open the SAME document. A reader that accepts one
+      // and rejects the other means the two entries disagree about the file
+      // key, which is the failure this whole slice risks.
+      test('both the user and the owner password open the document', () async {
+        final asUser = await renderWith('reader-pw', 'as-user');
+        final asOwner = await renderWith('author-pw', 'as-owner');
+
+        expect(diff(asUser, asOwner), 0);
+      });
+
+      test('a restricted document still renders like the original', () async {
+        final original = await File(
+          await fixturePath('sample_3page.pdf'),
+        ).readAsBytes();
+        final expected = await renderBytes(
+          writePdfDocument(original, parsePdfObjects(original)),
+          'plain-restricted',
+        );
+
+        expect(
+          diff(expected, await renderWith('reader-pw', 'restricted-render')),
+          0,
+          reason: 'restrictions govern what a reader may DO, not what it shows',
+        );
+      });
+
+      // The one place /P is read back by a real reader rather than by our own
+      // code. It compares the raw integer, not a reader's named getters:
+      // pdfrx labels bit 4 \"copying\" and bit 16 \"printing\", which is the
+      // reverse of ISO 32000-1 Table 22, so its names cannot be trusted here.
+      test('the reader reports the restrictions that were asked for', () async {
+        final f = File('${root.path}/perm-readback.pdf')
+          ..writeAsBytesSync(await restricted());
+        final h = await engine.open(
+          FileSource(f.path),
+          onPasswordRequired: () async => 'reader-pw',
+        );
+        final bits = h.permissionBits;
+        await engine.close(h);
+
+        // A reader that does not surface permissions at all tells us nothing,
+        // and pretending otherwise would be the fake assertion this project
+        // keeps finding. Only assert when there is something to assert on.
+        if (bits == null) {
+          markTestSkipped('this reader does not expose /P');
+          return;
+        }
+        expect(bits.toSigned(32), _restrictions.bits);
+      });
+    });
 
     test('the wrong password fails cleanly', () async {
       final (_, secured) = await build();

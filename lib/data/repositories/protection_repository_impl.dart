@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/domain/models/library_document.dart';
+import 'package:folio/domain/models/protect_request.dart';
 import 'package:folio/domain/pdf/pdf_document_writer.dart';
 import 'package:folio/domain/pdf/pdf_object.dart';
 import 'package:folio/domain/repositories/library_repository.dart';
@@ -19,7 +20,11 @@ class ProtectionRepositoryImpl implements ProtectionRepository {
   final DocumentWriter _documents;
 
   @override
-  Future<LibraryDocument> protect(int documentId, String password) async {
+  Future<LibraryDocument> protect(
+    int documentId,
+    ProtectRequest request,
+  ) async {
+    final password = request.userPassword;
     if (password.isEmpty) {
       throw ArgumentError.value(
         // Never the password itself: it must not reach a log or an error.
@@ -37,7 +42,11 @@ class ProtectionRepositoryImpl implements ProtectionRepository {
     final secured = writePdfDocument(
       bytes,
       parsePdfObjects(bytes),
-      encryption: PdfEncryption(userPassword: password),
+      encryption: PdfEncryption(
+        userPassword: password,
+        ownerPassword: request.distinctOwnerPassword,
+        permissions: request.permissions.bits,
+      ),
     );
 
     // No metadata is re-attached: PdfMetadata appends an incremental update,

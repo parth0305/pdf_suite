@@ -26,9 +26,14 @@ class PdfEncryption {
     this.permissions = -44,
     this.handler = PdfSecurityHandler.aesRevision6,
     this.randomBytes,
+    this.ownerPassword,
   });
 
   final String userPassword;
+
+  /// Opens the document with full rights regardless of [permissions]. Null
+  /// means the user password serves as both.
+  final String? ownerPassword;
 
   /// The /P bit field. -44 is the value the existing fixtures use.
   final int permissions;
@@ -93,6 +98,7 @@ Uint8List writePdfDocument(
       password: encryption!.userPassword,
       permissions: encryption.permissions,
       randomBytes: encryption.random,
+      ownerPassword: encryption.ownerPassword,
     );
     fileKey = aes.fileKey;
   } else if (encryption != null) {
