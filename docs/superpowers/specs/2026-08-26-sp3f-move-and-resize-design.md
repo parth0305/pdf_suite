@@ -124,12 +124,26 @@ It touches no other key, so colour, width and appearance references survive.
 ### Changes to existing files
 
 - `annotation_edit_session.dart` — `moveTo(int objectNumber, TextRect rect)`,
-  `Map<int, TextRect> get moved`, both included in the undo snapshot.
+  `Map<int, TextRect> get moved`, both included in the undo snapshot **and in
+  `isDirty`**, or Save stays disabled after a move and the work is lost on
+  leaving the mode. Deleting an annotation drops any staged move for it, the
+  same way it already drops a staged style.
 - `pdf_annotation_editor.dart` — `applyAnnotationEdits` gains
   `required Map<int, TextRect> moved`. A moved annotation's override runs
-  through `transformAnnotationDict`; it emits **no** new appearance. An
-  annotation both moved and restyled gets one override carrying both.
-- `annotation_edit_repository.dart` and its impl — `save` gains `moved`.
+  through `transformAnnotationDict`; it emits **no** new appearance.
+
+  **An annotation that is both moved and restyled must produce exactly ONE
+  override.** Emitting two overrides of the same object number means the later
+  one wins and silently discards the earlier — the restyle or the move would
+  vanish depending on loop order. The implementation therefore walks the union
+  of the moved and restyled object numbers once, applies the transform first
+  and the style second to the same dictionary, and emits a single object. This
+  gets its own test.
+
+  The early return also widens: `if (deleted.isEmpty && restyled.isEmpty &&
+  moved.isEmpty) return pdf;`
+- `annotation_edit_repository.dart` and its impl — `save` gains `moved`, and
+  its "nothing to save" guard counts moves too.
 - `annotation_edit_providers.dart` — `moveSelected(TextRect)`.
 - `annotation_selection_overlay.dart` — drag to move, four corner handles,
   live outline, and the per-kind resize rules.
@@ -171,6 +185,10 @@ Unit:
 - `lockAspect` preserves the original ratio for both a taller and a wider drag;
 - `movable` and `resizable` per subtype;
 - the session's undo covers a move, and a move plus a restyle;
+- `isDirty` is true after only a move;
+- deleting an annotation drops its staged move;
+- **an annotation both moved and restyled emits exactly one override, carrying
+  both changes**;
 - every SP-3c and SP-3e test still passes.
 
 Integration, all verified by rendering:
