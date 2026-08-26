@@ -120,8 +120,11 @@ Editing a document Folio created updates it in place, so fixing one colour
 three times leaves one document rather than four. Editing an imported document
 produces a new one and leaves the imported copy byte-identical.
 
-## Not in SP-1 or SP-2a
+## Not built yet
 
-Freehand ink, shapes, sticky notes, stamps, signatures, scanner, OCR,
+Sticky notes, stamps, signatures, moving or resizing annotations, scanner, OCR,
 compression, encryption authoring, redaction, watermarks, metadata editing,
-batch processing, automation rules, and printing are all ❌ — planned for SP-2b through SP-9.
+batch processing, automation rules, and printing are all ❌.
+
+Freehand ink and shapes shipped in SP-3b; editing and deleting saved
+annotations shipped in SP-3c.
