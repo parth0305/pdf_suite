@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/domain/annotations/annotation_session.dart';
 import 'package:folio/domain/annotations/page_coordinates.dart';
 import 'package:folio/domain/annotations/stroke_smoothing.dart';
+import 'package:folio/domain/models/saved_signature.dart';
+import 'package:folio/domain/signatures/signature_geometry.dart';
 import 'package:folio/domain/annotations/quad_merge.dart';
 import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
@@ -123,6 +125,32 @@ class AnnotationController extends Notifier<AnnotationState> {
       ),
     );
     state = state.copyWith(liveStroke: const []);
+  }
+
+  /// Stages a saved signature fitted into [box].
+  ///
+  /// One annotation carrying every stroke, not one per stroke: deleting a
+  /// signature must remove the whole thing.
+  void addSignature({
+    required SavedSignature signature,
+    required int pageIndex,
+    required TextRect box,
+    int colorArgb = 0xFF000000,
+    double strokeWidth = 2,
+  }) {
+    final strokes = placeSignature(signature, box: box);
+    if (strokes.isEmpty) return;
+
+    state.session.add(
+      DrawingAnnotation(
+        kind: DrawingKind.ink,
+        pageIndex: pageIndex,
+        strokes: strokes,
+        colorArgb: colorArgb,
+        strokeWidth: strokeWidth,
+      ),
+    );
+    _touch();
   }
 
   void undo() {
