@@ -70,10 +70,24 @@ A move is the one operation that *is* a request to change geometry, so it
 rewrites it — and rewrites `/Rect` and the geometry together, so they never
 disagree.
 
-**Rewriting `/Rect` alone would be a silent trap.** Rendering would follow the
-appearance and look right, but the geometry keys would still point at the old
-position: a later restyle regenerates the appearance from geometry and the
-annotation jumps back. Two actions apart, and invisible in between.
+**Corrected after implementation.** The design originally claimed that
+rewriting `/Rect` alone would make a later restyle drag the annotation back to
+its old position. That is **not** what happens: because a viewer maps the
+appearance `/BBox` onto `/Rect`, an appearance regenerated from stale geometry
+is still mapped onto the correct rect and renders in the right place. Measured
+by mutation — deleting the geometry rewrite leaves every render assertion
+green.
+
+The geometry rewrite is still correct, for a narrower reason: the file would
+otherwise be internally inconsistent. A viewer that does not honour `/AP`, or
+that regenerates appearances itself, draws from the geometry keys and would
+show the annotation where it used to be. Any future Folio code that reads
+geometry positionally would be wrong too.
+
+**This is only visible by reading the geometry back, never by rendering.** The
+end-to-end test asserts on the reconstructed stroke coordinates for exactly
+that reason, and it uses an ink annotation: a `/Square`'s geometry *is* its
+`/Rect`, so a rectangle has nowhere for the bug to live.
 
 ### Accuracy
 
