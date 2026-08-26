@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/domain/pdf/pdf_object.dart';
+
+import '../../../scripts/pdf_fixture_builder.dart';
 
 List<int> bytesOf(String s) => latin1.encode(s);
 
@@ -72,10 +73,11 @@ void main() {
     expect(objects, isEmpty);
   });
 
-  // A real document, not a synthetic one: the spike found nine objects here.
-  test('reads every object out of the real fixture', () {
-    final bytes = File('test_documents/sample_3page.pdf').readAsBytesSync();
-    final objects = parsePdfObjects(bytes);
+  // A real document, built by the same pure builder the fixtures use rather
+  // than read from disk: a relative path depends on the working directory and
+  // does not survive Windows CI.
+  test('reads every object out of a real document', () {
+    final objects = parsePdfObjects(buildPdf(kSampleThreePage));
 
     expect(objects, hasLength(9));
     expect(
