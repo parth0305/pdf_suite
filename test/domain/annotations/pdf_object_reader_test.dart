@@ -222,4 +222,72 @@ void main() {
       );
     });
   });
+
+  group('withContentsAndResources', () {
+    String rewrite(String dict) {
+      final reader = PdfObjectReader.parse(pdfWith(dict));
+      return reader.withContentsAndResources(
+        reader.pageAt(0)!,
+        contentObjectNumber: 20,
+        fontObjectNumber: 21,
+        extGStateObjectNumber: 22,
+      );
+    }
+
+    test('a single /Contents reference becomes an array', () {
+      final out = rewrite('<< /Type /Page /Parent 2 0 R /Contents 4 0 R >>');
+      expect(out, contains('/Contents [4 0 R 20 0 R]'));
+    });
+
+    test('an existing /Contents array is appended to', () {
+      final out = rewrite(
+        '<< /Type /Page /Parent 2 0 R /Contents [4 0 R 5 0 R] >>',
+      );
+      expect(out, contains('/Contents [4 0 R 5 0 R 20 0 R]'));
+    });
+
+    test('a page with no /Contents gains one', () {
+      final out = rewrite('<< /Type /Page /Parent 2 0 R >>');
+      expect(out, contains('/Contents [20 0 R]'));
+    });
+
+    test('a page with no /Resources gains them', () {
+      final out = rewrite('<< /Type /Page /Parent 2 0 R >>');
+
+      expect(out, contains('/WMF1 21 0 R'));
+      expect(out, contains('/WMGS 22 0 R'));
+    });
+
+    // Replacing a page's /Resources strips the fonts its own content depends
+    // on, and the page renders blank.
+    test('existing /Resources survive the merge', () {
+      final out = rewrite(
+        '<< /Type /Page /Parent 2 0 R '
+        '/Resources << /Font << /F1 9 0 R >> >> >>',
+      );
+
+      expect(out, contains('/F1 9 0 R'), reason: 'the page own font');
+      expect(out, contains('/WMF1 21 0 R'), reason: 'ours');
+    });
+
+    test('an existing /ExtGState entry survives too', () {
+      final out = rewrite(
+        '<< /Type /Page /Parent 2 0 R '
+        '/Resources << /ExtGState << /GS0 8 0 R >> >> >>',
+      );
+
+      expect(out, contains('/GS0 8 0 R'));
+      expect(out, contains('/WMGS 22 0 R'));
+    });
+
+    test('other page keys are left alone', () {
+      final out = rewrite(
+        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] '
+        '/Rotate 90 /Contents 4 0 R >>',
+      );
+
+      expect(out, contains('/MediaBox [0 0 595 842]'));
+      expect(out, contains('/Rotate 90'));
+    });
+  });
 }
