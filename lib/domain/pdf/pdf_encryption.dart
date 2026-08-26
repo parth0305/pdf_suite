@@ -1,9 +1,14 @@
 // PDF standard security handler, revision 2 (RC4, 40-bit), per ISO 32000-1
-// section 7.6.3. Used only to generate test fixtures.
+// section 7.6.3.
 //
-// This exists because no free Dart package produces an encrypted PDF and no
-// encryption tool is installed on the development machine. The app itself does
-// not author encryption in SP-1.
+// Written by hand because no permissively licensed Dart package produces an
+// encrypted PDF. It began life generating test fixtures; SP-5a moved it into
+// the app, where the object layer uses it to encrypt documents.
+//
+// RC4-40 is NOT protection worth offering to a user. Nothing in the app
+// exposes it: it exists to prove the encryption pipeline against a cipher that
+// is already verified, so that when AES-256 arrives the only new variable is
+// the cipher.
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -132,3 +137,65 @@ List<int> objectKey(List<int> fileKey, int objNum, int genNum) {
 /// Renders bytes as a PDF hexadecimal string literal.
 String hexString(List<int> bytes) =>
     '<${bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}>';
+
+/// Encrypts every literal string, hexadecimal string and stream inside a
+/// single object's body, using that object's key.
+///
+/// RC4 is symmetric, so applying this twice with the same key returns the
+/// original.
+///
+/// The caller must NOT pass the /Encrypt dictionary or the document /ID: a
+/// reader needs both in the clear before it can derive any key.
+List<int> encryptObjectBody(List<int> body, List<int> objectKey) {
+  final text = latin1.decode(body, allowInvalid: true);
+
+  // A stream is handled whole, because its data is binary and must not be
+  // scanned for string delimiters.
+  final streamAt = text.indexOf('stream');
+  if (streamAt >= 0) {
+    var dataStart = streamAt + 'stream'.length;
+    if (text.startsWith('\r\n', dataStart)) {
+      dataStart += 2;
+    } else if (text.startsWith('\n', dataStart)) {
+      dataStart += 1;
+    }
+    final dataEnd = text.lastIndexOf('endstream');
+    if (dataEnd > dataStart) {
+      return <int>[
+        ...latin1.encode(
+          _encryptStrings(text.substring(0, streamAt), objectKey),
+        ),
+        ...latin1.encode(text.substring(streamAt, dataStart)),
+        ...rc4(objectKey, body.sublist(dataStart, dataEnd)),
+        ...latin1.encode(text.substring(dataEnd)),
+      ];
+    }
+  }
+
+  return latin1.encode(_encryptStrings(text, objectKey));
+}
+
+/// Encrypts the literal and hexadecimal strings in a dictionary fragment.
+String _encryptStrings(String text, List<int> key) {
+  var out = text.replaceAllMapped(RegExp(r'\(([^()]*)\)'), (m) {
+    final encrypted = rc4(key, latin1.encode(m.group(1)!));
+    return '(${_escape(latin1.decode(encrypted))})';
+  });
+
+  // hexString already wraps its output in angle brackets, so return it as-is.
+  out = out.replaceAllMapped(
+    RegExp(r'<([0-9A-Fa-f]+)>'),
+    (m) => hexString(rc4(key, _fromHex(m.group(1)!))),
+  );
+
+  return out;
+}
+
+/// Escapes the characters that would end a PDF literal string early.
+String _escape(String s) =>
+    s.replaceAll(r'\', r'\\').replaceAll('(', r'\(').replaceAll(')', r'\)');
+
+List<int> _fromHex(String hex) => [
+  for (var i = 0; i + 1 < hex.length; i += 2)
+    int.parse(hex.substring(i, i + 2), radix: 16),
+];

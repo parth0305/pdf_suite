@@ -3,7 +3,7 @@
 // on-device via the same builder, so no test data ships in release builds.
 import 'dart:io';
 
-import 'pdf_encrypt.dart';
+import 'package:folio/domain/pdf/pdf_encryption.dart';
 import 'pdf_fixture_builder.dart';
 
 void write(String name, List<int> bytes) {

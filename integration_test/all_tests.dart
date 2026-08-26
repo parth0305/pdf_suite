@@ -24,6 +24,7 @@ import 'library_flow_test.dart' as library_flow;
 import 'markup_flow_test.dart' as markup_flow;
 import 'move_resize_flow_test.dart' as move_resize_flow;
 import 'notes_stamps_flow_test.dart' as notes_stamps_flow;
+import 'object_layer_flow_test.dart' as object_layer_flow;
 import 'page_editor_test.dart' as page_editor;
 import 'page_operations_flow_test.dart' as page_operations_flow;
 import 'pages_mode_test.dart' as pages_mode;
@@ -50,4 +51,5 @@ void main() {
   group('notes_stamps_flow', notes_stamps_flow.main);
   group('move_resize_flow', move_resize_flow.main);
   group('watermark_flow', watermark_flow.main);
+  group('object_layer_flow', object_layer_flow.main);
 }

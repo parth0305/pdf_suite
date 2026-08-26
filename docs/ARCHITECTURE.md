@@ -146,6 +146,36 @@ with no flip. The canvas-to-PDF flip happens once, at capture.
 
 Placement fits the signature inside the dragged box rather than filling it.
 
+## Two write models, and when each applies
+
+Folio writes documents two ways.
+
+**Incremental update** — append new objects, an overridden page dictionary, a
+new cross-reference section and a trailer chaining to the previous one. The
+original bytes are never touched. Everything through SP-4a works this way:
+metadata, annotations, watermarks.
+
+**Full rewrite** — parse every object, emit them all, write a fresh
+cross-reference table and a trailer with no `/Prev`. Verified by rendering: a
+rewritten document differs from its original by **zero pixels**.
+
+Encryption is what forces the second. Encrypting a document means encrypting
+every string and every stream in it, so every object must be re-emitted; there
+is nothing to append. Compressing an existing document and redacting one need
+the same thing.
+
+Two rules the rewrite depends on:
+
+- **`/Length` decides where an object ends**, not the word `endobj`. Binary
+  stream data can contain those bytes, and searching for them ends the object
+  inside its own stream.
+- **`/Encrypt` and the document `/ID` are never encrypted.** A reader needs
+  both in the clear before it can derive any key.
+
+Each object is encrypted with its **own** key, derived from the file key and
+the object number. Reusing the file key produces a document that opens in some
+readers and not others — mutation-tested at 7,308 pixels.
+
 ## Writing page content, and what it costs
 
 SP-4a is the first slice that writes page **content** rather than annotations.

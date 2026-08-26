@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
-import '../scripts/pdf_encrypt.dart';
+import 'package:folio/domain/pdf/pdf_encryption.dart';
 import '../scripts/pdf_fixture_builder.dart';
 
 /// Builds a fixture on the device and returns its path.

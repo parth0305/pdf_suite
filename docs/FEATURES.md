@@ -183,9 +183,13 @@ Drawn with the non-embedded standard-14 Helvetica, so no font data is shipped.
 
 ## Not built yet
 
-Photographed signatures, custom or date stamps, image watermarks, reshaping individual ink points, scanner, OCR,
-compression, encryption authoring, redaction, watermarks, metadata editing,
-batch processing, automation rules, and printing are all ❌.
+**Behind the object layer** (each needs a full-file rewrite, which Folio does
+not yet do): encryption authoring, redaction, and compressing documents Folio
+did not write.
+
+**Independent of it:** scanner, OCR, printing and sharing, batch processing,
+automation rules, metadata editing, image watermarks, photographed signatures,
+custom and date stamps, and reshaping individual ink points.
 
 Freehand ink and shapes shipped in SP-3b, editing and deleting saved
 annotations in SP-3c, drawn signatures in SP-3d, notes and stamps in SP-3e,

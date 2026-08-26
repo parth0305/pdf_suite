@@ -36,7 +36,7 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-4a.
+Last measured on 2026-08-27, after SP-5a.
 
 | Platform | Result |
 |---|---|
@@ -74,6 +74,23 @@ for the indicator got the document loaded but still tapped a disabled button.
 `pumpUntilEnabled` waits for the `IconButton` wrapping a given icon to have a
 non-null `onPressed` — tappability, not presence. Use it whenever a test taps a
 toolbar button whose enablement depends on async work.
+
+**A mutation has to be OBSERVABLE to prove anything.** The object layer's
+round-trip test asserts zero pixels differ. The first mutation tried against it
+— dropping the last object — did not fail, which looked like a blind
+assertion. It was not: the last object is the Helvetica font, and PDFium
+substitutes standard-14 fonts, so removing it changes nothing on screen.
+Dropping the content streams instead fails at 7,308 pixels. When a mutation
+does not fire, establish whether the assertion is blind or the mutation is
+invisible before changing either.
+
+**The fixture decides what an end-to-end test can see.** SP-5a's encryption
+flow asserts an encrypted document renders identically. Mutating the writer to
+leave dictionary strings unencrypted did **not** fail it — `sample_3page.pdf`
+has no literal strings in its dictionaries, so the leak is invisible there. The
+unit test caught it; the end-to-end one could not. A second assertion using
+`with_metadata.pdf`, which carries `/Title` and `/Author`, now fails on exactly
+that mutation. When choosing a fixture, ask what it makes observable.
 
 **When the bound fires, suspect the machine before the bound.** A long session
 degraded the emulator to the point where opening a 1,539-byte PDF took 31,256
