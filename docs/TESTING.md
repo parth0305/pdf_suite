@@ -75,6 +75,14 @@ for the indicator got the document loaded but still tapped a disabled button.
 non-null `onPressed` — tappability, not presence. Use it whenever a test taps a
 toolbar button whose enablement depends on async work.
 
+**When the bound fires, suspect the machine before the bound.** A long session
+degraded the emulator to the point where opening a 1,539-byte PDF took 31,256
+ms; the same load takes about 50 ms fresh. `pumpUntilFound` timed out and the
+run took over twelve minutes. Cold-restarting the emulator brought the whole
+suite back to 53 seconds with zero failures and page loads of 124–241 ms. Do
+not raise a pathology bound to accommodate a sick machine — that is exactly the
+signal it exists to give.
+
 ## The runner's own timeout is a benchmark too
 
 Integration suites carry `@Timeout(Duration(minutes: 5))`. The runner's default
