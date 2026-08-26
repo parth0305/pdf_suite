@@ -51,6 +51,16 @@ markup, ink, squares, circles and lines. Any other subtype is delete-only,
 because regenerating an appearance for a subtype Folio does not model would
 change how another tool's annotation renders.
 
+Stamps are a **fixed preset set** — Approved, Rejected, Draft, Confidential,
+Reviewed, Urgent. There are no custom stamps and no date stamps, and a saved
+stamp can be deleted but not restyled: Folio does not reconstruct one well
+enough to regenerate its appearance, so Edit annotations lists it as delete
+only rather than offering a control that does nothing.
+
+Sticky notes are icons with popups, not text boxes drawn onto the page. A note
+that must be readable without tapping is a `/FreeText` annotation, which Folio
+does not write.
+
 Signatures are **drawn only**. Photographing a signature on paper is not
 supported: it needs image embedding and background removal, and is scoped as its
 own slice.

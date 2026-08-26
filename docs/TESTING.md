@@ -36,12 +36,12 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-3d.
+Last measured on 2026-08-26, after SP-3e.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 491 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 80 passed, 1 skipped |
+| Unit (host) | 526 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 87 passed, 1 skipped |
 | Android emulator (API 35, x86_64) | 79 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
@@ -100,6 +100,14 @@ The fix was to make the instrument sensitive rather than to tune a threshold:
 the strokes now meet at mid-height, so a joining line crosses open space, and
 the assertion counts untouched columns across the whole gap. Measured on device,
 68 of 74 columns stay untouched when correct and 0 when joined.
+
+**A second worked example, from SP-3e: some instruments are blind by nature.**
+The end-to-end test that every stamp preset renders was checked against a
+deliberately narrowed 40pt box, which clips every label. It still passed — a
+clipped label draws pixels just as a complete one does. Pixel counts cannot
+detect clipping, so the box-sizing rule has its own unit test asserting that a
+longer label gives a wider box. Knowing which assertion is blind to what is
+worth more than adding another that is blind the same way.
 
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:

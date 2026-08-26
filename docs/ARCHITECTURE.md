@@ -115,6 +115,29 @@ multi-stroke ink annotation from another tool regenerated its appearance with
 the strokes joined. `boundsPt` had the same blind spot and would have bounded
 only the first stroke, clipping the rest away via the `/BBox`.
 
+## Appearance streams are per-kind, not universal
+
+Probed on device rather than assumed: a `/Text` note renders **without** an
+appearance stream (692 pixels changed), and a `/Stamp` renders **nothing**
+without one (0 pixels). So appearance generation is optional per annotation
+kind, not a step every annotation goes through.
+
+A note therefore carries no `/AP` at all. Generating one could only disagree
+with the icon every viewer already draws, and it would put the note's meaning
+in two places at once.
+
+## Standard-14 fonts are referenced, never embedded
+
+Stamp labels are drawn with `/BaseFont /Helvetica` and no font file. The
+fourteen standard fonts are built into every conforming viewer, so no font data
+is shipped and no font licence is involved — verified on device at 3927 pixels
+changed.
+
+The stamp box is **sized from its label** rather than measured:
+`2 × padding + label.length × fontSize × 0.75`. 0.75 em is a safe upper bound
+for uppercase Helvetica, so the text fits by construction. Carrying a width
+table for a font we do not embed is not worth the accuracy.
+
 ## Signatures are stored normalised, y-up
 
 A saved signature holds its strokes in a unit box with y increasing upward, the

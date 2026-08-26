@@ -14,6 +14,7 @@ import 'annotation_edit_flow_test.dart' as annotation_edit_flow;
 import 'drawing_flow_test.dart' as drawing_flow;
 import 'library_flow_test.dart' as library_flow;
 import 'markup_flow_test.dart' as markup_flow;
+import 'notes_stamps_flow_test.dart' as notes_stamps_flow;
 import 'page_editor_test.dart' as page_editor;
 import 'page_operations_flow_test.dart' as page_operations_flow;
 import 'pages_mode_test.dart' as pages_mode;
@@ -36,4 +37,5 @@ void main() {
   group('drawing_flow', drawing_flow.main);
   group('annotation_edit_flow', annotation_edit_flow.main);
   group('signature_flow', signature_flow.main);
+  group('notes_stamps_flow', notes_stamps_flow.main);
 }
