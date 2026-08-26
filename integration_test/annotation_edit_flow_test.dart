@@ -156,6 +156,7 @@ void main() {
         documentId: doc.id,
         deleted: {target.objectNumber},
         restyled: const {},
+        moved: const {},
       );
       final after = await render(await reload(doc.id));
 
@@ -179,6 +180,7 @@ void main() {
         documentId: doc.id,
         deleted: {target.objectNumber},
         restyled: const {},
+        moved: const {},
       );
       final after = await render(await reload(doc.id));
 
@@ -203,6 +205,7 @@ void main() {
             strokeWidth: 8,
           ),
         },
+        moved: const {},
       );
       final after = await render(await reload(doc.id));
 
@@ -223,6 +226,7 @@ void main() {
             strokeWidth: 6,
           ),
         },
+        moved: const {},
       );
 
       final after = (await edits.load(
@@ -243,6 +247,7 @@ void main() {
         documentId: doc.id,
         deleted: {target.objectNumber},
         restyled: const {},
+        moved: const {},
       );
 
       expect(saved.id, doc.id, reason: 'one library row, not two');
@@ -258,7 +263,12 @@ void main() {
 
       // Nothing to delete in a plain document, so this asserts the guard.
       await expectLater(
-        edits.save(documentId: src.id, deleted: const {}, restyled: const {}),
+        edits.save(
+          documentId: src.id,
+          deleted: const {},
+          restyled: const {},
+          moved: const {},
+        ),
         throwsA(isA<ArgumentError>()),
       );
       expect(await hashOf(await reload(src.id)), before);
@@ -302,6 +312,7 @@ void main() {
         documentId: withStamp.id,
         deleted: {stamp.objectNumber},
         restyled: const {},
+        moved: const {},
       );
 
       final after = await edits.load(saved.id);
@@ -335,6 +346,7 @@ void main() {
         documentId: annotated.id,
         deleted: {target.objectNumber},
         restyled: const {},
+        moved: const {},
       );
 
       final after = PdfMetadata.readFrom(

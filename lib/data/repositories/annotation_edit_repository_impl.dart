@@ -5,6 +5,7 @@ import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/domain/annotations/pdf_annotation_editor.dart';
 import 'package:folio/domain/annotations/pdf_annotation_reader.dart';
 import 'package:folio/domain/editing/pdf_metadata.dart';
+import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/repositories/annotation_edit_repository.dart';
 import 'package:folio/domain/repositories/library_repository.dart';
@@ -42,8 +43,9 @@ class AnnotationEditRepositoryImpl implements AnnotationEditRepository {
     required int documentId,
     required Set<int> deleted,
     required Map<int, AnnotationStyle> restyled,
+    required Map<int, TextRect> moved,
   }) async {
-    if (deleted.isEmpty && restyled.isEmpty) {
+    if (deleted.isEmpty && restyled.isEmpty && moved.isEmpty) {
       throw ArgumentError('nothing to save');
     }
 
@@ -56,6 +58,7 @@ class AnnotationEditRepositoryImpl implements AnnotationEditRepository {
       bytes,
       deleted: deleted,
       restyled: restyled,
+      moved: moved,
     );
 
     if (doc.createdByFolio && doc.isManaged) {

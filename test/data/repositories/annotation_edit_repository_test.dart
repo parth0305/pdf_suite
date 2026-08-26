@@ -74,6 +74,7 @@ void main() {
       documentId: id,
       deleted: {7},
       restyled: const {},
+      moved: const {},
     );
 
     expect(saved.id, id, reason: 'the same library row');
@@ -87,6 +88,7 @@ void main() {
       documentId: id,
       deleted: {7},
       restyled: const {},
+      moved: const {},
     );
 
     expect(saved.id, isNot(id));
@@ -101,7 +103,12 @@ void main() {
       ),
     ).readAsBytes();
 
-    await subject.save(documentId: id, deleted: {7}, restyled: const {});
+    await subject.save(
+      documentId: id,
+      deleted: {7},
+      restyled: const {},
+      moved: const {},
+    );
 
     final after = await File(
       await library.resolveReadablePath(
@@ -117,6 +124,7 @@ void main() {
       documentId: id,
       deleted: {7},
       restyled: const {},
+      moved: const {},
     );
 
     final text = await File(
@@ -129,7 +137,12 @@ void main() {
     final id = await folioCreated();
 
     await expectLater(
-      subject.save(documentId: id, deleted: const {}, restyled: const {}),
+      subject.save(
+        documentId: id,
+        deleted: const {},
+        restyled: const {},
+        moved: const {},
+      ),
       throwsA(isA<ArgumentError>()),
     );
     expect(await library.all(), hasLength(1));

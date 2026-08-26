@@ -201,6 +201,7 @@ void main() {
             contents: 'Corrected wording',
           ),
         },
+        moved: const {},
       );
 
       final after = (await edits.load(saved.id)).single;
@@ -225,6 +226,7 @@ void main() {
         documentId: out.id,
         deleted: {target.objectNumber},
         restyled: const {},
+        moved: const {},
       );
 
       expect(diff(plain, await render(cleaned)), lessThan(200));

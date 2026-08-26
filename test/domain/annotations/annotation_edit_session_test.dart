@@ -108,4 +108,56 @@ void main() {
     final s = AnnotationEditSession([saved(7)])..undo();
     expect(s.isDirty, isFalse);
   });
+
+  group('moving', () {
+    const target = TextRect(left: 200, bottom: 300, right: 300, top: 400);
+
+    test('staging a move makes the session dirty', () {
+      final s = AnnotationEditSession([saved(7)])..moveTo(7, target);
+
+      expect(s.moved[7], target);
+      expect(s.isDirty, isTrue, reason: 'Save must not stay disabled');
+    });
+
+    test('moving twice keeps only the latest rect', () {
+      final s = AnnotationEditSession([saved(7)])
+        ..moveTo(7, target)
+        ..moveTo(7, const TextRect(left: 0, bottom: 0, right: 10, top: 10));
+
+      expect(s.moved[7]!.right, 10);
+      expect(s.moved, hasLength(1));
+    });
+
+    // A move staged for something about to be unreferenced is dead weight.
+    test('deleting a moved annotation drops its staged move', () {
+      final s = AnnotationEditSession([saved(7)])
+        ..moveTo(7, target)
+        ..delete(7);
+
+      expect(s.moved, isEmpty);
+      expect(s.deleted, {7});
+    });
+
+    test('undo reverses a move', () {
+      final s = AnnotationEditSession([saved(7)])..moveTo(7, target);
+      s.undo();
+
+      expect(s.moved, isEmpty);
+      expect(s.isDirty, isFalse);
+    });
+
+    test('undo crosses moves and restyles in order', () {
+      final s = AnnotationEditSession([saved(7)])
+        ..restyle(7, red)
+        ..moveTo(7, target);
+
+      s.undo();
+      expect(s.moved, isEmpty);
+      expect(s.restyled[7], red);
+
+      s.undo();
+      expect(s.restyled, isEmpty);
+      expect(s.isDirty, isFalse);
+    });
+  });
 }
