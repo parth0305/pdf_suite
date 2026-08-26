@@ -59,6 +59,7 @@ class DocumentWriter {
       contentHash: hash,
       displayName: displayName,
       sizeBytes: payload.length,
+      createdByFolio: true,
     );
   }
 }

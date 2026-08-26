@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:folio/domain/models/library_collection.dart';
 import 'package:folio/domain/models/library_document.dart';
 
@@ -42,5 +44,16 @@ abstract interface class LibraryRepository {
     required String contentHash,
     required String displayName,
     required int sizeBytes,
+    bool createdByFolio = false,
+  });
+
+  /// Rewrites a managed document's content, keeping its library row.
+  ///
+  /// Storage is content-addressed, so new bytes live at a new path: this
+  /// writes the new file, repoints the row, and removes the old file only when
+  /// no other row still references it.
+  Future<LibraryDocument> replaceManagedContent({
+    required int documentId,
+    required Uint8List bytes,
   });
 }

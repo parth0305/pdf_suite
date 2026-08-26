@@ -8,6 +8,7 @@ class LibraryDocument {
     required this.sizeBytes,
     required this.addedAt,
     required this.isFavorite,
+    this.createdByFolio = false,
     this.lastOpenedAt,
     this.pageCount,
     this.collectionId,
@@ -20,6 +21,9 @@ class LibraryDocument {
   final DateTime addedAt;
   final DateTime? lastOpenedAt;
   final bool isFavorite;
+
+  /// True when Folio produced this file, so it can be rewritten in place.
+  final bool createdByFolio;
   final int? pageCount;
 
   /// Null means the document sits at the library root. Folders are virtual.
@@ -37,6 +41,7 @@ class LibraryDocument {
   }) => LibraryDocument(
     id: id,
     ref: ref,
+    createdByFolio: createdByFolio,
     displayName: displayName ?? this.displayName,
     sizeBytes: sizeBytes,
     addedAt: addedAt,

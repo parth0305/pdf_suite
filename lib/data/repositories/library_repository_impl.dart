@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:folio/core/errors/app_failure.dart';
@@ -113,13 +114,53 @@ class LibraryRepositoryImpl implements LibraryRepository {
     required String contentHash,
     required String displayName,
     required int sizeBytes,
+    bool createdByFolio = false,
   }) async {
     final id = await _dao.insertDocument(
       ref: ManagedRef(relativePath: relativePath, contentHash: contentHash),
       displayName: displayName,
       sizeBytes: sizeBytes,
+      createdByFolio: createdByFolio,
     );
     return (await all()).firstWhere((d) => d.id == id);
+  }
+
+  @override
+  Future<LibraryDocument> replaceManagedContent({
+    required int documentId,
+    required Uint8List bytes,
+  }) async {
+    final doc = (await all()).firstWhere((d) => d.id == documentId);
+    if (doc.ref is! ManagedRef) {
+      throw StateError('only a managed document can be rewritten');
+    }
+    final oldRef = doc.ref as ManagedRef;
+
+    final hash = sha256.convert(bytes).toString();
+    final relative = p.join(hash.substring(0, 2), '$hash.pdf');
+
+    await _writer.write(
+      destination: File(p.join(_root.path, relative)),
+      produce: (working) => working.writeAsBytes(bytes, flush: true),
+      validate: (working) async => await working.length() == bytes.length,
+    );
+
+    final newRef = ManagedRef(relativePath: relative, contentHash: hash);
+    await _dao.replaceContent(
+      id: documentId,
+      refPayload: newRef.encode(),
+      sizeBytes: bytes.length,
+    );
+
+    // Identical content is stored once, so another row may still need the old
+    // file. Removing it on their behalf would break them.
+    if (oldRef.relativePath != relative &&
+        await _dao.countByRefPayload(oldRef.encode()) == 0) {
+      final old = File(p.join(_root.path, oldRef.relativePath));
+      if (old.existsSync()) await old.delete();
+    }
+
+    return (await all()).firstWhere((d) => d.id == documentId);
   }
 
   @override

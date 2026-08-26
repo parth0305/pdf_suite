@@ -13,6 +13,7 @@ class LibraryDao {
     required String displayName,
     required int sizeBytes,
     int? pageCount,
+    bool createdByFolio = false,
   }) {
     return _db
         .into(_db.documents)
@@ -22,6 +23,7 @@ class LibraryDao {
             displayName: displayName,
             sizeBytes: sizeBytes,
             pageCount: Value(pageCount),
+            createdByFolio: Value(createdByFolio),
           ),
         );
   }
@@ -112,5 +114,28 @@ class LibraryDao {
     isFavorite: row.isFavorite,
     pageCount: row.pageCount,
     collectionId: row.collectionId,
+    createdByFolio: row.createdByFolio,
   );
+
+  /// Repoints a row at new content. Storage is content-addressed, so editing a
+  /// document's bytes gives it a new path; the row keeps its identity.
+  Future<void> replaceContent({
+    required int id,
+    required String refPayload,
+    required int sizeBytes,
+  }) async {
+    await (_db.update(_db.documents)..where((t) => t.id.equals(id))).write(
+      DocumentsCompanion(
+        refPayload: Value(refPayload),
+        sizeBytes: Value(sizeBytes),
+      ),
+    );
+  }
+
+  Future<int> countByRefPayload(String refPayload) async {
+    final rows = await (_db.select(
+      _db.documents,
+    )..where((t) => t.refPayload.equals(refPayload))).get();
+    return rows.length;
+  }
 }

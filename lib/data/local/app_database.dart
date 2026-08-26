@@ -23,6 +23,11 @@ class Documents extends Table {
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
   IntColumn get pageCount => integer().nullable()();
 
+  /// True when Folio itself produced this file, which makes it safe to rewrite
+  /// in place. Imported copies are never rewritten.
+  BoolColumn get createdByFolio =>
+      boolean().withDefault(const Constant(false))();
+
   /// Null means the document sits at the library root.
   ///
   /// Folders are virtual: managed files are stored content-addressed and flat,
@@ -54,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -62,6 +67,12 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(collections);
         await m.addColumn(documents, documents.collectionId);
+      }
+      if (from < 3) {
+        // Existing rows default to false, so documents created before this
+        // column existed are treated as imported and produce a new document
+        // on save. That is the safe direction.
+        await m.addColumn(documents, documents.createdByFolio);
       }
     },
     beforeOpen: (details) async {
