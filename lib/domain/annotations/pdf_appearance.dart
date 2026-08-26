@@ -1,4 +1,4 @@
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 
 /// Content stream for a markup annotation's appearance.
 ///
@@ -65,6 +65,10 @@ String appearanceDict(TextMarkup markup, int streamLength) {
 /// trimmed. Shared with the annotation writer so coordinates are written the
 /// same way everywhere rather than as verbose Dart doubles.
 String pdfNumber(double v) {
-  final s = v.toStringAsFixed(2);
-  return s.endsWith('.00') ? s.substring(0, s.length - 3) : s;
+  var s = v.toStringAsFixed(2);
+  if (s.contains('.')) {
+    s = s.replaceFirst(RegExp(r'0+$'), '');
+    if (s.endsWith('.')) s = s.substring(0, s.length - 1);
+  }
+  return s;
 }

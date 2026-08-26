@@ -11,8 +11,10 @@ import 'package:folio/engine/pdfrx_mappers.dart';
 import 'package:folio/features/home/providers.dart';
 import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/pages/split_sheet.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/features/viewer/annotation_providers.dart';
+import 'package:folio/features/viewer/widgets/drawing_surface.dart';
+import 'package:folio/features/viewer/widgets/drawing_toolbar.dart';
 import 'package:folio/features/viewer/widgets/markup_toolbar.dart';
 import 'package:folio/features/pages/widgets/page_grid.dart';
 import 'package:folio/features/pages/widgets/page_toolbar.dart';
@@ -25,7 +27,9 @@ import 'package:pdfrx/pdfrx.dart';
 
 enum _SidePanel { none, thumbnails, outline }
 
-enum _ViewerMode { read, pages, markup }
+enum _ViewerMode { read, pages, markup, draw }
+
+enum _AnnotateTool { markup, draw }
 
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
@@ -53,6 +57,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   bool _searchOpen = false;
   _SidePanel _panel = _SidePanel.none;
   _ViewerMode _mode = _ViewerMode.read;
+  DrawingKind _tool = DrawingKind.ink;
+  int _drawColour = drawingColours.first;
+  double _drawStrokeWidth = 2;
   int _currentPage = 1;
   int _totalPages = 0;
 
@@ -275,6 +282,37 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     setState(() => _mode = _ViewerMode.read);
   }
 
+  void _enterDrawMode() {
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.draw);
+  }
+
+  Future<void> _leaveDrawMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (ref.read(annotationSessionProvider).session.isDirty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.drawDiscardPrompt),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.pagesDiscard),
+            ),
+          ],
+        ),
+      );
+      if (discard != true) return;
+    }
+    if (!mounted) return;
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.read);
+  }
+
   /// Turns the live selection into staged markup.
   ///
   /// Each selected range carries its page and a character span; the matching
@@ -309,16 +347,19 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
-  Future<void> _saveMarkup() async {
+  Future<void> _saveAnnotations() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(annotationSessionProvider.notifier);
-    final markups = ref.read(annotationSessionProvider).session.markups;
+    final annotations = ref.read(annotationSessionProvider).session.annotations;
 
     controller.setBusy(true);
     try {
       final created = await ref
           .read(annotationRepositoryProvider)
-          .saveMarkup(sourceDocumentId: widget.document.id, markups: markups);
+          .saveAnnotations(
+            sourceDocumentId: widget.document.id,
+            annotations: annotations,
+          );
       await ref.read(libraryControllerProvider.notifier).refresh();
 
       if (!mounted) return;
@@ -447,6 +488,24 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           },
         ),
         pagePaintCallbacks: [_paintSearchMatches],
+        // Only present in draw mode: in read mode there is no overlay at all,
+        // so it cannot compete with the viewer for scroll or pinch gestures.
+        pageOverlaysBuilder: _mode != _ViewerMode.draw
+            ? null
+            : (context, pageRect, page) => [
+                DrawingSurface(
+                  tool: _tool,
+                  colorArgb: _drawColour,
+                  strokeWidth: _drawStrokeWidth,
+                  // The overlay is positioned at the page, so its own local
+                  // space starts at the page's top-left. Passing the viewer
+                  // space rect would offset every stroke by the page origin.
+                  pageRect: Offset.zero & pageRect.size,
+                  pageWidthPt: page.width,
+                  pageHeightPt: page.height,
+                  pageIndex: page.pageNumber - 1,
+                ),
+              ],
         onViewerReady: _onReady,
         onDocumentChanged: (doc) {
           if (doc != null && mounted) {
@@ -488,11 +547,21 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ],
                   ),
           ),
+          if (_mode == _ViewerMode.draw)
+            DrawingToolbar(
+              tool: _tool,
+              colorArgb: _drawColour,
+              strokeWidth: _drawStrokeWidth,
+              onToolChanged: (t) => setState(() => _tool = t),
+              onColourChanged: (c) => setState(() => _drawColour = c),
+              onStrokeWidthChanged: (w) => setState(() => _drawStrokeWidth = w),
+              onSave: _saveAnnotations,
+            ),
           if (_mode == _ViewerMode.markup)
             MarkupToolbar(
               hasSelection: _selection?.hasSelectedText ?? false,
               onMarkup: _markupSelection,
-              onSave: _saveMarkup,
+              onSave: _saveAnnotations,
             ),
           if (_mode == _ViewerMode.pages)
             PageToolbar(
@@ -539,6 +608,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         icon: const Icon(Icons.arrow_back),
         onPressed: _leaveMarkupMode,
       ),
+      _ViewerMode.draw => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _leaveDrawMode,
+      ),
       _ViewerMode.read => null,
     },
     actions: [
@@ -556,11 +629,36 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   ? _leavePagesMode()
                   : _enterPagesMode(),
       ),
+      // One menu rather than one icon per tool: the action bar was already at
+      // the width limit, and a second annotation icon overflowed it. Sticky
+      // notes and stamps land here too rather than pushing it over again.
       if (_mode == _ViewerMode.read)
-        IconButton(
-          tooltip: l10n.markupMode,
-          icon: const Icon(Icons.format_color_fill),
-          onPressed: _totalPages == 0 ? null : _enterMarkupMode,
+        PopupMenuButton<_AnnotateTool>(
+          tooltip: l10n.annotateMode,
+          icon: const Icon(Icons.edit_outlined),
+          enabled: _totalPages != 0,
+          onSelected: (tool) => switch (tool) {
+            _AnnotateTool.markup => _enterMarkupMode(),
+            _AnnotateTool.draw => _enterDrawMode(),
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: _AnnotateTool.markup,
+              child: ListTile(
+                leading: const Icon(Icons.format_color_fill),
+                title: Text(l10n.markupMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.draw,
+              child: ListTile(
+                leading: const Icon(Icons.draw_outlined),
+                title: Text(l10n.drawMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
         ),
       if (_mode == _ViewerMode.pages)
         IconButton(

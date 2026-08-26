@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/features/viewer/annotation_providers.dart';
 import 'package:folio/l10n/app_localizations.dart';
 
@@ -21,7 +21,7 @@ class MarkupToolbar extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(annotationSessionProvider);
     final controller = ref.read(annotationSessionProvider.notifier);
-    final count = state.session.markups.length;
+    final count = state.session.annotations.length;
 
     return Material(
       elevation: 3,

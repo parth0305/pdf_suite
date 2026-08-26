@@ -75,6 +75,32 @@ is what `PdfObjectReader` exists for. It matches dictionaries by brace balance
 rather than regex, and merges into an existing `/Annots` array rather than
 replacing it. It parses page dictionaries and nothing else, deliberately.
 
+`Annotation` is a **sealed** supertype of `TextMarkup` and `DrawingAnnotation`,
+so the writer's switch over annotation kinds is exhaustive: adding a kind
+without teaching the writer about it is a compile error, not a silently
+dropped annotation. Dart only allows a sealed type to be extended inside its
+own library, so the three types are one library made of `part` files.
+
+Both kinds share one `AnnotationSession`, and therefore one undo stack and one
+Save. Two parallel sessions would have given the user two undo stacks and
+produced two documents from a single editing sitting.
+
+## Screen coordinates are converted at one tested boundary
+
+A drawing is captured in canvas pixels and must be written in PDF user space,
+which is y-**up** and measured in points. Getting that flip wrong puts every
+stroke at the mirror image of where the user drew it.
+
+The conversion is two pure functions, `canvasToPdf` and `pdfToCanvas` in
+`page_coordinates.dart`, tested directly rather than only through the UI: they
+normalise against the page's on-screen rect, so zoom and scroll need no special
+handling — a stroke lands under the finger at any zoom because the rect grows
+with it.
+
+The drawing preview converts staged points *back* with `pdfToCanvas` rather
+than keeping a second copy in canvas space, so what the user sees on screen and
+what gets written cannot drift apart.
+
 ## Metadata is preserved by incremental update
 
 The writer discards a source document's `/Info`, so page operations would

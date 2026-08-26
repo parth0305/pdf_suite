@@ -1,0 +1,35 @@
+// One entrypoint for every integration suite.
+//
+// `flutter test integration_test` treats each file as a separate Dart
+// entrypoint, so it rebuilds, reinstalls and relaunches the app once per file.
+// Running them through a single entrypoint installs once and keeps the app
+// alive for the whole run.
+//
+// Each suite still gets its own group, so a failure names the file it came
+// from. Run one file directly when you want it in isolation.
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+
+import 'drawing_flow_test.dart' as drawing_flow;
+import 'library_flow_test.dart' as library_flow;
+import 'markup_flow_test.dart' as markup_flow;
+import 'page_editor_test.dart' as page_editor;
+import 'page_operations_flow_test.dart' as page_operations_flow;
+import 'pages_mode_test.dart' as pages_mode;
+import 'pdfrx_engine_test.dart' as pdfrx_engine;
+import 'platform_handles_test.dart' as platform_handles;
+import 'viewer_flow_test.dart' as viewer_flow;
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  group('library_flow', library_flow.main);
+  group('viewer_flow', viewer_flow.main);
+  group('pdfrx_engine', pdfrx_engine.main);
+  group('platform_handles', platform_handles.main);
+  group('page_editor', page_editor.main);
+  group('page_operations_flow', page_operations_flow.main);
+  group('pages_mode', pages_mode.main);
+  group('markup_flow', markup_flow.main);
+  group('drawing_flow', drawing_flow.main);
+}

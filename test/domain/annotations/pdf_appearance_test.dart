@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 
 const quad = TextRect(left: 60, top: 712, right: 120, bottom: 700);

@@ -8,7 +8,7 @@ import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/data/repositories/annotation_repository_impl.dart';
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/editing/pdf_metadata.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 
@@ -71,9 +71,9 @@ void main() {
     );
     final before = await File(sourcePath).readAsBytes();
 
-    final out = await subject.saveMarkup(
+    final out = await subject.saveAnnotations(
       sourceDocumentId: id,
-      markups: [markup()],
+      annotations: [markup()],
     );
 
     expect(out.displayName, 'Contract (edited).pdf');
@@ -83,9 +83,9 @@ void main() {
 
   test('the output carries the annotation', () async {
     final id = await seed();
-    final out = await subject.saveMarkup(
+    final out = await subject.saveAnnotations(
       sourceDocumentId: id,
-      markups: [markup()],
+      annotations: [markup()],
     );
 
     final text = await File(
@@ -97,9 +97,9 @@ void main() {
   // The SP-2b regression guard, on the new write path.
   test('metadata survives the annotation save', () async {
     final id = await seed();
-    final out = await subject.saveMarkup(
+    final out = await subject.saveAnnotations(
       sourceDocumentId: id,
-      markups: [markup()],
+      annotations: [markup()],
     );
 
     final meta = PdfMetadata.readFrom(
@@ -109,13 +109,16 @@ void main() {
     expect(meta?.author, 'A Sharma');
   });
 
-  test('an empty markup list is rejected before anything is written', () async {
-    final id = await seed();
+  test(
+    'an empty annotation list is rejected before anything is written',
+    () async {
+      final id = await seed();
 
-    await expectLater(
-      subject.saveMarkup(sourceDocumentId: id, markups: const []),
-      throwsA(isA<ArgumentError>()),
-    );
-    expect(await library.all(), hasLength(1));
-  });
+      await expectLater(
+        subject.saveAnnotations(sourceDocumentId: id, annotations: const []),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(await library.all(), hasLength(1));
+    },
+  );
 }

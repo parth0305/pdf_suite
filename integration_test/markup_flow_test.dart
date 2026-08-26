@@ -11,7 +11,7 @@ import 'package:folio/data/repositories/annotation_repository_impl.dart';
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
 import 'package:folio/domain/annotations/quad_merge.dart';
-import 'package:folio/domain/annotations/text_markup.dart';
+import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/editing/pdf_metadata.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
@@ -93,9 +93,9 @@ void main() {
       )).bgraPixels;
       await engine.close(before);
 
-      final out = await annotations.saveMarkup(
+      final out = await annotations.saveAnnotations(
         sourceDocumentId: src.id,
-        markups: [
+        annotations: [
           TextMarkup(kind: MarkupKind.highlight, pageIndex: 0, quads: quads),
         ],
       );
@@ -139,9 +139,9 @@ void main() {
         )).bgraPixels;
         await engine.close(before);
 
-        final out = await annotations.saveMarkup(
+        final out = await annotations.saveAnnotations(
           sourceDocumentId: src.id,
-          markups: [TextMarkup(kind: kind, pageIndex: 0, quads: quads)],
+          annotations: [TextMarkup(kind: kind, pageIndex: 0, quads: quads)],
         );
 
         final after = await engine.open(
@@ -167,9 +167,9 @@ void main() {
       final src = await seed('sample_3page.pdf', 'Contract.pdf');
       final before = await hashOf(src);
 
-      await annotations.saveMarkup(
+      await annotations.saveAnnotations(
         sourceDocumentId: src.id,
-        markups: [
+        annotations: [
           TextMarkup(
             kind: MarkupKind.highlight,
             pageIndex: 0,
@@ -183,9 +183,9 @@ void main() {
 
     test('extracted text is unchanged by markup', () async {
       final src = await seed('sample_3page.pdf', 'Contract.pdf');
-      final out = await annotations.saveMarkup(
+      final out = await annotations.saveAnnotations(
         sourceDocumentId: src.id,
-        markups: [
+        annotations: [
           TextMarkup(
             kind: MarkupKind.highlight,
             pageIndex: 0,
@@ -205,9 +205,9 @@ void main() {
     // SP-2b must not have regressed on this new write path.
     test('metadata survives the annotation save', () async {
       final src = await seed('with_metadata.pdf', 'Meta.pdf');
-      final out = await annotations.saveMarkup(
+      final out = await annotations.saveAnnotations(
         sourceDocumentId: src.id,
-        markups: [
+        annotations: [
           TextMarkup(
             kind: MarkupKind.highlight,
             pageIndex: 0,
@@ -226,15 +226,15 @@ void main() {
       final src = await seed('sample_3page.pdf', 'Contract.pdf');
       final quads = await quadsOver(src, 'Confidential');
 
-      final once = await annotations.saveMarkup(
+      final once = await annotations.saveAnnotations(
         sourceDocumentId: src.id,
-        markups: [
+        annotations: [
           TextMarkup(kind: MarkupKind.highlight, pageIndex: 0, quads: quads),
         ],
       );
-      final twice = await annotations.saveMarkup(
+      final twice = await annotations.saveAnnotations(
         sourceDocumentId: once.id,
-        markups: [
+        annotations: [
           TextMarkup(kind: MarkupKind.underline, pageIndex: 0, quads: quads),
         ],
       );
@@ -263,9 +263,9 @@ void main() {
       final doc = await library.importFile(f.path, displayName: 'Modern.pdf');
 
       await expectLater(
-        annotations.saveMarkup(
+        annotations.saveAnnotations(
           sourceDocumentId: doc.id,
-          markups: [
+          annotations: [
             const TextMarkup(
               kind: MarkupKind.highlight,
               pageIndex: 0,

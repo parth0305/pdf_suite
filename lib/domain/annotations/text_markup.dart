@@ -1,4 +1,4 @@
-import 'package:folio/domain/engine/pdf_types.dart';
+part of 'annotation.dart';
 
 enum MarkupKind { highlight, underline, strikeOut }
 
@@ -6,7 +6,7 @@ enum MarkupKind { highlight, underline, strikeOut }
 ///
 /// [quads] come straight from `PageText.charRects`, which are already PDF user
 /// space with y-up coordinates, so no conversion is needed anywhere.
-class TextMarkup {
+final class TextMarkup extends Annotation {
   const TextMarkup({
     required this.kind,
     required this.pageIndex,
@@ -15,11 +15,14 @@ class TextMarkup {
   });
 
   final MarkupKind kind;
+
+  @override
   final int pageIndex;
   final List<TextRect> quads;
   final int colorArgb;
 
   /// The PDF annotation subtype name. Note StrikeOut, not Strikethrough.
+  @override
   String get pdfSubtype => switch (kind) {
     MarkupKind.highlight => 'Highlight',
     MarkupKind.underline => 'Underline',

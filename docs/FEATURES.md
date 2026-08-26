@@ -74,7 +74,31 @@ Verified by rendering the page before and after and requiring the pixels to
 differ — a file that merely opens proves nothing.
 
 Editing or deleting markup after it has been saved is **not** yet possible; that
-needs reading `/Annots` back, which is SP-3b.
+needs reading `/Annots` back, which is not yet scoped.
+
+## SP-3b — Ink and shapes
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Freehand pen | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+| Rectangle | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+| Oval | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+| Line | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+| Arrow | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+| Colour and thickness | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+| Undo staged drawings | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+| Save drawings into the PDF | ✅ | ✅ | 🟡 | 🟡 | ✅ |
+
+Drawing needs **no text layer**, so it works on scanned pages where markup
+cannot apply — asserted against `scanned_no_text.pdf` by rendering the page
+before and after and requiring the pixels to differ.
+
+Drawings and text markup share one session, one undo stack and one Save, so
+marking up and drawing in a single sitting produces one document, not two.
+
+Each drawing carries its own appearance stream. That stream is load-bearing,
+not decoration: removing it changes exactly zero pixels on reopen, because
+PDFium does not synthesise an appearance from `/InkList` or `/L`.
 
 ## Not in SP-1 or SP-2a
 
