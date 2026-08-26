@@ -100,6 +100,26 @@ Each drawing carries its own appearance stream. That stream is load-bearing,
 not decoration: removing it changes exactly zero pixels on reopen, because
 PDFium does not synthesise an appearance from `/InkList` or `/L`.
 
+## SP-3c — Editing saved annotations
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Delete a saved annotation | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Change colour | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Change thickness | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Undo staged changes | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Deleting works on annotations from **any** producer — it removes a reference,
+which needs no understanding of the annotation. Changing colour or thickness
+needs to regenerate an appearance, so it is offered only where Folio can read
+the geometry back: `/QuadPoints` for markup, `/InkList` for ink, `/Rect` for
+squares and circles, `/L` for lines. Anything else is listed as **delete only**
+rather than silently ignoring the controls.
+
+Editing a document Folio created updates it in place, so fixing one colour
+three times leaves one document rather than four. Editing an imported document
+produces a new one and leaves the imported copy byte-identical.
+
 ## Not in SP-1 or SP-2a
 
 Freehand ink, shapes, sticky notes, stamps, signatures, scanner, OCR,

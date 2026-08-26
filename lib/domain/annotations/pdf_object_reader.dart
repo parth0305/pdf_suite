@@ -1,4 +1,5 @@
 import 'package:folio/core/errors/app_failure.dart';
+import 'package:folio/domain/annotations/pdf_object_index.dart';
 
 /// A page object located in a PDF's text.
 class PdfPageObject {
@@ -38,55 +39,24 @@ class PdfObjectReader {
   final bool usesXrefStream;
 
   static PdfObjectReader parse(String pdfText) {
-    // Object number -> its latest dictionary, plus the order object numbers
-    // first appear, so page order survives the de-duplication.
-    final latest = <int, String>{};
-    final order = <int>[];
+    final index = PdfObjectIndex.parse(pdfText);
+    final pages = <PdfPageObject>[];
 
-    // Dictionaries are matched by brace balance rather than a regex, so nested
-    // << >> cannot terminate one early - the spike's regex broke on exactly
-    // that.
-    for (final start in RegExp(r'(\d+)\s+0\s+obj').allMatches(pdfText)) {
-      final open = pdfText.indexOf('<<', start.end);
-      if (open < 0) continue;
-      final close = _matchingClose(pdfText, open);
-      if (close < 0) continue;
-
-      final dict = pdfText.substring(open, close + 2);
+    for (final number in index.objectNumbers) {
+      final dict = index.bodyOf(number)!;
       // /Type /Page but not /Pages: the next character must not be a letter.
       if (!RegExp(r'/Type\s*/Page(?![a-zA-Z])').hasMatch(dict)) continue;
 
-      final number = int.parse(start.group(1)!);
-      if (!latest.containsKey(number)) order.add(number);
-      latest[number] = dict;
-    }
-
-    final pages = [
-      for (final number in order)
+      pages.add(
         PdfPageObject(
           objectNumber: number,
-          rawDictionary: latest[number]!,
-          existingAnnotRefs: _readAnnotRefs(latest[number]!),
+          rawDictionary: dict,
+          existingAnnotRefs: _readAnnotRefs(dict),
         ),
-    ];
-
-    return PdfObjectReader._(pages, RegExp(r'/Type\s*/XRef').hasMatch(pdfText));
-  }
-
-  /// Index of the `>>` closing the `<<` at [openIndex], honouring nesting.
-  static int _matchingClose(String text, int openIndex) {
-    var depth = 0;
-    for (var i = openIndex; i < text.length - 1; i++) {
-      if (text[i] == '<' && text[i + 1] == '<') {
-        depth++;
-        i++;
-      } else if (text[i] == '>' && text[i + 1] == '>') {
-        depth--;
-        if (depth == 0) return i;
-        i++;
-      }
+      );
     }
-    return -1;
+
+    return PdfObjectReader._(pages, index.usesXrefStream);
   }
 
   static List<String> _readAnnotRefs(String dict) {

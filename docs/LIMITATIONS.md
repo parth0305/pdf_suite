@@ -42,9 +42,17 @@ cross-reference table. Documents using PDF 1.5+ cross-reference streams are
 **refused with a clear message** rather than silently producing a file whose
 annotations never appear.
 
-Saved annotations — markup and drawings alike — cannot yet be moved, restyled or
-deleted: that requires reading `/Annots` back out, which is not yet scoped.
-Anything staged can be undone freely before saving.
+Saved annotations can be deleted, and their colour and thickness changed, but
+their **geometry cannot be edited** — nothing can be moved, resized or
+reshaped. Delete and redraw instead.
+
+Restyling is offered only for annotations whose geometry Folio can read back:
+markup, ink, squares, circles and lines. Any other subtype is delete-only,
+because regenerating an appearance for a subtype Folio does not model would
+change how another tool's annotation renders.
+
+Each edit supersedes an appearance stream and leaves the old one in the file,
+so repeatedly editing one document grows it slowly. Nothing is compacted.
 
 Appearance streams are generated for every markup. PDFium renders markup without
 them, but portability to other viewers could not be measured on this machine, and

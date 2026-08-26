@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/domain/models/document_ref.dart';
@@ -109,11 +110,18 @@ class _FakeRepo implements LibraryRepository {
     required String contentHash,
     required String displayName,
     required int sizeBytes,
+    bool createdByFolio = false,
   }) async {
     final doc = _make(displayName);
     docs.add(doc);
     return doc;
   }
+
+  @override
+  Future<LibraryDocument> replaceManagedContent({
+    required int documentId,
+    required Uint8List bytes,
+  }) async => docs.firstWhere((d) => d.id == documentId);
 
   @override
   Future<void> deleteCollection(int id) async {

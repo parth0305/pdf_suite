@@ -36,13 +36,13 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-3b.
+Last measured on 2026-08-26, after SP-3c.
 
 | Platform | Result |
 |---|---|
-| Unit (host) | 387 passing |
-| iOS simulator (iPhone 16 Plus, iOS 18.6) | 65 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 64 passed, 2 skipped |
+| Unit (host) | 457 passing |
+| iOS simulator (iPhone 16 Plus, iOS 18.6) | 74 passed, 1 skipped |
+| Android emulator (API 35, x86_64) | 73 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the

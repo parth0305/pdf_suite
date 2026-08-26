@@ -444,4 +444,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get annotateMode => 'Annotate';
+
+  @override
+  String get annotationsMode => 'Edit annotations';
+
+  @override
+  String get annotationsEmpty => 'This page has no annotations.';
+
+  @override
+  String get annotationsDeleteOnly => 'Delete only';
+
+  @override
+  String get annotationsDelete => 'Delete';
+
+  @override
+  String get annotationsUndo => 'Undo';
+
+  @override
+  String get annotationsSave => 'Save changes';
+
+  @override
+  String annotationsSaved(String name) {
+    return 'Saved $name';
+  }
+
+  @override
+  String get annotationsSelectFirst => 'Tap an annotation to select it.';
+
+  @override
+  String get annotationsDiscardPrompt =>
+      'Discard your changes? The document is unchanged either way.';
 }
