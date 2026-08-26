@@ -39,6 +39,9 @@ dependencies:
   intl: any
   logging: 1.3.0
   crypto: ^3.0.7
+  # AES for PDF 2.0 encryption (R6/AESV3). Dart ships no AES; Bouncy Castle
+  # is MIT-licensed, which the licence audit accepts.
+  pointycastle: ^4.0.0
   path_provider: 2.1.6
   path: ^1.9.1
   pdfrx: ^2.4.7
