@@ -240,5 +240,18 @@
       }
     }
   },
-  "signDiscardPrompt": "Discard this signature placement? The document is unchanged either way."
+  "signDiscardPrompt": "Discard this signature placement? The document is unchanged either way.",
+  "noteMode": "Sticky note",
+  "noteText": "Note",
+  "noteHint": "What do you want to say?",
+  "notePlaceHint": "Tap where the note should go.",
+  "noteEmpty": "A note needs some text.",
+  "stampMode": "Stamp",
+  "stampPlaceHint": "Tap where the stamp should go.",
+  "stampApproved": "Approved",
+  "stampRejected": "Rejected",
+  "stampDraft": "Draft",
+  "stampConfidential": "Confidential",
+  "stampReviewed": "Reviewed",
+  "stampUrgent": "Urgent"
 }

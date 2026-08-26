@@ -519,4 +519,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signDiscardPrompt =>
       'Discard this signature placement? The document is unchanged either way.';
+
+  @override
+  String get noteMode => 'Sticky note';
+
+  @override
+  String get noteText => 'Note';
+
+  @override
+  String get noteHint => 'What do you want to say?';
+
+  @override
+  String get notePlaceHint => 'Tap where the note should go.';
+
+  @override
+  String get noteEmpty => 'A note needs some text.';
+
+  @override
+  String get stampMode => 'Stamp';
+
+  @override
+  String get stampPlaceHint => 'Tap where the stamp should go.';
+
+  @override
+  String get stampApproved => 'Approved';
+
+  @override
+  String get stampRejected => 'Rejected';
+
+  @override
+  String get stampDraft => 'Draft';
+
+  @override
+  String get stampConfidential => 'Confidential';
+
+  @override
+  String get stampReviewed => 'Reviewed';
+
+  @override
+  String get stampUrgent => 'Urgent';
 }

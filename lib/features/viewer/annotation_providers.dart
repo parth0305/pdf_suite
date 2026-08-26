@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/domain/annotations/annotation_session.dart';
 import 'package:folio/domain/annotations/page_coordinates.dart';
+import 'package:folio/domain/annotations/pdf_point.dart';
 import 'package:folio/domain/annotations/stroke_smoothing.dart';
 import 'package:folio/domain/models/saved_signature.dart';
 import 'package:folio/domain/signatures/signature_geometry.dart';
@@ -149,6 +150,36 @@ class AnnotationController extends Notifier<AnnotationState> {
         colorArgb: colorArgb,
         strokeWidth: strokeWidth,
       ),
+    );
+    _touch();
+  }
+
+  /// Stages a sticky note. Empty text is refused: an icon that says nothing
+  /// only clutters the page.
+  void addNote({
+    required int pageIndex,
+    required PdfPoint anchorPt,
+    required String contents,
+  }) {
+    if (contents.trim().isEmpty) return;
+
+    state.session.add(
+      StickyNote(
+        pageIndex: pageIndex,
+        anchorPt: anchorPt,
+        contents: contents.trim(),
+      ),
+    );
+    _touch();
+  }
+
+  void addStamp({
+    required StampPreset preset,
+    required int pageIndex,
+    required PdfPoint anchorPt,
+  }) {
+    state.session.add(
+      Stamp(preset: preset, pageIndex: pageIndex, anchorPt: anchorPt),
     );
     _touch();
   }
