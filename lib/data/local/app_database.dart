@@ -10,6 +10,21 @@ class Collections extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+/// A signature the user drew once, reusable on any document.
+///
+/// [strokes] is JSON: a list of stroke point lists, normalised into a unit box
+/// with y increasing upward. [kind] and [imageBytes] exist so a photographed
+/// signature can land later without migrating what is already stored.
+class Signatures extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get label => text()();
+  TextColumn get kind => text().withDefault(const Constant('drawn'))();
+  TextColumn get strokes => text()();
+  RealColumn get aspectRatio => real()();
+  BlobColumn get imageBytes => blob().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 class Documents extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -41,7 +56,7 @@ class Documents extends Table {
   )();
 }
 
-@DriftDatabase(tables: [Documents, Collections])
+@DriftDatabase(tables: [Documents, Collections, Signatures])
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
     : super(
@@ -59,7 +74,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -73,6 +88,9 @@ class AppDatabase extends _$AppDatabase {
         // column existed are treated as imported and produce a new document
         // on save. That is the safe direction.
         await m.addColumn(documents, documents.createdByFolio);
+      }
+      if (from < 4) {
+        await m.createTable(signatures);
       }
     },
     beforeOpen: (details) async {
