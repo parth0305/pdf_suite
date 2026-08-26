@@ -106,6 +106,7 @@ Uint8List applyAnnotationEdits(
           drawingAppearanceStream(restyledAnnotation).length,
         ),
       ),
+      StickyNote() || Stamp() => throw StateError('unreachable'),
     };
 
     final apNum = nextObj++;
@@ -182,6 +183,8 @@ Annotation _withStyle(Annotation annotation, AnnotationStyle style) =>
         colorArgb: style.colorArgb,
         strokeWidth: style.strokeWidth,
       ),
+      StickyNote() => annotation,
+      Stamp() => annotation,
     };
 
 /// Rewrites only `/C`, `/BS` and `/AP`, leaving every other key - including
