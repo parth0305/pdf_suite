@@ -89,6 +89,16 @@ SP-3f's job.
 target is a note, the override rewrites `/Contents` and emits no `/AP`.
 Geometry is still copied verbatim, exactly as SP-3c requires.
 
+`AnnotationStyle` already defines `==` and `hashCode`; both must include
+`contents`. Leaving it out would make two different edits compare equal, and the
+session keeps only the latest style per object — so an edit would be silently
+discarded.
+
+A note is restylable for its **colour and text, not its stroke width**: a `/Text`
+icon has no stroke. The edit toolbar disables the thickness slider when the
+selection is a note, the same way it already disables everything for a
+delete-only annotation.
+
 ## Architecture
 
 ### `lib/domain/annotations/sticky_note.dart` — new, part of `annotation.dart`
@@ -162,7 +172,10 @@ save rather than one per stamp.
 
 - `pdf_annotation_writer.dart` — appearance generation becomes optional; a
   shared font object is emitted once when any stamp is present; the geometry
-  switch gains `/Contents` for notes.
+  switch gains `/Contents` for notes. **Two** switches over the sealed type stop
+  being exhaustive and must both be extended: the one choosing an appearance and
+  the one in `_annotationDict`.
+- `annotation.dart` — gains `part 'sticky_note.dart';` and `part 'stamp.dart';`.
 - `pdf_annotation_reader.dart` — reconstructs a `StickyNote` from `/Contents`
   so its text can be edited. `/Stamp` stays unreconstructed, hence delete-only.
 - `pdf_annotation_editor.dart` — `AnnotationStyle.contents`; a note override
@@ -197,6 +210,7 @@ Unit:
   emitted once for several stamps;
 - stamp box width grows with label length;
 - the sealed switch covers all four annotation kinds;
+- two `AnnotationStyle` values differing only in `contents` are not equal;
 - `AnnotationStyle.contents` rewrites `/Contents` and leaves `/Rect` untouched;
 - every SP-3a, SP-3b, SP-3c and SP-3d test still passes.
 
