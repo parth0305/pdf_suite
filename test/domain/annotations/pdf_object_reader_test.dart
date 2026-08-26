@@ -260,12 +260,23 @@ void main() {
 
     // Replacing a page's /Resources strips the fonts its own content depends
     // on, and the page renders blank.
+    //
+    // Asserting both entries are merely PRESENT is not enough: a writer that
+    // appends a SECOND /Resources leaves the original in the string and passes
+    // that check, while a PDF reader takes only one of them. Assert there is
+    // exactly one, and that it holds both.
     test('existing /Resources survive the merge', () {
       final out = rewrite(
         '<< /Type /Page /Parent 2 0 R '
         '/Resources << /Font << /F1 9 0 R >> >> >>',
       );
 
+      expect(
+        RegExp(r'/Resources').allMatches(out).length,
+        1,
+        reason: 'one /Resources, not two',
+      );
+      expect(RegExp(r'/Font').allMatches(out).length, 1, reason: 'one /Font');
       expect(out, contains('/F1 9 0 R'), reason: 'the page own font');
       expect(out, contains('/WMF1 21 0 R'), reason: 'ours');
     });
@@ -276,6 +287,8 @@ void main() {
         '/Resources << /ExtGState << /GS0 8 0 R >> >> >>',
       );
 
+      expect(RegExp(r'/Resources').allMatches(out).length, 1);
+      expect(RegExp(r'/ExtGState').allMatches(out).length, 1);
       expect(out, contains('/GS0 8 0 R'));
       expect(out, contains('/WMGS 22 0 R'));
     });
