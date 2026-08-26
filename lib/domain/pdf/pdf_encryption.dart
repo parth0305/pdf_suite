@@ -1,9 +1,14 @@
 // PDF standard security handler, revision 2 (RC4, 40-bit), per ISO 32000-1
-// section 7.6.3. Used only to generate test fixtures.
+// section 7.6.3.
 //
-// This exists because no free Dart package produces an encrypted PDF and no
-// encryption tool is installed on the development machine. The app itself does
-// not author encryption in SP-1.
+// Written by hand because no permissively licensed Dart package produces an
+// encrypted PDF. It began life generating test fixtures; SP-5a moved it into
+// the app, where the object layer uses it to encrypt documents.
+//
+// RC4-40 is NOT protection worth offering to a user. Nothing in the app
+// exposes it: it exists to prove the encryption pipeline against a cipher that
+// is already verified, so that when AES-256 arrives the only new variable is
+// the cipher.
 import 'dart:convert';
 import 'dart:typed_data';
 

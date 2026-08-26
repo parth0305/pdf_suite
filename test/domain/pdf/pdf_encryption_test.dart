@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../scripts/pdf_encrypt.dart';
+import 'package:folio/domain/pdf/pdf_encryption.dart';
 
 String hex(List<int> b) =>
     b.map((x) => x.toRadixString(16).padLeft(2, '0')).join().toUpperCase();
