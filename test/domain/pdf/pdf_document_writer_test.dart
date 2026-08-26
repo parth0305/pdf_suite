@@ -87,4 +87,41 @@ void main() {
       throwsA(isA<UnsupportedPdfStructure>()),
     );
   });
+
+  group('encrypting', () {
+    String encrypted() => latin1.decode(
+      writePdfDocument(
+        bytesOf(source),
+        parsePdfObjects(bytesOf(source)),
+        encryption: const PdfEncryption(userPassword: 'folio-test'),
+      ),
+    );
+
+    test('the trailer references an /Encrypt dictionary', () {
+      expect(encrypted(), contains('/Encrypt'));
+    });
+
+    test('the trailer carries an /ID', () {
+      // Revision 2 derives its key from the first /ID element; without one a
+      // reader cannot open the document at all.
+      expect(encrypted(), contains('/ID [<'));
+    });
+
+    // The /Encrypt dictionary and the /ID are what a reader needs BEFORE it
+    // can derive a key. Encrypting either produces a file nothing can open.
+    test('the /Encrypt dictionary itself is not encrypted', () {
+      final out = encrypted();
+
+      expect(out, contains('/Filter /Standard'));
+      expect(out, contains('/R 2'));
+    });
+
+    test('the password never appears in the output', () {
+      expect(encrypted(), isNot(contains('folio-test')));
+    });
+
+    test('an unencrypted rewrite has no /Encrypt', () {
+      expect(rewritten(), isNot(contains('/Encrypt')));
+    });
+  });
 }

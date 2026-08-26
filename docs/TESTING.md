@@ -36,7 +36,7 @@ builder, so no test data ships in release builds.
 
 ## Current status
 
-Last measured on 2026-08-26, after SP-4a.
+Last measured on 2026-08-27, after SP-5a.
 
 | Platform | Result |
 |---|---|
@@ -83,6 +83,14 @@ substitutes standard-14 fonts, so removing it changes nothing on screen.
 Dropping the content streams instead fails at 7,308 pixels. When a mutation
 does not fire, establish whether the assertion is blind or the mutation is
 invisible before changing either.
+
+**The fixture decides what an end-to-end test can see.** SP-5a's encryption
+flow asserts an encrypted document renders identically. Mutating the writer to
+leave dictionary strings unencrypted did **not** fail it — `sample_3page.pdf`
+has no literal strings in its dictionaries, so the leak is invisible there. The
+unit test caught it; the end-to-end one could not. A second assertion using
+`with_metadata.pdf`, which carries `/Title` and `/Author`, now fails on exactly
+that mutation. When choosing a fixture, ask what it makes observable.
 
 **When the bound fires, suspect the machine before the bound.** A long session
 degraded the emulator to the point where opening a 1,539-byte PDF took 31,256
