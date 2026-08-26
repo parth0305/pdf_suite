@@ -42,12 +42,27 @@ Last measured on 2026-08-26, after SP-3e.
 |---|---|
 | Unit (host) | 526 passing |
 | iOS simulator (iPhone 16 Plus, iOS 18.6) | 87 passed, 1 skipped |
-| Android emulator (API 35, x86_64) | 79 passed, 2 skipped |
+| Android emulator (API 35, x86_64) | 86 passed, 2 skipped |
 | Windows | **unit and build only — no integration tests, no manual QA** |
 
 Skipped tests are platform-contract differences, not failures: iOS skips the
 Android SAF-URI contract, and Android skips the two filesystem-path handle
 tests that cannot apply there.
+
+## The runner's own timeout is a benchmark too
+
+Integration suites carry `@Timeout(Duration(minutes: 5))`. The runner's default
+is 30 seconds per test, which is a benchmark: on a loaded emulator, in the
+aggregate run where one app process has already been alive for six minutes, a
+loop over six stamp presets legitimately exceeds it.
+
+Two tests failed that way on Android while passing in isolation on the same
+emulator. The `Can't re-open a database after closing it` error that followed
+was not a second bug — it is the timed-out test's async work continuing after
+`tearDown` closed the database.
+
+Five minutes means something is genuinely wrong, which is the only thing a
+timeout should assert. Do not tighten it.
 
 ## Running the integration suite
 

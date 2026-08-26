@@ -1,3 +1,11 @@
+// Integration tests run against a real device, and the aggregate entrypoint
+// keeps one app process alive across every suite. The runner's default 30s per
+// test is a benchmark, not a pathology bound: a loop over six presets on a
+// loaded emulator legitimately exceeds it. Five minutes means "something is
+// genuinely wrong", which is the only thing a timeout should assert.
+@Timeout(Duration(minutes: 5))
+library;
+
 // One entrypoint for every integration suite.
 //
 // `flutter test integration_test` treats each file as a separate Dart
