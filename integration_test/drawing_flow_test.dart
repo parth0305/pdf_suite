@@ -104,18 +104,22 @@ void main() {
   DrawingAnnotation shape(DrawingKind kind) => DrawingAnnotation(
     kind: kind,
     pageIndex: 0,
-    points: const [PdfPoint(120, 450), PdfPoint(420, 650)],
+    strokes: [
+      const [PdfPoint(120, 450), PdfPoint(420, 650)],
+    ],
     strokeWidth: 4,
   );
 
   const inkStroke = DrawingAnnotation(
     kind: DrawingKind.ink,
     pageIndex: 0,
-    points: [
-      PdfPoint(100, 500),
-      PdfPoint(200, 600),
-      PdfPoint(300, 500),
-      PdfPoint(400, 600),
+    strokes: [
+      [
+        PdfPoint(100, 500),
+        PdfPoint(200, 600),
+        PdfPoint(300, 500),
+        PdfPoint(400, 600),
+      ],
     ],
     strokeWidth: 4,
   );

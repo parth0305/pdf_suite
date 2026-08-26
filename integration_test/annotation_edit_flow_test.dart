@@ -100,20 +100,26 @@ void main() {
         DrawingAnnotation(
           kind: DrawingKind.rectangle,
           pageIndex: 0,
-          points: [PdfPoint(60, 600), PdfPoint(200, 700)],
+          strokes: [
+            [PdfPoint(60, 600), PdfPoint(200, 700)],
+          ],
           strokeWidth: 4,
         ),
         DrawingAnnotation(
           kind: DrawingKind.rectangle,
           pageIndex: 0,
-          points: [PdfPoint(220, 600), PdfPoint(360, 700)],
+          strokes: [
+            [PdfPoint(220, 600), PdfPoint(360, 700)],
+          ],
           colorArgb: 0xFFD32F2F,
           strokeWidth: 4,
         ),
         DrawingAnnotation(
           kind: DrawingKind.rectangle,
           pageIndex: 0,
-          points: [PdfPoint(380, 600), PdfPoint(520, 700)],
+          strokes: [
+            [PdfPoint(380, 600), PdfPoint(520, 700)],
+          ],
           colorArgb: 0xFF1976D2,
           strokeWidth: 4,
         ),
@@ -305,7 +311,9 @@ void main() {
           DrawingAnnotation(
             kind: DrawingKind.rectangle,
             pageIndex: 0,
-            points: [PdfPoint(60, 600), PdfPoint(200, 700)],
+            strokes: [
+              [PdfPoint(60, 600), PdfPoint(200, 700)],
+            ],
             strokeWidth: 4,
           ),
         ],

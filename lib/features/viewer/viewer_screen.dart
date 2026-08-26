@@ -16,7 +16,10 @@ import 'package:folio/features/viewer/annotation_providers.dart';
 import 'package:folio/features/viewer/annotation_edit_providers.dart';
 import 'package:folio/features/viewer/widgets/annotation_edit_toolbar.dart';
 import 'package:folio/features/viewer/widgets/annotation_selection_overlay.dart';
+import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:folio/features/viewer/widgets/drawing_surface.dart';
+import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
+import 'package:folio/features/viewer/widgets/signature_sheet.dart';
 import 'package:folio/features/viewer/widgets/drawing_toolbar.dart';
 import 'package:folio/features/viewer/widgets/markup_toolbar.dart';
 import 'package:folio/features/pages/widgets/page_grid.dart';
@@ -30,9 +33,9 @@ import 'package:pdfrx/pdfrx.dart';
 
 enum _SidePanel { none, thumbnails, outline }
 
-enum _ViewerMode { read, pages, markup, draw, annotations }
+enum _ViewerMode { read, pages, markup, draw, annotations, signature }
 
-enum _AnnotateTool { markup, draw, annotations }
+enum _AnnotateTool { markup, draw, annotations, signature }
 
 class ViewerScreen extends ConsumerStatefulWidget {
   const ViewerScreen({super.key, required this.document});
@@ -316,6 +319,46 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     setState(() => _mode = _ViewerMode.read);
   }
 
+  Future<void> _enterSignatureMode() async {
+    ref.read(annotationSessionProvider.notifier).reset();
+    ref.read(signingProvider.notifier).select(null);
+
+    final chose = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (_) => const SignatureSheet(),
+    );
+    // Entering with nothing chosen would leave the user in a mode that does
+    // nothing when they drag.
+    if (chose != true || !mounted) return;
+    setState(() => _mode = _ViewerMode.signature);
+  }
+
+  Future<void> _leaveSignatureMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (ref.read(annotationSessionProvider).session.isDirty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.signDiscardPrompt),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.pagesDiscard),
+            ),
+          ],
+        ),
+      );
+      if (discard != true) return;
+    }
+    if (!mounted) return;
+    ref.read(annotationSessionProvider.notifier).reset();
+    setState(() => _mode = _ViewerMode.read);
+  }
+
   Future<void> _enterAnnotationsMode() async {
     final controller = ref.read(annotationEditProvider.notifier);
     controller.reset();
@@ -580,14 +623,23 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         // Only present in draw mode: in read mode there is no overlay at all,
         // so it cannot compete with the viewer for scroll or pinch gestures.
         pageOverlaysBuilder:
-            (_mode != _ViewerMode.draw && _mode != _ViewerMode.annotations)
+            (_mode != _ViewerMode.draw &&
+                _mode != _ViewerMode.annotations &&
+                _mode != _ViewerMode.signature)
             ? null
             : (context, pageRect, page) => [
                 // The overlay is positioned at the page, so its own local
                 // space starts at the page's top-left. Passing the viewer
                 // space rect would offset every stroke and every hit test by
                 // the page origin.
-                if (_mode == _ViewerMode.draw)
+                if (_mode == _ViewerMode.signature)
+                  SignaturePlacementSurface(
+                    pageRect: Offset.zero & pageRect.size,
+                    pageWidthPt: page.width,
+                    pageHeightPt: page.height,
+                    pageIndex: page.pageNumber - 1,
+                  )
+                else if (_mode == _ViewerMode.draw)
                   DrawingSurface(
                     tool: _tool,
                     colorArgb: _drawColour,
@@ -646,6 +698,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ],
                   ),
           ),
+          if (_mode == _ViewerMode.signature) _signatureToolbar(l10n),
           if (_mode == _ViewerMode.annotations)
             AnnotationEditToolbar(
               onSave: _saveAnnotationEdits,
@@ -697,6 +750,49 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     );
   }
 
+  Widget _signatureToolbar(AppLocalizations l10n) {
+    final state = ref.watch(annotationSessionProvider);
+    final controller = ref.read(annotationSessionProvider.notifier);
+    final chosen = ref.watch(signingProvider).chosen;
+
+    return Material(
+      elevation: 3,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  state.session.isEmpty
+                      ? '${chosen?.label ?? ''} · ${l10n.signPlaceHint}'
+                      : l10n.markupCount(state.session.annotations.length),
+                  style: Theme.of(context).textTheme.labelLarge,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: l10n.drawUndo,
+                icon: const Icon(Icons.undo),
+                onPressed: state.session.canUndo ? controller.undo : null,
+              ),
+              // Pinned, never inside a scrolling row.
+              FilledButton.icon(
+                onPressed: state.session.isDirty && !state.busy
+                    ? _saveAnnotations
+                    : null,
+                icon: const Icon(Icons.save_outlined),
+                label: Text(l10n.drawSave),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   PreferredSizeWidget _appBar(AppLocalizations l10n) => AppBar(
     title: Text(
       widget.document.displayName,
@@ -719,6 +815,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       _ViewerMode.annotations => IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: _leaveAnnotationsMode,
+      ),
+      _ViewerMode.signature => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _leaveSignatureMode,
       ),
       _ViewerMode.read => null,
     },
@@ -749,6 +849,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.markup => _enterMarkupMode(),
             _AnnotateTool.draw => _enterDrawMode(),
             _AnnotateTool.annotations => _enterAnnotationsMode(),
+            _AnnotateTool.signature => _enterSignatureMode(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -764,6 +865,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.draw_outlined),
                 title: Text(l10n.drawMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.signature,
+              child: ListTile(
+                leading: const Icon(Icons.draw),
+                title: Text(l10n.signMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

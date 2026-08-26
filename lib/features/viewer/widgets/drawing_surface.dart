@@ -114,12 +114,16 @@ class _DrawingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final drawing in staged) {
-      _drawShape(
-        canvas,
-        drawing.kind,
-        drawing.points.map(_toCanvas).toList(),
-        _paint(drawing.colorArgb, drawing.strokeWidth),
-      );
+      // Every stroke: painting only `points` previews a signature as its
+      // first stroke alone.
+      for (final stroke in drawing.strokes) {
+        _drawShape(
+          canvas,
+          drawing.kind,
+          stroke.map(_toCanvas).toList(),
+          _paint(drawing.colorArgb, drawing.strokeWidth),
+        );
+      }
     }
 
     if (live.length >= 2) {

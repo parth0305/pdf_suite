@@ -219,5 +219,26 @@
     }
   },
   "annotationsSelectFirst": "Tap an annotation to select it.",
-  "annotationsDiscardPrompt": "Discard your changes? The document is unchanged either way."
+  "annotationsDiscardPrompt": "Discard your changes? The document is unchanged either way.",
+  "signMode": "Sign",
+  "signChoose": "Choose a signature",
+  "signNone": "No signatures yet. Draw one to get started.",
+  "signAdd": "New signature",
+  "signDraw": "Draw your signature",
+  "signClear": "Clear",
+  "signSave": "Save signature",
+  "signLabel": "Label",
+  "signLabelHint": "Full, Initials…",
+  "signRename": "Rename",
+  "signDelete": "Delete",
+  "signPlaceHint": "Drag a box where the signature should go.",
+  "signSaved": "Signed {name}",
+  "@signSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "signDiscardPrompt": "Discard this signature placement? The document is unchanged either way."
 }

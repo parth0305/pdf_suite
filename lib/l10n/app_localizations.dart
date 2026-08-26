@@ -957,6 +957,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discard your changes? The document is unchanged either way.'**
   String get annotationsDiscardPrompt;
+
+  /// No description provided for @signMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign'**
+  String get signMode;
+
+  /// No description provided for @signChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a signature'**
+  String get signChoose;
+
+  /// No description provided for @signNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No signatures yet. Draw one to get started.'**
+  String get signNone;
+
+  /// No description provided for @signAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'New signature'**
+  String get signAdd;
+
+  /// No description provided for @signDraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw your signature'**
+  String get signDraw;
+
+  /// No description provided for @signClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get signClear;
+
+  /// No description provided for @signSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save signature'**
+  String get signSave;
+
+  /// No description provided for @signLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get signLabel;
+
+  /// No description provided for @signLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Full, Initials…'**
+  String get signLabelHint;
+
+  /// No description provided for @signRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get signRename;
+
+  /// No description provided for @signDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get signDelete;
+
+  /// No description provided for @signPlaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag a box where the signature should go.'**
+  String get signPlaceHint;
+
+  /// No description provided for @signSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed {name}'**
+  String signSaved(String name);
+
+  /// No description provided for @signDiscardPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard this signature placement? The document is unchanged either way.'**
+  String get signDiscardPrompt;
 }
 
 class _AppLocalizationsDelegate

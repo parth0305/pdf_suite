@@ -51,6 +51,16 @@ markup, ink, squares, circles and lines. Any other subtype is delete-only,
 because regenerating an appearance for a subtype Folio does not model would
 change how another tool's annotation renders.
 
+Signatures are **drawn only**. Photographing a signature on paper is not
+supported: it needs image embedding and background removal, and is scoped as its
+own slice.
+
+A Folio signature is a picture of your signature, not a cryptographic one. It
+proves nothing about identity and is not a digital signature in the legal sense.
+
+A signature captured in a small canvas and placed very large may show faceting
+where its samples were taken.
+
 Each edit supersedes an appearance stream and leaves the old one in the file,
 so repeatedly editing one document grows it slowly. Nothing is compacted.
 

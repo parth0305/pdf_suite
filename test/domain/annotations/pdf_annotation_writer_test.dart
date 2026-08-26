@@ -123,7 +123,9 @@ void main() {
     DrawingAnnotation ink() => const DrawingAnnotation(
       kind: DrawingKind.ink,
       pageIndex: 0,
-      points: [PdfPoint(60, 700), PdfPoint(90, 730), PdfPoint(120, 700)],
+      strokes: [
+        [PdfPoint(60, 700), PdfPoint(90, 730), PdfPoint(120, 700)],
+      ],
     );
 
     test('emits an /Ink annotation with an /InkList', () {
@@ -141,7 +143,9 @@ void main() {
           const DrawingAnnotation(
             kind: DrawingKind.rectangle,
             pageIndex: 0,
-            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+            strokes: [
+              [PdfPoint(60, 700), PdfPoint(160, 760)],
+            ],
           ),
         ]),
       );
@@ -156,7 +160,9 @@ void main() {
           const DrawingAnnotation(
             kind: DrawingKind.ellipse,
             pageIndex: 0,
-            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+            strokes: [
+              [PdfPoint(60, 700), PdfPoint(160, 760)],
+            ],
           ),
         ]),
       );
@@ -169,7 +175,9 @@ void main() {
           const DrawingAnnotation(
             kind: DrawingKind.line,
             pageIndex: 0,
-            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+            strokes: [
+              [PdfPoint(60, 700), PdfPoint(160, 760)],
+            ],
           ),
         ]),
       );
@@ -184,7 +192,9 @@ void main() {
           const DrawingAnnotation(
             kind: DrawingKind.arrow,
             pageIndex: 0,
-            points: [PdfPoint(60, 700), PdfPoint(160, 760)],
+            strokes: [
+              [PdfPoint(60, 700), PdfPoint(160, 760)],
+            ],
           ),
         ]),
       );

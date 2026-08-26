@@ -474,4 +474,49 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get annotationsDiscardPrompt =>
       'Discard your changes? The document is unchanged either way.';
+
+  @override
+  String get signMode => 'Sign';
+
+  @override
+  String get signChoose => 'Choose a signature';
+
+  @override
+  String get signNone => 'No signatures yet. Draw one to get started.';
+
+  @override
+  String get signAdd => 'New signature';
+
+  @override
+  String get signDraw => 'Draw your signature';
+
+  @override
+  String get signClear => 'Clear';
+
+  @override
+  String get signSave => 'Save signature';
+
+  @override
+  String get signLabel => 'Label';
+
+  @override
+  String get signLabelHint => 'Full, Initials…';
+
+  @override
+  String get signRename => 'Rename';
+
+  @override
+  String get signDelete => 'Delete';
+
+  @override
+  String get signPlaceHint => 'Drag a box where the signature should go.';
+
+  @override
+  String signSaved(String name) {
+    return 'Signed $name';
+  }
+
+  @override
+  String get signDiscardPrompt =>
+      'Discard this signature placement? The document is unchanged either way.';
 }

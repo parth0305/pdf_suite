@@ -11,7 +11,7 @@ final class DrawingAnnotation extends Annotation {
   const DrawingAnnotation({
     required this.kind,
     required this.pageIndex,
-    required this.points,
+    required this.strokes,
     this.colorArgb = 0xFF000000,
     this.strokeWidth = 2,
   });
@@ -21,7 +21,13 @@ final class DrawingAnnotation extends Annotation {
   @override
   final int pageIndex;
 
-  final List<PdfPoint> points;
+  /// Sub-paths, matching what PDF's /InkList has always meant. Shapes hold a
+  /// single sub-path of two corners; a signature holds one per pen stroke.
+  final List<List<PdfPoint>> strokes;
+
+  /// The first sub-path. Shapes have only one, so their code reads naturally.
+  List<PdfPoint> get points => strokes.first;
+
   final int colorArgb;
   final double strokeWidth;
 
@@ -38,12 +44,15 @@ final class DrawingAnnotation extends Annotation {
   /// The bounding box in PDF space. Normalised, so a drag in any direction
   /// gives the same rectangle.
   ({double left, double bottom, double right, double top}) get boundsPt {
-    var left = points.first.x;
-    var right = points.first.x;
-    var bottom = points.first.y;
-    var top = points.first.y;
+    // Across ALL strokes: bounding only the first would give a /Rect that is
+    // too small and a /BBox that clips the rest of the drawing away.
+    final all = strokes.expand((s) => s);
+    var left = all.first.x;
+    var right = all.first.x;
+    var bottom = all.first.y;
+    var top = all.first.y;
 
-    for (final p in points) {
+    for (final p in all) {
       if (p.x < left) left = p.x;
       if (p.x > right) right = p.x;
       if (p.y < bottom) bottom = p.y;

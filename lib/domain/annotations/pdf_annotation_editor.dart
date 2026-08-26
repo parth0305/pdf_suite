@@ -178,7 +178,7 @@ Annotation _withStyle(Annotation annotation, AnnotationStyle style) =>
       DrawingAnnotation() => DrawingAnnotation(
         kind: annotation.kind,
         pageIndex: annotation.pageIndex,
-        points: annotation.points,
+        strokes: [annotation.points],
         colorArgb: style.colorArgb,
         strokeWidth: style.strokeWidth,
       ),
