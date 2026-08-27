@@ -1882,6 +1882,48 @@ abstract class AppLocalizations {
   /// **'That image could not be read.'**
   String get watermarkImageUnusable;
 
+  /// No description provided for @unlockMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove password'**
+  String get unlockMode;
+
+  /// No description provided for @unlockPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the document\'s password'**
+  String get unlockPrompt;
+
+  /// No description provided for @unlockAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove protection'**
+  String get unlockAction;
+
+  /// No description provided for @unlockDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed the password from {name}'**
+  String unlockDone(String name);
+
+  /// No description provided for @unlockWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'That password does not open this document.'**
+  String get unlockWrong;
+
+  /// No description provided for @unlockNotProtected.
+  ///
+  /// In en, this message translates to:
+  /// **'This document is not password protected.'**
+  String get unlockNotProtected;
+
+  /// No description provided for @unlockNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The new document has no password at all. Anyone who can open the file can read it.'**
+  String get unlockNote;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

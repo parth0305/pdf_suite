@@ -255,20 +255,17 @@ String _aesStrings(
   List<int> Function(int) randomBytes,
   List<int> Function(List<int>, List<int>, List<int>) encrypt,
 ) {
-  var out = text.replaceAllMapped(RegExp(r'\(([^()]*)\)'), (m) {
-    final cipher = encrypt(
-      fileKey,
-      latin1.encode(m.group(1)!),
-      randomBytes(16),
-    );
+  // ONE pass over both forms. Two passes - literals first, then hex - encrypt
+  // every literal TWICE, because the first pass turns a literal into hex and
+  // the second pass then finds it. A reader decrypting once got ciphertext
+  // where a /Title should be, and nothing noticed until the decryptor was
+  // written and could not read Folio's own output back.
+  return text.replaceAllMapped(RegExp(r'\(([^()]*)\)|<([0-9A-Fa-f]+)>'), (m) {
+    final plain = m.group(1) != null
+        ? latin1.encode(m.group(1)!)
+        : _fromHex(m.group(2)!);
+
     // Hexadecimal, because ciphertext is binary and would need escaping.
-    return hexString(cipher);
+    return hexString(encrypt(fileKey, plain, randomBytes(16)));
   });
-
-  out = out.replaceAllMapped(
-    RegExp(r'<([0-9A-Fa-f]+)>'),
-    (m) => hexString(encrypt(fileKey, _fromHex(m.group(1)!), randomBytes(16))),
-  );
-
-  return out;
 }

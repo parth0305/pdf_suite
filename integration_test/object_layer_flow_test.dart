@@ -10,6 +10,7 @@ import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/pdf/pdf_document_writer.dart';
 import 'package:folio/domain/pdf/pdf_object.dart';
+import 'package:folio/domain/pdf/pdf_unlock.dart';
 import 'package:folio/domain/pdf/pdf_permissions.dart' as folio;
 import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:integration_test/integration_test.dart';
@@ -368,6 +369,62 @@ void main() {
               attempts++ == 0 ? 'not-the-password' : null,
         ),
         throwsA(isA<AppFailure>()),
+      );
+    });
+  });
+
+  // Folio can lock a document; it must be able to unlock it again. The proof
+  // is a reader opening the result with NO password and rendering it the same.
+  group('removing protection', () {
+    test('an unlocked document opens without a password', () async {
+      final original = await File(
+        await fixturePath('with_metadata.pdf'),
+      ).readAsBytes();
+      final objects = parsePdfObjects(original);
+
+      final expected = await renderBytes(
+        writePdfDocument(original, objects),
+        'plain-unlock',
+      );
+
+      final locked = writePdfDocument(
+        original,
+        objects,
+        encryption: const PdfEncryption(userPassword: 'lock-me'),
+      );
+      final unlocked = unlockPdf(locked, 'lock-me');
+
+      final f = File('${root.path}/unlocked.pdf')..writeAsBytesSync(unlocked);
+
+      // No onPasswordRequired at all: if it is still encrypted, this throws.
+      final h = await engine.open(FileSource(f.path));
+      final pixels = (await engine.renderPage(
+        h,
+        0,
+        targetWidthPx: 400,
+        targetHeightPx: 566,
+      )).bgraPixels;
+      await engine.close(h);
+
+      expect(diff(expected, pixels), 0);
+    });
+
+    // The bug that writing this feature uncovered: strings were encrypted
+    // twice, so a reader decrypting once found ciphertext where the title was.
+    test('the title survives a lock and unlock', () async {
+      final original = await File(
+        await fixturePath('with_metadata.pdf'),
+      ).readAsBytes();
+
+      final locked = writePdfDocument(
+        original,
+        parsePdfObjects(original),
+        encryption: const PdfEncryption(userPassword: 'lock-me'),
+      );
+
+      expect(
+        latin1.decode(unlockPdf(locked, 'lock-me'), allowInvalid: true),
+        contains('FOLIO-PROBE-TITLE'),
       );
     });
   });

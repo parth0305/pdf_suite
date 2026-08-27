@@ -996,6 +996,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get watermarkImageUnusable => 'That image could not be read.';
 
   @override
+  String get unlockMode => 'Remove password';
+
+  @override
+  String get unlockPrompt => 'Enter the document\'s password';
+
+  @override
+  String get unlockAction => 'Remove protection';
+
+  @override
+  String unlockDone(String name) {
+    return 'Removed the password from $name';
+  }
+
+  @override
+  String get unlockWrong => 'That password does not open this document.';
+
+  @override
+  String get unlockNotProtected => 'This document is not password protected.';
+
+  @override
+  String get unlockNote =>
+      'The new document has no password at all. Anyone who can open the file can read it.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

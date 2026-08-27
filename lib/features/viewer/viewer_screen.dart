@@ -29,6 +29,8 @@ import 'package:folio/features/viewer/widgets/image_placement_surface.dart';
 import 'package:folio/features/viewer/metadata_providers.dart';
 import 'package:folio/features/viewer/widgets/metadata_dialog.dart';
 import 'package:folio/domain/watermark/watermark.dart';
+import 'package:folio/features/viewer/unlock_providers.dart';
+import 'package:folio/features/viewer/widgets/unlock_dialog.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
@@ -412,6 +414,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _removeWatermark();
       case DocumentAction.protect:
         await _protectDocument();
+      case DocumentAction.unlock:
+        await _unlockDocument();
       case DocumentAction.redact:
         _enterRedactMode();
       case DocumentAction.ocr:
@@ -604,6 +608,41 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.watermarkImageUnusable)),
+      );
+    }
+  }
+
+  /// Removes password protection, given the password.
+  ///
+  /// Folio stores no passwords and cannot open a document without one - that
+  /// is the whole point of the feature this undoes. So it asks.
+  Future<void> _unlockDocument() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final password = await showUnlockDialog(context);
+    if (password == null || !mounted) return;
+
+    try {
+      final unlocked = await ref
+          .read(unlockRepositoryProvider)
+          .unlock(widget.document.id, password);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.unlockDone(unlocked.displayName))),
+      );
+    } on WrongPassword {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.unlockWrong)));
+    } on UnsupportedPdfStructure {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.unlockNotProtected)));
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
       );
     }
   }

@@ -21,6 +21,7 @@ enum DocumentAction {
   ocr,
   redact,
   protect,
+  unlock,
   print,
   share,
 }
@@ -168,6 +169,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 DocumentAction.protect,
                 Icons.lock_outline,
                 l10n.protectMode,
+              ),
+              item(
+                DocumentAction.unlock,
+                Icons.lock_open_outlined,
+                l10n.unlockMode,
               ),
               item(
                 DocumentAction.redact,

@@ -436,6 +436,16 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "watermarkImageUnusable": "That image could not be read.",
+  "unlockMode": "Remove password",
+  "unlockPrompt": "Enter the document's password",
+  "unlockAction": "Remove protection",
+  "unlockDone": "Removed the password from {name}",
+  "@unlockDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "unlockWrong": "That password does not open this document.",
+  "unlockNotProtected": "This document is not password protected.",
+  "unlockNote": "The new document has no password at all. Anyone who can open the file can read it.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",
