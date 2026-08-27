@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The dark theme's surface, for the same reason. -->
+    <color name="folio_splash_background">#1E3D41</color>
+</resources>
