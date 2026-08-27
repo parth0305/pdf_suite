@@ -15,6 +15,7 @@ import 'package:folio/domain/annotations/annotation.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
+import 'package:folio/data/signature/signature_photo_source.dart';
 import 'package:folio/domain/signature/background_removal.dart';
 import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:integration_test/integration_test.dart';
@@ -196,6 +197,51 @@ void main() {
         await File(await library.resolveReadablePath(src)).readAsBytes(),
         bytes,
       );
+    });
+  });
+
+  // The whole path a photograph takes: encoded bytes in, decoded, ink
+  // extracted, re-encoded for preview. Only a device can run it - decoding
+  // goes through dart:ui, which needs a real engine.
+  group('the photograph pipeline', () {
+    test('a real PNG decodes, extracts and re-encodes', () async {
+      // A PNG of dark ink on light paper, built here so the test owns its
+      // input rather than depending on a fixture file.
+      const w = 32, h = 16;
+      final rgba = <int>[];
+      for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+          final ink = y >= 6 && y <= 9;
+          final v = ink ? 25 : 240;
+          rgba.addAll([v, v, v, 255]);
+        }
+      }
+      final png = await encodeRgbaToPng(rgba, w, h);
+
+      final photo = await SignaturePhotoSource.extract(png);
+
+      expect(photo.width, w);
+      expect(photo.height, h);
+      expect(photo.isUsable, isTrue);
+
+      // Paper transparent, ink opaque - the point of the whole feature.
+      int alphaAt(int x, int y) => photo.rgba[(y * w + x) * 4 + 3];
+      expect(alphaAt(16, 7), 255, reason: 'on the ink');
+      expect(alphaAt(16, 1), 0, reason: 'on the paper');
+    });
+
+    test('the preview PNG keeps its transparency', () async {
+      const w = 8, h = 8;
+      final rgba = <int>[];
+      for (var i = 0; i < w * h; i++) {
+        rgba.addAll(i < 8 ? [0, 0, 0, 255] : [255, 255, 255, 0]);
+      }
+
+      final png = await encodeRgbaToPng(rgba, w, h);
+      final round = await SignaturePhotoSource.extract(png);
+
+      // A JPEG preview would bring the paper back as black; PNG does not.
+      expect(round.rgba[3], 255);
     });
   });
 }

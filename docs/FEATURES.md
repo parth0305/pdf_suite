@@ -416,6 +416,32 @@ document works normally — it stays encrypted on the way out.
 No print-range or scaling options: every platform's own print dialog already
 offers both, and a worse duplicate would be worse than none.
 
+## Photographed signatures
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Photograph a signature and place it | ✅ | ✅ | ✅ | ❌ | ✅ |
+
+The camera button in the signature sheet. Sign on white paper, photograph it,
+and Folio removes the paper and keeps the ink.
+
+**The photograph is never stored.** What is kept is the extracted ink. A photo
+of your signature is also a photo of your desk, and Folio has no business
+holding onto it.
+
+**How the paper is removed.** A luminance histogram and Otsu's 1979 threshold —
+classical image processing, no model, no training, no network. "Remove the
+background" usually means a hosted segmentation service; this runs on your
+device like everything else Folio does.
+
+You see the result before saving it. Separating ink from paper is a judgement
+the algorithm can get wrong, and you can tell at a glance far better than any
+threshold can. A photo too dark to separate is refused with an explanation
+rather than becoming a black rectangle on your contract.
+
+**Not available on Windows**, because it needs the camera and gallery picker
+that has no Windows implementation — the same reason OCR is unavailable there.
+
 ## Not built yet
 
 Accurate as of SP-10. Everything here is genuinely absent — nothing in this
@@ -436,8 +462,7 @@ you to *edit* them. There is no UI at all.
 **Extensions of features that did ship:**
 
 - **Image watermarks.** SP-4a does text only.
-- **Photographed signatures.** SP-3d does drawn only. The signatures table
-  already carries `kind` and `imageBytes` columns for this.
+
 - **Custom and date stamps.** SP-3e ships fixed presets.
 - **Reshaping individual ink points.** SP-3f moves and resizes a whole
   annotation.

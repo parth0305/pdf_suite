@@ -139,6 +139,24 @@ class AnnotationController extends Notifier<AnnotationState> {
     int colorArgb = 0xFF000000,
     double strokeWidth = 2,
   }) {
+    // A photographed signature is pixels, not strokes: it becomes an image
+    // annotation with the transparency mask that hides its paper.
+    if (signature.kind == SignatureKind.photo) {
+      if (!signature.isPlaceable) return;
+
+      state.session.add(
+        ImageAnnotation(
+          pageIndex: pageIndex,
+          rect: box,
+          rgba: signature.imageRgba!,
+          pixelWidth: signature.pixelWidth!,
+          pixelHeight: signature.pixelHeight!,
+        ),
+      );
+      _touch();
+      return;
+    }
+
     final strokes = placeSignature(signature, box: box);
     if (strokes.isEmpty) return;
 

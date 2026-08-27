@@ -902,6 +902,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionsGroupView => 'View';
 
   @override
+  String get signAddPhoto => 'Photograph a signature';
+
+  @override
+  String get signPhotoHint =>
+      'Sign on white paper in good light. Folio removes the paper and keeps the ink; the photo itself is never stored.';
+
+  @override
+  String get signPhotoUnusable =>
+      'That photo could not be separated into ink and paper. Try again on plain paper in brighter light.';
+
+  @override
+  String get signPhotoCamera => 'Camera';
+
+  @override
+  String get signPhotoGallery => 'Choose a photo';
+
+  @override
+  String get signPhotoLabel => 'Name this signature';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

@@ -1714,6 +1714,42 @@ abstract class AppLocalizations {
   /// **'View'**
   String get actionsGroupView;
 
+  /// No description provided for @signAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph a signature'**
+  String get signAddPhoto;
+
+  /// No description provided for @signPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign on white paper in good light. Folio removes the paper and keeps the ink; the photo itself is never stored.'**
+  String get signPhotoHint;
+
+  /// No description provided for @signPhotoUnusable.
+  ///
+  /// In en, this message translates to:
+  /// **'That photo could not be separated into ink and paper. Try again on plain paper in brighter light.'**
+  String get signPhotoUnusable;
+
+  /// No description provided for @signPhotoCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get signPhotoCamera;
+
+  /// No description provided for @signPhotoGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo'**
+  String get signPhotoGallery;
+
+  /// No description provided for @signPhotoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name this signature'**
+  String get signPhotoLabel;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

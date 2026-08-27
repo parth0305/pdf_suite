@@ -16,6 +16,8 @@ class SignatureDao {
     required String label,
     required String strokes,
     required double aspectRatio,
+    String kind = 'drawn',
+    Uint8List? imageBytes,
   }) => _db
       .into(_db.signatures)
       .insert(
@@ -23,6 +25,8 @@ class SignatureDao {
           label: label,
           strokes: strokes,
           aspectRatio: aspectRatio,
+          kind: Value(kind),
+          imageBytes: Value(imageBytes),
         ),
       );
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/domain/models/saved_signature.dart';
 import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:folio/features/viewer/widgets/signature_capture_canvas.dart';
+import 'package:folio/features/viewer/widgets/signature_photo_dialog.dart';
 import 'package:folio/l10n/app_localizations.dart';
 
 /// Pick a signature to place, or manage the saved ones.
@@ -110,6 +111,15 @@ class SignatureSheet extends ConsumerWidget {
                       l10n.signChoose,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
+                  ),
+                  IconButton(
+                    tooltip: l10n.signAddPhoto,
+                    icon: const Icon(Icons.photo_camera_outlined),
+                    onPressed: () async {
+                      if (await showSignaturePhotoDialog(context)) {
+                        ref.invalidate(signaturesProvider);
+                      }
+                    },
                   ),
                   TextButton.icon(
                     onPressed: () => _add(context, ref),
