@@ -6,6 +6,14 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<!-- image_picker needs these. iOS TERMINATES the app the moment the
+	     camera or photo library is opened without them: not an error, not a
+	     denied permission, an immediate crash. The scanner's tests use a fake
+	     image source, so nothing in the suite reaches this boundary. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Folio uses the camera to photograph pages of a document you are scanning. Photos stay on your device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Folio reads images you choose so it can turn them into a PDF. Nothing is uploaded.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Folio</string>
 	<key>CFBundleExecutable</key>

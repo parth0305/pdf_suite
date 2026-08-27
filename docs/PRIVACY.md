@@ -3,7 +3,8 @@
 ## Summary
 
 There is no account, no cloud, no telemetry, and no AI. Folio makes no network
-requests of its own, ever.
+requests of its own — and on Android that is enforced by the operating system,
+not merely intended. See **Network access** below for what enforces it.
 
 Your documents leave your device in exactly two situations, both of which you
 start deliberately:

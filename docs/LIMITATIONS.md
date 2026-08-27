@@ -4,6 +4,23 @@ Stated plainly. A feature absent from this list is not thereby guaranteed to
 work; see `FEATURES.md` for what is claimed and `TESTING.md` for what was
 actually verified.
 
+## 0. A boundary made for testability is a boundary tests cannot cross
+
+The scanner's image source sits behind an interface so the feature can be
+tested without a camera. That is what made SP-6a testable at all — and it is
+also why Folio shipped a **crash**: `image_picker` needs
+`NSCameraUsageDescription` in `Info.plist`, and iOS terminates the app the
+instant the camera opens without it. No test reached the real plugin, so
+nothing failed.
+
+The same shape recurs throughout Folio: `PlatformExport`, `ScanImageSource`,
+`OcrEngine`, `PlatformHandles`. Each is a seam that makes the code around it
+testable, and each is a place where a defect can sit undetected.
+
+Where the boundary cannot be crossed in a test, the declaration behind it is
+asserted directly — `test/platform/permission_declarations_test.dart` is that,
+and the release checklist verifies the built bundle rather than the source.
+
 ## 1. Windows has no manual QA — and never will on this machine
 
 Flutter Windows builds require Windows plus Visual Studio 2022. The development

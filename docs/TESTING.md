@@ -345,6 +345,22 @@ were genuinely wrong.
 string literals instead. It found exactly two real cases. A source check that
 guesses at extent will tell you confident, specific, wrong things.
 
+**A seventeenth, and the most expensive: the seam that makes code testable is
+where the untested defect lives.** Folio shipped a scanner that **crashes on
+iOS**. `image_picker` needs `NSCameraUsageDescription`, and iOS terminates the
+app the instant the camera opens without it. Every scanner test passed, because
+every scanner test uses a fake `ScanImageSource` — the interface introduced
+precisely so the feature could be tested without a camera.
+
+The suite was not weak here. It could not reach the defect by construction. The
+same shape exists at `PlatformExport`, `OcrEngine` and `PlatformHandles`.
+
+Where a boundary cannot be crossed in a test, assert the declaration behind it
+instead: `test/platform/permission_declarations_test.dart` checks `Info.plist`
+directly, and the release checklist verifies the built bundle rather than the
+source, because a correct source file that fails to reach the bundle fails
+identically.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 

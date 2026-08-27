@@ -112,6 +112,11 @@ PDFium plus Tesseract's native library, and 3.9 MB is the English OCR model.
 - [ ] `THIRD_PARTY_LICENSES.md` covers every direct dependency
 - [ ] The release build is **signed** — check for the signature block, do not
       assume it
+- [ ] iOS usage descriptions are present for camera and photo library —
+      without them iOS **terminates the app** when the scanner opens
+      (`test/platform/permission_declarations_test.dart` enforces this).
+      Confirm they reached the bundle, not just the source:
+      `plutil -extract NSCameraUsageDescription raw build/ios/iphoneos/Runner.app/Info.plist`
 - [ ] An app bundle or per-ABI APKs, never the universal APK
 - [ ] Every localised string is shown somewhere
       (`test/l10n/strings_are_shown_test.dart` enforces this — a string the app
