@@ -353,10 +353,37 @@ not undo completed work.
 Each result is a new document; your originals are untouched, as everywhere else
 in Folio.
 
+## SP-8b — Automation
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Rules that run when a document is added | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+The automation button in the library. A rule runs when you add a document, and
+can be narrowed by name or by minimum size. Three actions: **compress**, **make
+searchable**, **watermark**.
+
+**Compressing and OCR replace the document rather than making a copy.** Both are
+lossless — nothing you can see changes — so an "auto-compress on import" rule
+leaves you with one library entry, not two. Watermarking always makes a new
+document, because it changes what the page looks like and replacing would
+destroy the unmarked version.
+
+**A document you opened in place is never rewritten.** That points at your own
+file on disk; automation makes a new document for those instead.
+
+**Protecting with a password cannot be automated,** and this is deliberate. A
+rule that ran unattended would have to store your password to use it — turning
+the one feature whose value is that Folio *cannot* recover your password into
+one where Folio keeps it. The automation screen says so rather than leaving you
+wondering why the option is missing.
+
+**A failing rule never loses your import.** The document is in the library
+first; rules run after, and one that fails is abandoned while the rest continue.
+
 ## Not built yet
 
-Still absent: printing and sharing, and automation rules ("when a document is
-added, do X"). Lossy image compression — reducing a photograph's quality to
+Still absent: printing and sharing. Lossy image compression — reducing a photograph's quality to
 shrink a file — is a deliberate omission rather than a gap.
 
 **Independent of it:** printing and sharing, batch processing,

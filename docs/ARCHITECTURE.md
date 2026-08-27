@@ -287,6 +287,43 @@ pixels, which is most portrait shots. `image_picker` is asked for `maxWidth` and
 orientation into the pixels**. The size reduction is welcome; the orientation is
 the reason.
 
+## Automation, and the one place Folio rewrites an imported document
+
+Every operation in Folio produces a new document. Automation is the exception,
+and it had to be: an "auto-compress on import" rule that also created a copy
+would double the library on every import.
+
+The rule that makes it safe is **losslessness**. Compress and OCR change nothing
+anyone can see, so folding the result back into the original row loses nothing.
+A watermark changes the page, so it can never replace what it came from —
+`AutomationAction.isLossless` is what decides, and it is the only thing that
+does.
+
+The second guard is **`isManaged`**. A document opened in place points at the
+user's own file on disk; rewriting that would modify a file outside Folio's
+library, which nothing in this project does. Those get a new document even
+though the action is lossless.
+
+Rules run **after** the import completes, never as part of it, and a failing
+rule is abandoned rather than propagated. Automation runs with nobody watching,
+and an import that failed because a rule did would be a poor trade.
+
+`protect` is not an `AutomationAction` at all. A rule running unattended would
+need its password at rest, which is precisely what protection exists to avoid —
+so the option does not exist rather than existing and being discouraged.
+
+### A bug this uncovered in the library
+
+Folding a result back meant deleting the intermediate document, which exposed
+something older: `LibraryRepository.delete` removed a managed file
+**unconditionally**. Storage is content-addressed, so two rows with identical
+content share one file — importing the same document twice is enough — and
+deleting either left the other pointing at nothing.
+
+`replaceManagedContent` had guarded against exactly this since it was written;
+`delete` never got the same check. It does now, and a test covers both
+directions: a shared file survives, and an unshared one is still removed.
+
 ## Batch owns no PDF logic
 
 `BatchRepositoryImpl` delegates every action to the repository that already

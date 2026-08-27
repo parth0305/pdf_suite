@@ -185,12 +185,23 @@ class LibraryRepositoryImpl implements LibraryRepository {
   @override
   Future<void> delete(int id) async {
     final doc = (await all()).firstWhere((d) => d.id == id);
-    // Only ever delete a copy the app made. A user's own file is never removed.
+
+    // The row goes first, so the reference count below does not count the row
+    // being deleted.
+    await _dao.deleteDocument(id);
+
+    // Only ever delete a copy the app made. A user's own file is never
+    // removed.
     if (doc.ref case ManagedRef(:final relativePath)) {
+      // Storage is content-addressed, so two rows with identical content share
+      // ONE file - importing the same document twice is enough. Deleting it on
+      // the other row's behalf leaves that row pointing at nothing, which is
+      // the same guard replaceManagedContent has always had.
+      if (await _dao.countByRefPayload(doc.ref.encode()) > 0) return;
+
       final file = File(p.join(_root.path, relativePath));
       if (file.existsSync()) await file.delete();
     }
-    await _dao.deleteDocument(id);
   }
 
   @override

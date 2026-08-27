@@ -1,5 +1,6 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:folio/features/automation/automation_providers.dart';
 import 'package:folio/domain/models/library_collection.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/repositories/library_repository.dart';
@@ -46,7 +47,15 @@ class LibraryController extends AsyncNotifier<List<LibraryDocument>> {
     final file = await openFile(acceptedTypeGroups: const [typeGroup]);
     if (file == null) return;
 
-    await _mutate(() => _repo.importFile(file.path, displayName: file.name));
+    await _mutate(() async {
+      final imported = await _repo.importFile(
+        file.path,
+        displayName: file.name,
+      );
+      // Rules run after the document is safely in the library, never as part
+      // of importing it: a rule that fails must not lose the import.
+      await ref.read(automationRepositoryProvider).runOnImport(imported);
+    });
   }
 
   Future<void> toggleFavorite(int id) async {

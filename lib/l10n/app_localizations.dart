@@ -1492,6 +1492,84 @@ abstract class AppLocalizations {
   /// **'This reads every page and can take several minutes.'**
   String get batchSlowWarning;
 
+  /// No description provided for @automationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Automation'**
+  String get automationTitle;
+
+  /// No description provided for @automationEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No rules yet. A rule runs when you add a document to your library.'**
+  String get automationEmpty;
+
+  /// No description provided for @automationAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get automationAdd;
+
+  /// No description provided for @automationDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete rule'**
+  String get automationDelete;
+
+  /// No description provided for @automationWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'When a document is added'**
+  String get automationWhen;
+
+  /// No description provided for @automationNameContains.
+  ///
+  /// In en, this message translates to:
+  /// **'and its name contains (optional)'**
+  String get automationNameContains;
+
+  /// No description provided for @automationMinSize.
+  ///
+  /// In en, this message translates to:
+  /// **'and it is at least this many KB (optional)'**
+  String get automationMinSize;
+
+  /// No description provided for @automationWatermarkText.
+  ///
+  /// In en, this message translates to:
+  /// **'Watermark text'**
+  String get automationWatermarkText;
+
+  /// No description provided for @automationInPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Compressing and OCR replace the document. Watermarking makes a new one, because it changes how the page looks.'**
+  String get automationInPlace;
+
+  /// No description provided for @automationNoProtect.
+  ///
+  /// In en, this message translates to:
+  /// **'Protecting with a password cannot be automated: a rule that ran on its own would have to store your password.'**
+  String get automationNoProtect;
+
+  /// No description provided for @automationRuleCompress.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress it'**
+  String get automationRuleCompress;
+
+  /// No description provided for @automationRuleOcr.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it searchable'**
+  String get automationRuleOcr;
+
+  /// No description provided for @automationRuleWatermark.
+  ///
+  /// In en, this message translates to:
+  /// **'Watermark it'**
+  String get automationRuleWatermark;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:
