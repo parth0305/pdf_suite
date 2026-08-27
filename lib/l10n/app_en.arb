@@ -411,6 +411,13 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "watermarkNoneFound": "No watermark that Folio applied. Folio can only remove its own: a mark added by another app leaves nothing it can identify with certainty.",
+  "insertImageMode": "Insert image",
+  "insertImageHint": "Drag a box where the image should go.",
+  "insertImageUnsupported": "That image could not be read.",
+  "stampApply": "Add",
+  "stampCustom": "Custom text\u2026",
+  "stampDate": "Today's date",
+  "stampCustomLabel": "Stamp text",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",

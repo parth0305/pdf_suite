@@ -22,6 +22,10 @@ import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
+import 'package:folio/features/viewer/widgets/custom_stamp_dialog.dart';
+import 'package:folio/data/signature/signature_photo_source.dart';
+import 'package:folio/features/scanner/scanner_providers.dart';
+import 'package:folio/features/viewer/widgets/image_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
@@ -59,6 +63,7 @@ enum _ViewerMode {
   note,
   stamp,
   redact,
+  insertImage,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -91,6 +96,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   int _drawColour = drawingColours.first;
   double _drawStrokeWidth = 2;
   StampPreset _stampPreset = StampPreset.approved;
+
+  /// Set when the user chose custom wording or today's date. Null means the
+  /// preset speaks for itself.
+  String? _stampCustomLabel;
+
+  /// The decoded picture waiting to be placed.
+  DecodedImage? _insertImage;
   int _currentPage = 1;
   int _totalPages = 0;
 
@@ -377,6 +389,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _enterMarkupMode();
       case DocumentAction.draw:
         _enterDrawMode();
+      case DocumentAction.insertImage:
+        await _enterInsertImageMode();
       case DocumentAction.annotations:
         await _enterAnnotationsMode();
       case DocumentAction.signature:
@@ -480,6 +494,34 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   /// what makes them identifiable with certainty. A mark another tool applied
   /// leaves no such marker, and the refusal says so rather than reporting a
   /// success that removed nothing.
+  /// Picks an image, then lets the user drag a box for it.
+  ///
+  /// The picture is decoded here rather than at placement time so a file that
+  /// cannot be read fails before the user has chosen where to put it.
+  Future<void> _enterInsertImageMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final picked = await ref.read(scanImageSourceProvider).pickFromGallery();
+    if (picked.isEmpty || !mounted) return;
+
+    try {
+      final decoded = await decodeRgba(picked.first);
+      if (!mounted) return;
+
+      setState(() {
+        _insertImage = decoded;
+        _mode = _ViewerMode.insertImage;
+      });
+      messenger.showSnackBar(SnackBar(content: Text(l10n.insertImageHint)));
+    } on Object {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.insertImageUnsupported)),
+      );
+    }
+  }
+
   Future<void> _removeWatermark() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -836,6 +878,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     ref.read(annotationSessionProvider.notifier).reset();
     setState(() {
       _stampPreset = StampPreset.approved;
+      _stampCustomLabel = null;
       _mode = _ViewerMode.stamp;
     });
   }
@@ -1184,14 +1227,25 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 _mode != _ViewerMode.signature &&
                 _mode != _ViewerMode.note &&
                 _mode != _ViewerMode.stamp &&
-                _mode != _ViewerMode.redact)
+                _mode != _ViewerMode.redact &&
+                _mode != _ViewerMode.insertImage)
             ? null
             : (context, pageRect, page) => [
                 // The overlay is positioned at the page, so its own local
                 // space starts at the page's top-left. Passing the viewer
                 // space rect would offset every stroke and every hit test by
                 // the page origin.
-                if (_mode == _ViewerMode.redact)
+                if (_mode == _ViewerMode.insertImage && _insertImage != null)
+                  ImagePlacementSurface(
+                    pageRect: Offset.zero & pageRect.size,
+                    pageWidthPt: page.width,
+                    pageHeightPt: page.height,
+                    pageIndex: page.pageNumber - 1,
+                    rgba: _insertImage!.rgba,
+                    pixelWidth: _insertImage!.width,
+                    pixelHeight: _insertImage!.height,
+                  )
+                else if (_mode == _ViewerMode.redact)
                   RedactOverlay(
                     pageRect: Offset.zero & pageRect.size,
                     pageWidthPt: page.width,
@@ -1208,12 +1262,15 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     onTap: (pt) async {
                       final pageIndex = page.pageNumber - 1;
                       if (_mode == _ViewerMode.stamp) {
+                        // A null custom label means the preset's own wording,
+                        // so one call serves preset, custom and date stamps.
                         ref
                             .read(annotationSessionProvider.notifier)
                             .addStamp(
                               preset: _stampPreset,
                               pageIndex: pageIndex,
                               anchorPt: pt,
+                              customLabel: _stampCustomLabel,
                             );
                         return;
                       }
@@ -1295,7 +1352,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   ),
           ),
           if (_mode == _ViewerMode.redact) _redactToolbar(l10n),
-          if (_mode == _ViewerMode.note || _mode == _ViewerMode.stamp)
+          if (_mode == _ViewerMode.note ||
+              _mode == _ViewerMode.stamp ||
+              _mode == _ViewerMode.insertImage)
             _stagingToolbar(l10n),
           if (_mode == _ViewerMode.signature) _signatureToolbar(l10n),
           if (_mode == _ViewerMode.annotations)
@@ -1392,10 +1451,40 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               ),
               if (isStamp) ...[
                 const SizedBox(height: 4),
-                StampPicker(
-                  selected: _stampPreset,
-                  onSelected: (p) => setState(() => _stampPreset = p),
+                Row(
+                  children: [
+                    Expanded(
+                      child: StampPicker(
+                        selected: _stampPreset,
+                        onSelected: (p) => setState(() {
+                          _stampPreset = p;
+                          // Choosing a preset clears custom wording: the
+                          // picker showing APPROVED while the page gets
+                          // "PAID" would be a lie about what will happen.
+                          _stampCustomLabel = null;
+                        }),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: l10n.stampCustom,
+                      isSelected: _stampCustomLabel != null,
+                      icon: const Icon(Icons.edit_note),
+                      onPressed: () async {
+                        final label = await showCustomStampDialog(context);
+                        if (label == null || !mounted) return;
+                        setState(() => _stampCustomLabel = label);
+                      },
+                    ),
+                  ],
                 ),
+                if (_stampCustomLabel != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _stampCustomLabel!,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ),
               ],
             ],
           ),
@@ -1458,6 +1547,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       _ViewerMode.markup => _leaveModeButton(_leaveMarkupMode, l10n),
       _ViewerMode.draw => _leaveModeButton(_leaveDrawMode, l10n),
       _ViewerMode.redact => _leaveModeButton(_exitRedactMode, l10n),
+      _ViewerMode.insertImage => _leaveModeButton(_leaveStagingMode, l10n),
       _ViewerMode.annotations => _leaveModeButton(_leaveAnnotationsMode, l10n),
       _ViewerMode.signature => _leaveModeButton(_leaveSignatureMode, l10n),
       _ViewerMode.note ||

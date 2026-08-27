@@ -934,6 +934,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'No watermark that Folio applied. Folio can only remove its own: a mark added by another app leaves nothing it can identify with certainty.';
 
   @override
+  String get insertImageMode => 'Insert image';
+
+  @override
+  String get insertImageHint => 'Drag a box where the image should go.';
+
+  @override
+  String get insertImageUnsupported => 'That image could not be read.';
+
+  @override
+  String get stampApply => 'Add';
+
+  @override
+  String get stampCustom => 'Custom text…';
+
+  @override
+  String get stampDate => 'Today\'s date';
+
+  @override
+  String get stampCustomLabel => 'Stamp text';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

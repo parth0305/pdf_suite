@@ -195,9 +195,37 @@ class AnnotationController extends Notifier<AnnotationState> {
     required StampPreset preset,
     required int pageIndex,
     required PdfPoint anchorPt,
+    String? customLabel,
   }) {
     state.session.add(
-      Stamp(preset: preset, pageIndex: pageIndex, anchorPt: anchorPt),
+      Stamp(
+        preset: preset,
+        pageIndex: pageIndex,
+        anchorPt: anchorPt,
+        customLabel: customLabel,
+      ),
+    );
+    _touch();
+  }
+
+  /// Stages an image fitted into [box].
+  void addImage({
+    required int pageIndex,
+    required TextRect box,
+    required List<int> rgba,
+    required int pixelWidth,
+    required int pixelHeight,
+  }) {
+    if (rgba.isEmpty || pixelWidth <= 0 || pixelHeight <= 0) return;
+
+    state.session.add(
+      ImageAnnotation(
+        pageIndex: pageIndex,
+        rect: box,
+        rgba: rgba,
+        pixelWidth: pixelWidth,
+        pixelHeight: pixelHeight,
+      ),
     );
     _touch();
   }

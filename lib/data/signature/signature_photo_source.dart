@@ -62,26 +62,45 @@ class SignaturePhotoSource {
 
   static Future<({List<int> rgba, int width, int height})> _decode(
     Uint8List bytes,
-  ) async {
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    final image = frame.image;
+  ) => decodeRgba(
+    bytes,
+  ).then((d) => (rgba: d.rgba, width: d.width, height: d.height));
+}
 
-    // Straight RGBA, not premultiplied: the extraction reads colour channels
-    // directly, and premultiplied values would be darkened by their own alpha.
-    final data = await image.toByteData(
-      format: ui.ImageByteFormat.rawStraightRgba,
-    );
-    final result = (
-      rgba: data!.buffer.asUint8List().toList(),
-      width: image.width,
-      height: image.height,
-    );
+/// A picture decoded to straight RGBA.
+class DecodedImage {
+  const DecodedImage({
+    required this.rgba,
+    required this.width,
+    required this.height,
+  });
 
-    image.dispose();
-    codec.dispose();
-    return result;
-  }
+  final List<int> rgba;
+  final int width;
+  final int height;
+}
+
+/// Decodes any format `dart:ui` understands into straight RGBA.
+///
+/// Straight, not premultiplied: callers read the colour channels directly, and
+/// premultiplied values are darkened by their own alpha.
+Future<DecodedImage> decodeRgba(List<int> encoded) async {
+  final codec = await ui.instantiateImageCodec(Uint8List.fromList(encoded));
+  final frame = await codec.getNextFrame();
+  final image = frame.image;
+
+  final data = await image.toByteData(
+    format: ui.ImageByteFormat.rawStraightRgba,
+  );
+  final result = DecodedImage(
+    rgba: data!.buffer.asUint8List().toList(),
+    width: image.width,
+    height: image.height,
+  );
+
+  image.dispose();
+  codec.dispose();
+  return result;
 }
 
 /// Encodes RGBA as a PNG, for showing the extracted ink on screen.

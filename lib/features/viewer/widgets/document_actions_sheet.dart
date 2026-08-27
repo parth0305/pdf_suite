@@ -8,6 +8,7 @@ enum DocumentAction {
   fullScreen,
   markup,
   draw,
+  insertImage,
   note,
   stamp,
   signature,
@@ -106,6 +107,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 l10n.markupMode,
               ),
               item(DocumentAction.draw, Icons.draw_outlined, l10n.drawMode),
+              item(
+                DocumentAction.insertImage,
+                Icons.image_outlined,
+                l10n.insertImageMode,
+              ),
               item(
                 DocumentAction.note,
                 Icons.sticky_note_2_outlined,

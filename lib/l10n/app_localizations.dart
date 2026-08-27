@@ -1768,6 +1768,48 @@ abstract class AppLocalizations {
   /// **'No watermark that Folio applied. Folio can only remove its own: a mark added by another app leaves nothing it can identify with certainty.'**
   String get watermarkNoneFound;
 
+  /// No description provided for @insertImageMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert image'**
+  String get insertImageMode;
+
+  /// No description provided for @insertImageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag a box where the image should go.'**
+  String get insertImageHint;
+
+  /// No description provided for @insertImageUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'That image could not be read.'**
+  String get insertImageUnsupported;
+
+  /// No description provided for @stampApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get stampApply;
+
+  /// No description provided for @stampCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom text…'**
+  String get stampCustom;
+
+  /// No description provided for @stampDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s date'**
+  String get stampDate;
+
+  /// No description provided for @stampCustomLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamp text'**
+  String get stampCustomLabel;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

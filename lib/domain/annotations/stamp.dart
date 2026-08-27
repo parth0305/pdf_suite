@@ -11,9 +11,18 @@ final class Stamp extends Annotation {
     required this.preset,
     required this.pageIndex,
     required this.anchorPt,
+    this.customLabel,
   });
 
   final StampPreset preset;
+
+  /// Overrides the preset's wording.
+  ///
+  /// The preset still decides the colour, so a custom stamp looks like the
+  /// others rather than like a stray piece of text. A date stamp is just this
+  /// with the date formatted into it - there is no separate mechanism, because
+  /// there does not need to be one.
+  final String? customLabel;
 
   @override
   final int pageIndex;
@@ -24,7 +33,10 @@ final class Stamp extends Annotation {
   @override
   String get pdfSubtype => 'Stamp';
 
-  String get label => switch (preset) {
+  String get label =>
+      customLabel?.trim().isNotEmpty ?? false ? customLabel!.trim() : _preset;
+
+  String get _preset => switch (preset) {
     StampPreset.approved => 'APPROVED',
     StampPreset.rejected => 'REJECTED',
     StampPreset.draft => 'DRAFT',
