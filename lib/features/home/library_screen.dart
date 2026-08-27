@@ -9,6 +9,12 @@ import 'package:folio/features/home/widgets/document_tile.dart';
 import 'package:folio/features/home/widgets/empty_state.dart';
 import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/home/widgets/library_toolbar.dart';
+import 'package:folio/domain/batch/batch_outcome.dart';
+import 'package:folio/domain/watermark/watermark.dart';
+import 'package:folio/features/batch/batch_providers.dart';
+import 'package:folio/features/batch/batch_sheet.dart';
+import 'package:folio/features/viewer/widgets/protect_dialog.dart';
+import 'package:folio/features/viewer/widgets/watermark_sheet.dart';
 import 'package:folio/features/scanner/scanner_screen.dart';
 import 'package:folio/l10n/app_localizations.dart';
 
@@ -40,6 +46,15 @@ class LibraryScreen extends ConsumerWidget {
                   ? () => _mergeSelected(context, ref, l10n)
                   : null,
               child: Text(l10n.libraryMergeSelected),
+            ),
+            IconButton(
+              tooltip: l10n.batchTitle(
+                ref.watch(librarySelectionProvider).length,
+              ),
+              icon: const Icon(Icons.playlist_add_check),
+              onPressed: ref.watch(librarySelectionProvider).isEmpty
+                  ? null
+                  : () => _runBatch(context, ref, l10n),
             ),
             TextButton(
               onPressed: () {
@@ -137,6 +152,90 @@ class LibraryScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  /// Runs one operation over every selected document.
+  ///
+  /// The batch runs to completion; a document that fails is recorded and the
+  /// rest continue. Stopping leaves everything already produced in place -
+  /// undoing finished work would be a rollback nobody asked for.
+  Future<void> _runBatch(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final ids = ref.read(librarySelectionProvider).toList();
+    if (ids.isEmpty) return;
+
+    final action = await showBatchSheet(context, ids.length);
+    if (action == null || !context.mounted) return;
+
+    Watermark? mark;
+    String? password;
+
+    if (action == BatchAction.watermark) {
+      mark = await showWatermarkSheet(context);
+      if (mark == null || !context.mounted) return;
+    }
+    if (action == BatchAction.protect) {
+      final request = await showProtectDialog(context);
+      if (request == null || !context.mounted) return;
+      password = request.userPassword;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    var running = true;
+
+    // A batch over ten documents with OCR is minutes of work. The banner is
+    // the only sign anything is happening, and Stop has to actually stop.
+    void showProgress(int done, int total) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.batchRunning(done, total)),
+            duration: const Duration(minutes: 10),
+            action: SnackBarAction(
+              label: l10n.batchCancel,
+              onPressed: () => running = false,
+            ),
+          ),
+        );
+    }
+
+    showProgress(0, ids.length);
+
+    final outcome = await ref
+        .read(batchRepositoryProvider)
+        .run(
+          action: action,
+          documentIds: ids,
+          watermark: mark,
+          password: password,
+          onProgress: showProgress,
+          shouldContinue: () => running,
+        );
+
+    await ref.read(libraryControllerProvider.notifier).refresh();
+    if (!context.mounted) return;
+
+    ref.read(librarySelectModeProvider.notifier).value = false;
+    ref.read(librarySelectionProvider.notifier).value = const {};
+
+    final details = batchSkipDetails(outcome, l10n);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            [
+              batchSummary(outcome, l10n),
+              if (details.isNotEmpty) details.join(' · '),
+            ].join('\n'),
+          ),
+          duration: const Duration(seconds: 8),
+        ),
+      );
   }
 
   Future<void> _mergeSelected(

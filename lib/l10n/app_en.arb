@@ -326,6 +326,39 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "compressLossless": "Folio only compresses losslessly: nothing is removed and no image quality is reduced.",
+  "batchTitle": "Apply to {count} documents",
+  "@batchTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "batchCompress": "Compress",
+  "batchOcr": "Make searchable (OCR)",
+  "batchWatermark": "Watermark",
+  "batchProtect": "Protect with password",
+  "batchRunning": "{done} of {total} done",
+  "@batchRunning": {
+    "placeholders": { "done": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "batchCancel": "Stop",
+  "batchStopped": "Stopped. Documents already finished were kept.",
+  "batchDoneAll": "All {count} done",
+  "@batchDoneAll": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "batchDoneSome": "{done} done, {skipped} skipped",
+  "@batchDoneSome": {
+    "placeholders": { "done": { "type": "int" }, "skipped": { "type": "int" } }
+  },
+  "batchDoneNone": "Nothing was produced",
+  "batchSkipNothing": "{count} had nothing to gain",
+  "@batchSkipNothing": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "batchSkipFailed": "{count} could not be processed",
+  "@batchSkipFailed": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "batchNewDocuments": "Each result is a new document. Your originals are untouched.",
+  "batchSlowWarning": "This reads every page and can take several minutes.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",
