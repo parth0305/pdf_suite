@@ -1864,6 +1864,24 @@ abstract class AppLocalizations {
   /// **'These travel with the document. Anyone you share it with can read them, and redaction does not remove them.'**
   String get metadataNote;
 
+  /// No description provided for @watermarkImageMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Image watermark'**
+  String get watermarkImageMode;
+
+  /// No description provided for @watermarkImageApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Watermarked {name}'**
+  String watermarkImageApplied(String name);
+
+  /// No description provided for @watermarkImageUnusable.
+  ///
+  /// In en, this message translates to:
+  /// **'That image could not be read.'**
+  String get watermarkImageUnusable;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

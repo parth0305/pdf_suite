@@ -430,6 +430,12 @@
   },
   "metadataEmpty": "Fill in at least one field.",
   "metadataNote": "These travel with the document. Anyone you share it with can read them, and redaction does not remove them.",
+  "watermarkImageMode": "Image watermark",
+  "watermarkImageApplied": "Watermarked {name}",
+  "@watermarkImageApplied": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "watermarkImageUnusable": "That image could not be read.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",

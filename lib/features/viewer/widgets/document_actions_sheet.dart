@@ -15,6 +15,7 @@ enum DocumentAction {
   annotations,
   metadata,
   watermark,
+  imageWatermark,
   removeWatermark,
   compress,
   ocr,
@@ -144,6 +145,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 DocumentAction.watermark,
                 Icons.branding_watermark_outlined,
                 l10n.watermarkMode,
+              ),
+              item(
+                DocumentAction.imageWatermark,
+                Icons.photo_size_select_large,
+                l10n.watermarkImageMode,
               ),
               item(
                 DocumentAction.removeWatermark,

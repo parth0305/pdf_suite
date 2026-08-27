@@ -28,6 +28,7 @@ import 'package:folio/features/scanner/scanner_providers.dart';
 import 'package:folio/features/viewer/widgets/image_placement_surface.dart';
 import 'package:folio/features/viewer/metadata_providers.dart';
 import 'package:folio/features/viewer/widgets/metadata_dialog.dart';
+import 'package:folio/domain/watermark/watermark.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
@@ -405,6 +406,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _editMetadata();
       case DocumentAction.watermark:
         await _applyWatermark();
+      case DocumentAction.imageWatermark:
+        await _applyImageWatermark();
       case DocumentAction.removeWatermark:
         await _removeWatermark();
       case DocumentAction.protect:
@@ -556,6 +559,51 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
+  /// Stamps a chosen image across every page.
+  ///
+  /// No placement step, unlike inserting an image: a watermark goes in the
+  /// same place on every page by definition, so asking where would be asking
+  /// a question with one answer.
+  Future<void> _applyImageWatermark() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final picked = await ref.read(scanImageSourceProvider).pickFromGallery();
+    if (picked.isEmpty || !mounted) return;
+
+    try {
+      final decoded = await decodeRgba(picked.first);
+      if (!mounted) return;
+
+      final marked = await ref
+          .read(watermarkRepositoryProvider)
+          .applyImage(
+            widget.document.id,
+            ImageWatermark(
+              rgba: decoded.rgba,
+              pixelWidth: decoded.width,
+              pixelHeight: decoded.height,
+            ),
+          );
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.watermarkImageApplied(marked.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    } on Object {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.watermarkImageUnusable)),
       );
     }
   }

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/watermark/pdf_watermark_remover.dart';
+import 'package:folio/domain/watermark/pdf_image_watermark_writer.dart';
 import 'package:folio/domain/watermark/pdf_watermark_writer.dart';
 import 'package:folio/domain/watermark/watermark.dart';
 
@@ -121,5 +122,26 @@ void main() {
     expect(out, contains('PAGE-ONE-BODY'));
     expect(out, isNot(contains('WMF1')));
     expect(out, isNot(contains('Tj')));
+  });
+
+  // An image watermark is removed by the same path, found by its own resource
+  // name rather than by the font the text mark uses.
+  test('an image watermark is removed too', () {
+    final marked = writeImageWatermark(
+      twoPages(),
+      const ImageWatermark(
+        rgba: [255, 0, 0, 255, 0, 0, 255, 255],
+        pixelWidth: 2,
+        pixelHeight: 1,
+      ),
+    );
+
+    final result = removeFolioWatermark(marked);
+    final out = latin1.decode(result.bytes, allowInvalid: true);
+
+    expect(result.removal.pagesAffected, 2);
+    expect(out, isNot(contains('/WMIm')));
+    expect(out, isNot(contains('/SMask')));
+    expect(out, contains('PAGE-ONE-BODY'));
   });
 }

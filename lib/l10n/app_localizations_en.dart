@@ -985,6 +985,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'These travel with the document. Anyone you share it with can read them, and redaction does not remove them.';
 
   @override
+  String get watermarkImageMode => 'Image watermark';
+
+  @override
+  String watermarkImageApplied(String name) {
+    return 'Watermarked $name';
+  }
+
+  @override
+  String get watermarkImageUnusable => 'That image could not be read.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

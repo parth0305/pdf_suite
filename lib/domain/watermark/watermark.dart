@@ -1,5 +1,40 @@
 enum WatermarkRotation { diagonal, horizontal }
 
+/// An image stamped across every page, instead of text.
+///
+/// Kept as a separate type rather than nullable fields on [Watermark]: a text
+/// mark has a font size and a colour, an image mark has pixels and a scale,
+/// and a class carrying both with half of them null invites drawing neither.
+class ImageWatermark {
+  const ImageWatermark({
+    required this.rgba,
+    required this.pixelWidth,
+    required this.pixelHeight,
+    this.opacity = 0.3,
+    this.scale = 0.5,
+    this.rotation = WatermarkRotation.diagonal,
+  });
+
+  final List<int> rgba;
+  final int pixelWidth;
+  final int pixelHeight;
+
+  /// 0 is invisible, 1 is opaque.
+  final double opacity;
+
+  /// Fraction of the page's shorter side the mark spans.
+  final double scale;
+
+  final WatermarkRotation rotation;
+
+  bool get isUsable =>
+      pixelWidth > 0 &&
+      pixelHeight > 0 &&
+      rgba.length == pixelWidth * pixelHeight * 4;
+
+  double get aspectRatio => pixelWidth / pixelHeight;
+}
+
 /// A text mark stamped across every page of a document.
 ///
 /// This is page content, not an annotation: an annotation would be a stamp,

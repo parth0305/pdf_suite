@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/pdf/pdf_document_writer.dart';
 import 'package:folio/domain/pdf/pdf_object.dart';
+import 'package:folio/domain/watermark/pdf_image_watermark_writer.dart';
 import 'package:folio/domain/watermark/watermark_content.dart';
 
 /// What removing a watermark would do to a document.
@@ -61,8 +62,11 @@ class WatermarkRemoval {
       rewritten.add(object);
       continue;
     }
+    // /WMIm is the image watermark's resource name; the text mark uses
+    // /WMF1 and /WMGS. All three are Folio's own.
     if (!body.contains('/$watermarkFontName') &&
-        !body.contains('/$watermarkGStateName')) {
+        !body.contains('/$watermarkGStateName') &&
+        !body.contains('/$imageWatermarkName')) {
       rewritten.add(object);
       continue;
     }
@@ -133,6 +137,7 @@ String? _withoutWatermark(String body, List<PdfObject> objects) {
   var out = body.replaceRange(contents.start, contents.end, merged);
   out = _withoutResource(out, watermarkFontName);
   out = _withoutResource(out, watermarkGStateName);
+  out = _withoutResource(out, imageWatermarkName);
   return out;
 }
 
@@ -149,7 +154,9 @@ bool _drawsWatermark(List<PdfObject> objects, int number) {
       ? _inflated(object.body, body, streamAt)
       : body.substring(streamAt);
 
-  return payload != null && payload.contains('/$watermarkFontName');
+  return payload != null &&
+      (payload.contains('/$watermarkFontName') ||
+          payload.contains('/$imageWatermarkName'));
 }
 
 /// The stream's inflated payload, or null when it cannot be read.

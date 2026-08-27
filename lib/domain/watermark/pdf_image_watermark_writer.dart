@@ -4,29 +4,30 @@ import 'dart:typed_data';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart'
     show pdfStreamBody;
+import 'package:folio/domain/annotations/pdf_object_index.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
-import 'package:folio/domain/annotations/stamp_appearance.dart'
-    show helveticaFontObject;
+import 'package:folio/domain/watermark/image_watermark_content.dart';
+import 'package:folio/domain/watermark/page_geometry.dart';
+import 'package:folio/domain/watermark/watermark.dart';
 
-/// Adds an invisible text layer to pages, by appending an incremental update.
+/// The resource name Folio gives an image watermark.
 ///
-/// An incremental update is right here, unlike redaction: nothing is being
-/// removed, so leaving the original bytes at the front of the file is exactly
-/// what should happen. The original document is never rewritten.
+/// Distinctive so removal can find it with certainty, exactly as `/WMF1` does
+/// for the text mark.
+const imageWatermarkName = 'WMIm';
+
+/// Stamps [mark] across every page by appending an incremental update.
 ///
-/// [layers] maps a page index to its content-stream fragment. A page with no
-/// entry, or an empty one, is left completely untouched.
-Uint8List writeOcrLayer(Uint8List pdf, Map<int, String> layers) {
-  final wanted = {
-    for (final e in layers.entries)
-      if (e.value.trim().isNotEmpty) e.key: e.value,
-  };
-  if (wanted.isEmpty) {
-    throw ArgumentError.value(layers, 'layers', 'no text to add');
+/// The original bytes are never rewritten: one image, one mask, and a content
+/// stream per page.
+Uint8List writeImageWatermark(Uint8List pdf, ImageWatermark mark) {
+  if (!mark.isUsable) {
+    throw ArgumentError.value(mark, 'mark', 'the image is empty or mis-sized');
   }
 
   final text = latin1.decode(pdf, allowInvalid: true);
   final reader = PdfObjectReader.parse(text);
+  final index = PdfObjectIndex.parse(text);
 
   if (reader.usesXrefStream) {
     throw const UnsupportedPdfStructure(
@@ -59,8 +60,14 @@ Uint8List writeOcrLayer(Uint8List pdf, Map<int, String> layers) {
     out.addAll(latin1.encode('$number 0 obj\n$body\nendobj\n'));
   }
 
-  /// Deflate output is binary and would not survive latin1 round-tripping, so
-  /// the bytes are appended rather than spliced into a string.
+  void emitBinary(int number, String dict, List<int> bytes) {
+    offsets[number] = out.length;
+    out
+      ..addAll(latin1.encode('$number 0 obj\n$dict\nstream\n'))
+      ..addAll(bytes)
+      ..addAll(latin1.encode('\nendstream\nendobj\n'));
+  }
+
   void emitStream(int number, String content) {
     final body = pdfStreamBody(content);
     offsets[number] = out.length;
@@ -75,19 +82,42 @@ Uint8List writeOcrLayer(Uint8List pdf, Map<int, String> layers) {
       ..addAll(latin1.encode('\nendstream\nendobj\n'));
   }
 
-  // One font for the whole document, not one per page.
-  final fontNum = nextObj++;
-  emit(fontNum, helveticaFontObject());
+  // One image and one mask for the whole document, however many pages use it.
+  final samples = imageWatermarkSamples(mark);
 
-  for (final entry in wanted.entries) {
-    final page = reader.pageAt(entry.key);
-    if (page == null) {
-      throw ArgumentError.value(entry.key, 'layers', 'no such page');
-    }
+  final maskNum = nextObj++;
+  emitBinary(
+    maskNum,
+    '<< /Type /XObject /Subtype /Image '
+    '/Width ${mark.pixelWidth} /Height ${mark.pixelHeight} '
+    '/ColorSpace /DeviceGray /BitsPerComponent 8 '
+    '/Length ${samples.alpha.length} /Filter /FlateDecode >>',
+    samples.alpha,
+  );
 
+  final imageNum = nextObj++;
+  emitBinary(
+    imageNum,
+    '<< /Type /XObject /Subtype /Image '
+    '/Width ${mark.pixelWidth} /Height ${mark.pixelHeight} '
+    '/ColorSpace /DeviceRGB /BitsPerComponent 8 /SMask $maskNum 0 R '
+    '/Length ${samples.rgb.length} /Filter /FlateDecode >>',
+    samples.rgb,
+  );
+
+  for (var pageIndex = 0; ; pageIndex++) {
+    final page = reader.pageAt(pageIndex);
+    if (page == null) break;
+
+    // Per page: a page may be a different size from its neighbours, and a mark
+    // centred on the wrong one lands off the paper.
     final contentNum = nextObj++;
-    emitStream(contentNum, entry.value);
-    emit(page.objectNumber, _withOcrLayer(page, contentNum, fontNum));
+    emitStream(
+      contentNum,
+      imageWatermarkContentStream(mark, mediaBox: mediaBoxOf(index, page)),
+    );
+
+    emit(page.objectNumber, _withImage(page, contentNum, imageNum));
   }
 
   final xrefOffset = out.length;
@@ -99,8 +129,6 @@ Uint8List writeOcrLayer(Uint8List pdf, Map<int, String> layers) {
   }
   buffer.writeln('trailer');
 
-  // Carry /Info forward: the newest trailer wins, and one without it discards
-  // the document's title and author.
   final info = RegExp(r'/Info\s+(\d+)\s+(\d+)\s+R').allMatches(text);
   final infoEntry = info.isEmpty
       ? ''
@@ -119,12 +147,12 @@ Uint8List writeOcrLayer(Uint8List pdf, Map<int, String> layers) {
   return Uint8List.fromList(out);
 }
 
-/// The page dictionary with the OCR stream APPENDED to /Contents and the font
-/// merged into /Resources.
+/// The page with the mark's content APPENDED and its image merged into
+/// /Resources.
 ///
-/// Appended, never substituted: the page's own drawing - the scan itself - has
-/// to keep happening, and the text layer draws nothing anyway.
-String _withOcrLayer(PdfPageObject page, int contentNum, int fontNum) {
+/// Appended and merged, never replaced: the page's own drawing and its own
+/// images have to survive.
+String _withImage(PdfPageObject page, int contentNum, int imageNum) {
   var body = page.rawDictionary;
   body = body.substring(2, body.length - 2).trim();
 
@@ -145,24 +173,21 @@ String _withOcrLayer(PdfPageObject page, int contentNum, int fontNum) {
       ? '$body $merged'
       : body.replaceRange(contents.start, contents.end, merged);
 
-  return '<< ${_withFont(body, fontNum)} >>';
+  return '<< ${_withXObject(body, imageNum)} >>';
 }
 
-/// Merges `/OcF1` into whatever `/Resources` and `/Font` already exist.
+/// Merges `/WMIm` into whatever /Resources and /XObject already exist.
 ///
-/// Replacing them would strip the page's own fonts and images, which for a
-/// scanned page means losing the scan.
-///
-/// The entry is inserted immediately after the opening `<<`. The earlier
-/// version worked out the index of the matching `>>` instead, which is the
-/// arithmetic that is easy to get wrong - and which crashed with a RangeError
-/// on a dictionary whose braces do not balance.
-String _withFont(String body, int fontNum) {
-  final entry = '/OcF1 $fontNum 0 R';
+/// The entry is inserted immediately after the opening `<<` rather than before
+/// the matching `>>`. Both are correct PDF, and only one of them needs the
+/// closing brace's index - which is the arithmetic that is easy to get wrong,
+/// and did go wrong here first time round.
+String _withXObject(String body, int imageNum) {
+  final entry = '/$imageWatermarkName $imageNum 0 R';
 
-  final fonts = RegExp(r'/Font\s*<<').firstMatch(body);
-  if (fonts != null) {
-    return body.replaceRange(fonts.end, fonts.end, ' $entry');
+  final xobjects = RegExp(r'/XObject\s*<<').firstMatch(body);
+  if (xobjects != null) {
+    return body.replaceRange(xobjects.end, xobjects.end, ' $entry');
   }
 
   final resources = RegExp(r'/Resources\s*<<').firstMatch(body);
@@ -170,9 +195,9 @@ String _withFont(String body, int fontNum) {
     return body.replaceRange(
       resources.end,
       resources.end,
-      ' /Font << $entry >>',
+      ' /XObject << $entry >>',
     );
   }
 
-  return '$body /Resources << /Font << $entry >> >>';
+  return '$body /Resources << /XObject << $entry >> >>';
 }

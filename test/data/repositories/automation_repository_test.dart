@@ -62,6 +62,10 @@ class FakeOcr implements OcrRepository {
 
 class FakeWatermark implements WatermarkRepository {
   @override
+  Future<LibraryDocument> applyImage(int documentId, ImageWatermark mark) =>
+      throw UnimplementedError('image marks are not exercised here');
+
+  @override
   Future<LibraryDocument> remove(int documentId) =>
       throw UnimplementedError('removal is not exercised here');
 
