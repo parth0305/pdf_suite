@@ -1360,6 +1360,48 @@ abstract class AppLocalizations {
   /// **'On this platform Folio can read the words but not where they sit, so search will find them but highlight only the right area.'**
   String get ocrApproximate;
 
+  /// No description provided for @compressMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get compressMode;
+
+  /// No description provided for @compressChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking what can be saved…'**
+  String get compressChecking;
+
+  /// No description provided for @compressNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'This document is already well compressed. Nothing worth saving.'**
+  String get compressNothing;
+
+  /// No description provided for @compressOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Can save {saved} ({percent}%). The pages will look exactly the same.'**
+  String compressOffer(String saved, String percent);
+
+  /// No description provided for @compressApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get compressApply;
+
+  /// No description provided for @compressDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Compressed to {name}'**
+  String compressDone(String name);
+
+  /// No description provided for @compressLossless.
+  ///
+  /// In en, this message translates to:
+  /// **'Folio only compresses losslessly: nothing is removed and no image quality is reduced.'**
+  String get compressLossless;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

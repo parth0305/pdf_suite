@@ -19,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'annotation_edit_flow_test.dart' as annotation_edit_flow;
+import 'compression_flow_test.dart' as compression_flow;
 import 'drawing_flow_test.dart' as drawing_flow;
 import 'library_flow_test.dart' as library_flow;
 import 'markup_flow_test.dart' as markup_flow;
@@ -58,4 +59,5 @@ void main() {
   group('redaction_flow', redaction_flow.main);
   group('scanner_flow', scanner_flow.main);
   group('ocr_flow', ocr_flow.main);
+  group('compression_flow', compression_flow.main);
 }

@@ -287,6 +287,44 @@ pixels, which is most portrait shots. `image_picker` is asked for `maxWidth` and
 orientation into the pixels**. The size reduction is welcome; the orientation is
 the reason.
 
+## Compression: measured first, and lossless by necessity
+
+Compression was designed backwards from a measurement. Task 1 analysed sixteen
+real documents before any of it was written, and the result inverted the plan:
+**deflating uncompressed streams gains almost nothing** on real PDFs, because
+they arrive already compressed. Only Folio's own simple output benefits.
+
+**Deduplication is the win.** A merged set of five bank statements was 37%
+byte-identical objects — merging duplicates every shared font and image, and
+Folio has a merge feature, so it produces exactly that shape.
+
+Three exact transformations run through the object layer's full rewrite:
+identical objects collapse to one, unreferenced objects are dropped, and
+uncompressed streams are deflated.
+
+### The saving is measured, never predicted
+
+`compressPdf` returns the compressed bytes *and* the result, and the saving is
+the real difference in file size. A per-object estimate was tried and
+over-promised by 215 bytes: it cannot model the rewrite's own overhead — a
+fresh cross-reference table, a document `/ID`, free entries where objects were
+dropped. A number shown to a user before they commit must never exceed what
+they get.
+
+Keeping the bytes also means accepting the offer cannot produce a different
+file from the one that was measured.
+
+### Two rules that keep it safe
+
+**Only byte-identical objects collapse.** Two objects differing by whitespace
+mean the same thing to a reader, but proving that needs a parser, and
+collapsing merely-equivalent objects is how a compressor corrupts a document.
+
+**References are remapped in dictionaries only, never in stream payloads.** A
+compressed image's bytes are arbitrary; bytes that happen to read as `6 0 R`
+are image data. Rewriting them corrupts the image while leaving the file
+structurally valid — the worst kind of failure, because everything still opens.
+
 ## OCR adds a layer; it never touches the page
 
 An OCR pass appends an **incremental update**. Nothing is being removed, so the

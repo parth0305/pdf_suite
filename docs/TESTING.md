@@ -286,6 +286,29 @@ it and the test passed against a writer that dropped it. It now reads only the
 last trailer. Anything asserted about an incremental update's new trailer must
 be scoped to that trailer.
 
+**A thirteenth, from SP-7a: the fixtures did not contain the thing being
+tested.** Compression's main mechanism is collapsing duplicate objects. Not one
+generated fixture has a duplicated object, so mutating the remapping - the step
+that repoints references at the survivor - was green across the entire
+integration suite. The suite proved compression was lossless on documents where
+compression did nothing. A fixture with a genuinely duplicated font now exists,
+and that mutation fails against it.
+
+Before assuming a fixture exercises a feature, check that the fixture contains
+the condition the feature exists for.
+
+**Two more properties the device cannot observe**, bringing the total to four
+alongside AES IV reuse and the JPEG `/ColorSpace`:
+
+- A `/Length` that describes the uncompressed payload should make a stream
+  unparseable. PDFium recovers by scanning for `endstream` and renders
+  correctly, so only the unit test catches it. Stricter readers are not
+  promised to be as forgiving.
+- Remapping references inside a stream's binary payload would corrupt an image
+  while leaving the file structurally valid. Constructing a device fixture whose
+  compressed image data happens to read as `6 0 R` is impractical, so the unit
+  test - which does exactly that with plain bytes - is the guard.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 

@@ -142,19 +142,44 @@ misreads things — especially poor photographs, unusual fonts and handwriting.
 Nothing in Folio treats OCR output as authoritative: it adds a searchable
 layer, and never alters the page you can see.
 
-## 6. Android open-in-place requires a SAF URI
+## 6. Compression is lossless only, so scans barely shrink
+
+When most apps say "compress a PDF" they mean downsampling its images and
+re-encoding them at lower quality. That is lossy, and Folio does not do it. It
+would need a JPEG encoder, which the project has no dependency for —
+`dart:ui` decodes anything but encodes only PNG, which is worse than JPEG for
+photographs.
+
+What Folio does is exact: identical objects stored once, unreferenced objects
+dropped, uncompressed streams deflated. Not one pixel or character changes.
+
+The consequence is that **the documents people most want to shrink shrink the
+least**. Measured on real files: a merged set of bank statements gave back 37%,
+while a 3.6MB photographed passport scan gave back 632 bytes — 0.0%. Their bytes
+are already-compressed JPEG, and nothing lossless can improve on that.
+
+Folio therefore measures first and reports the figure before compressing,
+including "nothing worth saving". A button that silently achieves nothing is
+worse than one that explains why.
+
+Small documents can even come out **larger**: the rewrite carries its own
+overhead — a fresh cross-reference table, a document `/ID` — and on a
+three-page file that exceeded what deflating its streams saved, by nine bytes.
+Folio reports that as not worth doing rather than growing the file.
+
+## 7. Android open-in-place requires a SAF URI
 
 `PlatformHandles.capture()` on Android accepts only a `content://` URI from the
 system picker. A filesystem path cannot be granted a persistable permission, so
 it is rejected with `UnsupportedFeature` rather than producing a handle that
 would fail silently on next launch.
 
-## 7. English only
+## 8. English only
 
 The architecture supports localisation — all strings live in ARB files from the
 first commit — but no translations exist.
 
-## 8. Both native dependencies use Dart native assets
+## 9. Both native dependencies use Dart native assets
 
 `pdfrx` (PDFium) and `sqlite3` (via drift) build through Dart's newer native
 assets / build hooks mechanism rather than classic Flutter plugins. The iOS
@@ -163,7 +188,7 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 9. Redaction does not cover metadata, bookmarks or attachments
+## 10. Redaction does not cover metadata, bookmarks or attachments
 
 **This is the limitation most likely to hurt someone.** Redaction removes what
 is under the boxes from the page. It does not touch `/Title`, `/Author` or
@@ -175,7 +200,7 @@ Folio states this in the confirmation dialog, in an error-coloured panel, rather
 than leaving it to be discovered. It is stated here too because a limitation
 that only appears in a dialog someone dismissed once is not documented.
 
-## 10. A redacted page becomes an image, and its text is rebuilt
+## 11. A redacted page becomes an image, and its text is rebuilt
 
 Redaction rasterises the page at 200 DPI and replaces its content with that
 image. This is what makes removal unconditional: the original content stream
@@ -196,7 +221,7 @@ approximate:
   can sit slightly off the ink.
 - Ligatures in the original arrive as whatever PDFium extracted them as.
 
-## 11. A scan is refused unless it is a baseline JPEG
+## 12. A scan is refused unless it is a baseline JPEG
 
 `/DCTDecode`, the PDF filter that carries a JPEG untouched, supports baseline
 JPEG. A progressive or arithmetic-coded JPEG renders as garbage in some readers
@@ -210,7 +235,7 @@ is enforced anyway, because "should not happen" is not a guarantee.
 That same re-encode is what bakes EXIF orientation into the pixels. PDF ignores
 EXIF entirely, so without it a portrait photograph would embed sideways.
 
-## 12. Redaction refuses a shared content stream
+## 13. Redaction refuses a shared content stream
 
 If a page being redacted draws a content stream that a page you did **not**
 select also draws, there is no correct answer available: dropping it breaks the
@@ -220,7 +245,7 @@ still carrying the content.
 
 Sharing a content stream between pages is unusual, so this should be rare.
 
-## 13. Permissions are advisory, and readers disagree about the bits
+## 14. Permissions are advisory, and readers disagree about the bits
 
 Folio writes the `/P` bit field a document asks for, and `/Perms` so a reader
 can tell it was not tampered with. Nothing beyond that is possible: a
@@ -238,7 +263,7 @@ Re-protecting a document Folio already protected is not supported: Folio does
 not decrypt, so the second pass would encrypt ciphertext. Protect the original
 instead.
 
-## 14. Test fixtures are generated, not committed
+## 15. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their

@@ -290,10 +290,44 @@ tapped.
 
 English only. The bundled language model is 3.9MB.
 
+## SP-7a — Compression
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Compress a document losslessly | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Annotate menu → **Compress**. Folio checks what it can save and tells you before
+doing anything: *"Can save 340 KB (12%)"*, or that the document is already well
+compressed and there is nothing worth doing.
+
+**Nothing is removed and no image quality is reduced.** Three exact
+transformations: identical objects are stored once, objects nothing refers to
+are dropped, and streams left in the clear are deflated. Every page renders
+pixel-identically afterwards, which the test suite asserts on every build.
+
+**What it saves depends entirely on the document**, and Folio measured real
+ones rather than guessing:
+
+| Document | Saved |
+|---|---|
+| A merged set of five bank statements | **37%** |
+| A single bank statement | 4% |
+| A 1.6MB notification | 3% |
+| A scanned document | 2% |
+| A 3.6MB photographed passport scan | **0%** |
+
+Merged documents gain the most, because merging duplicates every shared font
+and image — and Folio's own merge feature produces exactly that. Scans and
+photographs gain almost nothing, because their bytes are already compressed
+images. Folio says so instead of offering a button that appears to do nothing.
+
+**Folio will not reduce image quality to make a file smaller.** That is what
+most apps mean by "compress", and it is lossy — see LIMITATIONS.
+
 ## Not built yet
 
-**Behind the object layer:** compressing documents Folio did not write.
-Redaction landed in SP-5d.
+Lossy image compression — reducing a photograph's quality to shrink a file — is
+the main thing still absent, and it is a deliberate omission rather than a gap.
 
 **Independent of it:** printing and sharing, batch processing,
 automation rules, metadata editing, image watermarks, photographed signatures,
