@@ -21,8 +21,10 @@ SP-2a added merge, split, reorder, delete, extract, rotate, duplicate and
 insert. Every one produces a **new** document and leaves its source
 byte-identical.
 
-Still absent: annotations, signatures, metadata editing, encryption authoring,
-redaction, compression, watermarks and OCR. Those are SP-2b onward.
+Still absent at that point: annotations, signatures, metadata editing,
+encryption authoring, redaction, compression, watermarks and OCR. All but
+redaction, OCR and compressing foreign documents landed in SP-2b through
+SP-5c.
 
 `PdfEngine` remains read-only and has no write method; all writing goes through
 the separate `PdfPageEditor`, so the reader still cannot alter a document.

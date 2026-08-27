@@ -215,6 +215,19 @@ The rule: a callback that supplies a **correct** password must still be
 bounded, because the failure it has to survive is the reader refusing a
 password that is right.
 
+**A sixth, from the watermark-compression follow-up: the assertion that
+"compressed" means "smaller".** Wiring watermark streams through the shared
+`pdfStreamBody` made every test pass and made the output file **27 bytes
+bigger**. The helper compared deflated bytes against raw bytes and never
+counted the ` /Filter /FlateDecode` it also had to write. Nothing in the suite
+would have noticed: the streams really were compressed, the reader really did
+inflate them, and every assertion was about the stream rather than about the
+document.
+
+The test that catches it compares the finished document against what it would
+weigh with those streams stored raw. A compression feature has to be measured
+on the artefact it claims to shrink, not on the part that shrank.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 

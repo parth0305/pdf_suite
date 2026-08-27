@@ -247,6 +247,19 @@ SP-5b/5c used.
 stream we compressed, so Flate itself was never the obstacle — the write model
 was.
 
+### Compression is size-aware, and the filter declaration counts
+
+Every stream Folio writes goes through `pdfStreamBody`, which deflates **only
+when that makes the file smaller**. The comparison includes the 21 bytes of
+` /Filter /FlateDecode` that must go into the dictionary, because leaving them
+out is not a rounding error: a 119-byte watermark stream deflates to 107, and
+compressing all three pages of a document grew it by 27 bytes. Short appearance
+and watermark streams are therefore stored raw, and long ones are deflated.
+
+A consequence worth remembering when writing tests: a five-letter watermark is
+**not** compressed, so a test that expects `/FlateDecode` must use a mark long
+enough to earn it.
+
 ## Moving is a rect rewrite, and the appearance follows
 
 Probed on device: changing only `/Rect` moved a mark from columns 20..59 to

@@ -46,6 +46,30 @@ void main() {
     expect(short.bytes, latin1.encode('q Q'));
   });
 
+  // The /Filter declaration is 21 bytes of dictionary. A stream that deflates
+  // by less than that makes the document BIGGER, which is how three compressed
+  // watermark streams grew a file by 27 bytes.
+  test('a stream that barely deflates is left raw', () {
+    // Deflates by a little, but not by 21 bytes.
+    const content = '0 0 0 RG 2 w 10 10 m 20 20 l S 10 10 m 20 20 l S';
+    final deflated = ZLibCodec(level: 9).encode(latin1.encode(content));
+
+    expect(
+      deflated.length,
+      lessThan(content.length),
+      reason: 'the premise: raw deflate alone does shrink it',
+    );
+    expect(
+      deflated.length + 21,
+      greaterThanOrEqualTo(content.length),
+      reason: 'but not by enough to pay for /Filter /FlateDecode',
+    );
+
+    final body = pdfStreamBody(content);
+    expect(body.filter, isEmpty);
+    expect(body.bytes, latin1.encode(content));
+  });
+
   test('compressed bytes inflate back to the original content', () {
     final content = List.filled(300, '10 20 m 30 40 l S').join('\n');
     final body = pdfStreamBody(content);

@@ -93,13 +93,21 @@ String pdfString(String text) {
 /// forty-byte appearance stream comes out bigger - compressing unconditionally
 /// would make Folio's output larger, which is the opposite of the point.
 ///
+/// The comparison counts the `/Filter` declaration, because that text goes
+/// into the file too. Without it a stream that deflates by twelve bytes still
+/// grows the document by nine, and a three-page watermark grew by 27.
+///
 /// zlib comes from dart:io, so this costs no dependency.
 ({List<int> bytes, String filter}) pdfStreamBody(String content) {
+  const filter = ' /Filter /FlateDecode';
+
   final raw = latin1.encode(content);
   if (raw.isEmpty) return (bytes: raw, filter: '');
 
   final deflated = ZLibCodec(level: 9).encode(raw);
-  if (deflated.length >= raw.length) return (bytes: raw, filter: '');
+  if (deflated.length + filter.length >= raw.length) {
+    return (bytes: raw, filter: '');
+  }
 
-  return (bytes: deflated, filter: ' /Filter /FlateDecode');
+  return (bytes: deflated, filter: filter);
 }
