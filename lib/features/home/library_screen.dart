@@ -42,11 +42,18 @@ class LibraryScreen extends ConsumerWidget {
         ),
         actions: [
           if (ref.watch(librarySelectModeProvider)) ...[
-            TextButton(
-              onPressed: ref.watch(librarySelectionProvider).length >= 2
-                  ? () => _mergeSelected(context, ref, l10n)
-                  : null,
-              child: Text(l10n.libraryMergeSelected),
+            Tooltip(
+              // A disabled button says it cannot be used, never why. Merging
+              // needs two documents and the tooltip is where that fits.
+              message: ref.watch(librarySelectionProvider).length >= 2
+                  ? l10n.libraryMergeSelected
+                  : l10n.mergeNeedsTwo,
+              child: TextButton(
+                onPressed: ref.watch(librarySelectionProvider).length >= 2
+                    ? () => _mergeSelected(context, ref, l10n)
+                    : null,
+                child: Text(l10n.libraryMergeSelected),
+              ),
             ),
             IconButton(
               tooltip: l10n.batchTitle(
@@ -231,6 +238,15 @@ class LibraryScreen extends ConsumerWidget {
 
     ref.read(librarySelectModeProvider.notifier).value = false;
     ref.read(librarySelectionProvider.notifier).value = const {};
+
+    // A stopped batch is not a finished one, and everything already produced
+    // stays. Saying so is the difference between "it worked" and "you stopped
+    // it, and here is what you got".
+    if (!running) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.batchStopped)));
+    }
 
     final details = batchSkipDetails(outcome, l10n);
     messenger

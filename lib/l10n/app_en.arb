@@ -146,8 +146,6 @@
     }
   },
   "pagesSplit": "Split document",
-  "pagesMerge": "Merge documents",
-  "pagesEmptyWarning": "A document must have at least one page.",
   "splitEveryPage": "Every page becomes its own document",
   "splitByRanges": "Custom ranges",
   "splitRangeHint": "e.g. 1-3, 7, 10-12",
@@ -385,7 +383,6 @@
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",
   "protectMismatch": "The passwords do not match.",
-  "protectEmpty": "A password is required.",
   "protectApply": "Protect",
   "protectPermissionsTitle": "Restrict what readers can do",
   "protectAllowPrinting": "Printing",

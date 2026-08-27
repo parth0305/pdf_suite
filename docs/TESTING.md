@@ -319,6 +319,20 @@ forever — and the code says plainly that no test distinguishes it.
 
 That is the fifth property recorded as unobservable rather than papered over.
 
+**A fifteenth, from SP-10: the documentation described messages that did not
+exist.** Three localised strings — the OCR "positions are approximate" note, the
+batch "stopped" message, and the share "this leaves your device" warning — were
+written, cited in `FEATURES.md` and `ARCHITECTURE.md` as things the UI says, and
+never wired to anything. `ARCHITECTURE.md` claimed the OCR fallback was
+"labelled as one everywhere it appears: in the UI, in FEATURES.md, and in
+LIMITATIONS.md". Two of those three were true.
+
+`test/l10n/strings_are_shown_test.dart` now fails when a string is defined and
+never referenced. It found two further orphans and three genuine duplicates of
+messages already shown elsewhere. In a project whose documentation makes
+specific claims about what the app tells you, an unused string is not a
+harmless leftover.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 

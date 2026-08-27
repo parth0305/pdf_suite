@@ -324,12 +324,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pagesSplit => 'Split document';
 
   @override
-  String get pagesMerge => 'Merge documents';
-
-  @override
-  String get pagesEmptyWarning => 'A document must have at least one page.';
-
-  @override
   String get splitEveryPage => 'Every page becomes its own document';
 
   @override
@@ -856,9 +850,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get protectMismatch => 'The passwords do not match.';
-
-  @override
-  String get protectEmpty => 'A password is required.';
 
   @override
   String get protectApply => 'Protect';

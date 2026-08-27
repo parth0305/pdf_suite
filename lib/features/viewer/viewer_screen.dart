@@ -418,8 +418,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (!mounted) return;
       // Names which document is going, because operations leave the original
       // alongside the result and the two look alike in a list.
+      // Names the document AND says plainly that this is one of the two
+      // places a document leaves Folio. PRIVACY.md makes the same promise;
+      // this is where the user actually sees it.
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.shareWhich(export.displayName))),
+        SnackBar(
+          content: Text(
+            '${l10n.shareWhich(export.displayName)}\n${l10n.shareLeavesDevice}',
+          ),
+          duration: const Duration(seconds: 6),
+        ),
       );
 
       await ref.read(platformExportProvider).share(export, origin: origin);
@@ -516,6 +524,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     return '${(bytes / 1024).toStringAsFixed(0)} KB';
   }
 
+  /// Word positions come from hOCR, which only Android can supply: the iOS
+  /// plugin's hOCR call blocks the platform thread indefinitely.
+  bool get _hasWordPositions => Platform.isAndroid;
+
   /// Tesseract is bundled for Android and iOS only; there is no Windows
   /// implementation, so the entry is disabled rather than failing on tap.
   bool get _ocrAvailable => Platform.isAndroid || Platform.isIOS;
@@ -531,9 +543,18 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
     // Recognition takes seconds per page, so the banner is not decoration -
     // without it the app looks frozen.
+    //
+    // On a platform that cannot report word positions the result is a weaker
+    // text layer, and saying so here is what makes the claim in FEATURES.md
+    // and ARCHITECTURE.md true. Without it the documentation described a
+    // message that did not exist.
     messenger.showSnackBar(
       SnackBar(
-        content: Text(l10n.ocrRunning),
+        content: Text(
+          _hasWordPositions
+              ? l10n.ocrRunning
+              : '${l10n.ocrRunning}\n${l10n.ocrApproximate}',
+        ),
         duration: const Duration(minutes: 5),
       ),
     );
@@ -941,8 +962,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (!mounted) return;
       controller.reset();
       setState(() => _mode = _ViewerMode.read);
+      // Signature placement goes through the same save path as markup, but
+      // "Marked up X" is the wrong word for it.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.markupSaved(created.displayName))),
+        SnackBar(
+          content: Text(
+            _mode == _ViewerMode.signature
+                ? l10n.signSaved(created.displayName)
+                : l10n.markupSaved(created.displayName),
+          ),
+        ),
       );
     } on AppFailure catch (f) {
       if (!mounted) return;

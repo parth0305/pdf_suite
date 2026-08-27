@@ -682,18 +682,6 @@ abstract class AppLocalizations {
   /// **'Split document'**
   String get pagesSplit;
 
-  /// No description provided for @pagesMerge.
-  ///
-  /// In en, this message translates to:
-  /// **'Merge documents'**
-  String get pagesMerge;
-
-  /// No description provided for @pagesEmptyWarning.
-  ///
-  /// In en, this message translates to:
-  /// **'A document must have at least one page.'**
-  String get pagesEmptyWarning;
-
   /// No description provided for @splitEveryPage.
   ///
   /// In en, this message translates to:
@@ -1629,12 +1617,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The passwords do not match.'**
   String get protectMismatch;
-
-  /// No description provided for @protectEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'A password is required.'**
-  String get protectEmpty;
 
   /// No description provided for @protectApply.
   ///

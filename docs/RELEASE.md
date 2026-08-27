@@ -34,14 +34,62 @@ host network, then exercise open, search, select, favourite and delete by hand.
 `flutter run` itself needs a connection to install, so install first and
 disconnect after.
 
+## Signing
+
+**A release build is UNSIGNED until you provide a keystore.** The Flutter
+template signs release builds with the *debug* key, which cannot be published
+and is shared by every Flutter developer in the world — anyone could forge an
+update to an app signed with it. Folio removed that: without a keystore the
+release build comes out unsigned and fails loudly at install time, rather than
+looking like a release until someone tries to publish it.
+
+Create `android/key.properties` (gitignored — it names a keystore and holds its
+passwords):
+
+```properties
+storeFile=/absolute/path/to/folio-release.jks
+storePassword=...
+keyAlias=folio
+keyPassword=...
+```
+
+Verify a build really is signed before publishing it — the absence of a
+signature block is the failure this guards against:
+
+```bash
+unzip -l build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+  | grep -E 'META-INF/.*\.(RSA|DSA|EC)'
+```
+
 ## Release builds
 
 ```bash
-flutter build apk --release       --dart-define-from-file=config/production.json
+# Play Store: an app bundle, which splits per ABI on the store side.
 flutter build appbundle --release --dart-define-from-file=config/production.json
-flutter build ios --release       --dart-define-from-file=config/production.json
+
+# Direct distribution: split per ABI. A universal APK carries all three.
+flutter build apk --release --split-per-abi \
+  --dart-define-from-file=config/production.json
+
+flutter build ios --release --dart-define-from-file=config/production.json
 # Windows is produced by CI only — see BUILD_WINDOWS.md
 ```
+
+### Size, measured
+
+Folio bundles PDFium and Tesseract natively, so it is not a small app. Measured
+on 2026-08-27:
+
+| Build | Size |
+|---|---|
+| Universal APK (all three ABIs) | 102 MB |
+| `arm64-v8a` only | 37 MB |
+| `armeabi-v7a` only | 31 MB |
+| `x86_64` only | 39 MB |
+
+**Never publish the universal APK.** It triples the download for no benefit —
+every device uses exactly one ABI. Roughly 15 MB of each split is
+PDFium plus Tesseract's native library, and 3.9 MB is the English OCR model.
 
 ## Before declaring a release complete
 
@@ -56,6 +104,12 @@ flutter build ios --release       --dart-define-from-file=config/production.json
 - [ ] `LIMITATIONS.md` lists every known gap, including anything discovered
       during this release
 - [ ] `THIRD_PARTY_LICENSES.md` covers every direct dependency
+- [ ] The release build is **signed** — check for the signature block, do not
+      assume it
+- [ ] An app bundle or per-ABI APKs, never the universal APK
+- [ ] Every localised string is shown somewhere
+      (`test/l10n/strings_are_shown_test.dart` enforces this — a string the app
+      never displays cannot back a claim the documentation makes)
 
 ## Honesty rule
 

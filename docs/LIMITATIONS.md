@@ -193,19 +193,32 @@ it.** Redaction, compression, OCR and the rest all leave the original in the
 library beside the result, with a similar name. Folio names the document it is
 sending, which is the most it can honestly do.
 
-## 8. Android open-in-place requires a SAF URI
+## 8. Folio is a large app, and the OCR model is bundled
+
+Measured on 2026-08-27: 37 MB for an `arm64-v8a` release APK, of which roughly
+15 MB is PDFium plus Tesseract's native library and 3.9 MB is the English OCR
+model. The universal APK carrying all three ABIs is 102 MB and should never be
+published.
+
+This is the price of doing everything on the device. A version that called a
+cloud OCR service would be a fraction of the size and would break the promise
+in `PRIVACY.md`.
+
+Only English is bundled. Adding a language means adding another few megabytes.
+
+## 9. Android open-in-place requires a SAF URI
 
 `PlatformHandles.capture()` on Android accepts only a `content://` URI from the
 system picker. A filesystem path cannot be granted a persistable permission, so
 it is rejected with `UnsupportedFeature` rather than producing a handle that
 would fail silently on next launch.
 
-## 9. English only
+## 10. English only
 
 The architecture supports localisation — all strings live in ARB files from the
 first commit — but no translations exist.
 
-## 10. Both native dependencies use Dart native assets
+## 11. Both native dependencies use Dart native assets
 
 `pdfrx` (PDFium) and `sqlite3` (via drift) build through Dart's newer native
 assets / build hooks mechanism rather than classic Flutter plugins. The iOS
@@ -214,7 +227,7 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 11. Redaction does not cover metadata, bookmarks or attachments
+## 12. Redaction does not cover metadata, bookmarks or attachments
 
 **This is the limitation most likely to hurt someone.** Redaction removes what
 is under the boxes from the page. It does not touch `/Title`, `/Author` or
@@ -226,7 +239,7 @@ Folio states this in the confirmation dialog, in an error-coloured panel, rather
 than leaving it to be discovered. It is stated here too because a limitation
 that only appears in a dialog someone dismissed once is not documented.
 
-## 12. A redacted page becomes an image, and its text is rebuilt
+## 13. A redacted page becomes an image, and its text is rebuilt
 
 Redaction rasterises the page at 200 DPI and replaces its content with that
 image. This is what makes removal unconditional: the original content stream
@@ -247,7 +260,7 @@ approximate:
   can sit slightly off the ink.
 - Ligatures in the original arrive as whatever PDFium extracted them as.
 
-## 13. A scan is refused unless it is a baseline JPEG
+## 14. A scan is refused unless it is a baseline JPEG
 
 `/DCTDecode`, the PDF filter that carries a JPEG untouched, supports baseline
 JPEG. A progressive or arithmetic-coded JPEG renders as garbage in some readers
@@ -261,7 +274,7 @@ is enforced anyway, because "should not happen" is not a guarantee.
 That same re-encode is what bakes EXIF orientation into the pixels. PDF ignores
 EXIF entirely, so without it a portrait photograph would embed sideways.
 
-## 14. Redaction refuses a shared content stream
+## 15. Redaction refuses a shared content stream
 
 If a page being redacted draws a content stream that a page you did **not**
 select also draws, there is no correct answer available: dropping it breaks the
@@ -271,7 +284,7 @@ still carrying the content.
 
 Sharing a content stream between pages is unusual, so this should be rare.
 
-## 15. Permissions are advisory, and readers disagree about the bits
+## 16. Permissions are advisory, and readers disagree about the bits
 
 Folio writes the `/P` bit field a document asks for, and `/Perms` so a reader
 can tell it was not tampered with. Nothing beyond that is possible: a
@@ -289,7 +302,7 @@ Re-protecting a document Folio already protected is not supported: Folio does
 not decrypt, so the second pass would encrypt ciphertext. Protect the original
 instead.
 
-## 16. Test fixtures are generated, not committed
+## 17. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their
