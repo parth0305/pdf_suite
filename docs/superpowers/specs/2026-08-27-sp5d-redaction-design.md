@@ -118,6 +118,11 @@ list in which, for each redacted page:
 - the objects that were the page's old content streams are **omitted from the
   list entirely**, so they are absent from the output rather than orphaned
   inside it;
+- any XObject that only the redacted pages referenced is omitted too. An image
+  under a black box lives in an XObject, not in the content stream; dropping
+  the content stream alone would leave it recoverable. An XObject a surviving
+  page still uses is **kept**, because it is visible in the output anyway, so
+  removing it would break that page and conceal nothing;
 - the image XObject, the new content stream and one shared Helvetica font
   object are appended.
 
