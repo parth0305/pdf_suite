@@ -1,6 +1,8 @@
 # Folio
 
-A privacy-focused, offline-first PDF reader for iPhone, iPad, Android and Windows.
+A privacy-focused, offline-first PDF reader for iPhone, iPad, Android and
+Windows. Everything it does runs on your device, apart from printing and
+sharing — which send a document somewhere else by definition, and say so.
 
 Folio processes documents entirely on your device. There is no account, no
 cloud, no telemetry, and no AI of any kind.
@@ -24,10 +26,14 @@ Document metadata — title, author, subject, keywords — is carried through pa
 operations. Folio never adds a `/Producer` or `/ModDate` of its own: a document
 you edit does not start advertising which tool touched it, or when.
 
-Not yet possible: printing. Compression is lossless only —
-Folio will not reduce image quality to shrink a file. Scanned documents have no text layer until you run OCR on them,
-which happens entirely on your device. See [FEATURES.md](docs/FEATURES.md) for what is
-implemented and verified on which platform.
+Compression is lossless only — Folio will not reduce image quality to shrink a
+file. Scanned documents have no text layer until you run OCR on them, which
+happens entirely on your device.
+
+**Printing and sharing are the only two features that send a document off your
+device**, and they are marked as such. Everything else runs locally with no
+network at all. See [FEATURES.md](docs/FEATURES.md) for what is implemented and
+verified on which platform.
 
 ## What it deliberately is not
 

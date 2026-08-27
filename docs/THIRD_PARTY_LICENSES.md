@@ -119,3 +119,19 @@ the full model.
 is unavailable there. SwiftyTesseract's `libtesseract.xcframework` also ships no
 arm64-simulator slice, so the iOS simulator is built for x86_64; real devices
 are arm64 and unaffected.
+
+## printing
+
+Apache-2.0. Hands a document to the operating system's print dialog on all four
+platforms. Pulls in `pdf` (Apache-2.0) as a transitive dependency.
+
+Printing is one of only two features where a document leaves the device: a
+network or wireless printer receives the whole file, and the operating system
+may spool it to disk outside Folio's storage.
+
+## share_plus
+
+BSD-3-Clause, maintained by the Flutter team. Opens the system share sheet.
+
+Sharing is the other feature where a document leaves the device. Once handed to
+another application, Folio has no control over what happens to it.

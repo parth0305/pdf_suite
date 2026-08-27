@@ -12,6 +12,10 @@ PODS:
   - pdfium_flutter (0.1.5):
     - Flutter
     - FlutterMacOS
+  - printing (1.0.0):
+    - Flutter
+  - share_plus (0.0.1):
+    - Flutter
   - SwiftyTesseract (3.1.3)
   - url_launcher_ios (0.0.1):
     - Flutter
@@ -23,6 +27,8 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - pdfium_flutter (from `.symlinks/plugins/pdfium_flutter/darwin`)
+  - printing (from `.symlinks/plugins/printing/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -42,6 +48,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   pdfium_flutter:
     :path: ".symlinks/plugins/pdfium_flutter/darwin"
+  printing:
+    :path: ".symlinks/plugins/printing/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -52,6 +62,8 @@ SPEC CHECKSUMS:
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   pdfium_flutter: e5a6e881af0b182d5b0465ebad23a8a20caa28d4
+  printing: 54ff03f28fe9ba3aa93358afb80a8595a071dd07
+  share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
 

@@ -58,6 +58,12 @@ dependencies:
   # SwiftyTesseract (MIT). Android and iOS only - there is no Windows
   # implementation, which is why OCR is unavailable there.
   flutter_tesseract_ocr: ^0.4.31
+  # Printing and sharing are the ONLY two features where a document leaves the
+  # device. Both are permissively licensed and cover all four platforms.
+  # printing: Apache-2.0, pulls `pdf` (also Apache-2.0).
+  printing: ^5.14.3
+  # share_plus: BSD-3, maintained by the Flutter team.
+  share_plus: ^13.3.0
 
 dev_dependencies:
   flutter_test:

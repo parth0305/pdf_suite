@@ -381,9 +381,44 @@ wondering why the option is missing.
 **A failing rule never loses your import.** The document is in the library
 first; rules run after, and one that fails is abandoned while the rest continue.
 
+## SP-9 — Printing and sharing
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Print a document | ✅ | ✅ | ✅ | 🟡 | ❌ |
+| Share a document | ✅ | ✅ | ✅ | 🟡 | ❌ |
+
+In the viewer's menu. Print hands the document to your operating system's print
+dialog; Share opens the system share sheet.
+
+**These are the only two features in Folio where a document leaves your
+device**, and the Offline column says ❌ for exactly that reason. Everything else
+Folio does — reading, annotating, signing, encrypting, redacting, OCR,
+compression — runs locally with no network. Printing sends the whole document to
+a printer, which may be on your network or somewhere further; sharing hands the
+file to another application, after which Folio has no say in what happens to it.
+
+**The document is handed over unchanged.** Folio does not re-render or re-encode
+it to print: what reaches the printer is the document in your library.
+
+**Folio names what it is sending.** Every operation leaves the original
+alongside the result, so a redacted document and its unredacted original sit in
+the library with similar names — and sharing the wrong one is the realistic
+mistake. The share sheet carries the document's own name, and Folio says which
+one is going.
+
+**A protected document cannot be printed.** Your operating system's print
+renderer would need the password, which Folio does not hand over and could not
+hand over safely. Folio refuses in the app rather than letting the job fail
+inside the print service where nothing explains why. Sharing a protected
+document works normally — it stays encrypted on the way out.
+
+No print-range or scaling options: every platform's own print dialog already
+offers both, and a worse duplicate would be worse than none.
+
 ## Not built yet
 
-Still absent: printing and sharing. Lossy image compression — reducing a photograph's quality to
+Still absent: lossy image compression — reducing a photograph's quality to
 shrink a file — is a deliberate omission rather than a gap.
 
 **Independent of it:** printing and sharing, batch processing,

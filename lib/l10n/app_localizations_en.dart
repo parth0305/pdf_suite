@@ -824,6 +824,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get automationRuleWatermark => 'Watermark it';
 
   @override
+  String get printAction => 'Print';
+
+  @override
+  String get shareAction => 'Share';
+
+  @override
+  String get printProtected =>
+      'A protected document cannot be printed. Folio does not hand your password to the printing service.';
+
+  @override
+  String get shareLeavesDevice =>
+      'Sharing sends this document out of Folio. Everything else Folio does stays on your device.';
+
+  @override
+  String shareWhich(String name) {
+    return 'Sharing $name';
+  }
+
+  @override
+  String get printFailed => 'The printing service could not be reached.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override
