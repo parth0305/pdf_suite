@@ -1606,6 +1606,78 @@ abstract class AppLocalizations {
   /// **'Clear search'**
   String get searchClear;
 
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Match system'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsWorkflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Workflow'**
+  String get settingsWorkflow;
+
+  /// No description provided for @settingsAutomationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules that run when you add a document'**
+  String get settingsAutomationSubtitle;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get settingsVersion;
+
+  /// No description provided for @settingsPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsPrivacy;
+
+  /// No description provided for @settingsPrivacyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Folio works entirely on your device. It has no account, no cloud and no telemetry, and the release build cannot reach the network at all. Printing and sharing are the only two features that send a document elsewhere, and both are things you start yourself.'**
+  String get settingsPrivacyBody;
+
+  /// No description provided for @settingsLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licences'**
+  String get settingsLicenses;
+
+  /// No description provided for @settingsLicensesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Every library Folio is built on'**
+  String get settingsLicensesSubtitle;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

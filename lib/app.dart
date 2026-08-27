@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/core/theme/app_theme.dart';
 import 'package:folio/features/home/library_screen.dart';
 import 'package:folio/features/viewer/viewer_screen.dart';
+import 'package:folio/features/settings/settings_providers.dart';
+import 'package:folio/features/settings/settings_screen.dart';
 import 'package:folio/l10n/app_localizations.dart';
 import 'package:folio/widgets/adaptive_scaffold.dart';
 
-class FolioApp extends StatefulWidget {
+class FolioApp extends ConsumerStatefulWidget {
   const FolioApp({super.key});
 
   @override
-  State<FolioApp> createState() => _FolioAppState();
+  ConsumerState<FolioApp> createState() => _FolioAppState();
 }
 
-class _FolioAppState extends State<FolioApp> {
+class _FolioAppState extends ConsumerState<FolioApp> {
   int _index = 0;
 
   @override
@@ -21,7 +24,8 @@ class _FolioAppState extends State<FolioApp> {
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      // Follows the user's choice, which defaults to the system setting.
+      themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
@@ -48,7 +52,7 @@ class _FolioAppState extends State<FolioApp> {
                       ),
                     ),
                   )
-                : Center(child: Text(l10n.settingsLabel)),
+                : const SettingsScreen(),
           );
         },
       ),

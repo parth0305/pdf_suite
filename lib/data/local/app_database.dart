@@ -61,6 +61,18 @@ class Documents extends Table {
 /// `protect` is deliberately not a storable action: a rule that runs
 /// unattended would need its password at rest, which is what protection exists
 /// to avoid.
+/// A tiny key-value store for user preferences.
+///
+/// A table rather than a new dependency: the database already exists, and
+/// `shared_preferences` would be a seventh package for something SQLite does.
+class Preferences extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
 @DataClassName('AutomationRuleRow')
 class AutomationRules extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -77,7 +89,9 @@ class AutomationRules extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
-@DriftDatabase(tables: [Documents, Collections, Signatures, AutomationRules])
+@DriftDatabase(
+  tables: [Documents, Collections, Signatures, AutomationRules, Preferences],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
     : super(
@@ -95,7 +109,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -115,6 +129,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 5) {
         await m.createTable(automationRules);
+      }
+      if (from < 6) {
+        await m.createTable(preferences);
       }
     },
     beforeOpen: (details) async {

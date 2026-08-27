@@ -418,12 +418,36 @@ offers both, and a worse duplicate would be worse than none.
 
 ## Not built yet
 
-Still absent: lossy image compression — reducing a photograph's quality to
-shrink a file — is a deliberate omission rather than a gap.
+Accurate as of SP-10. Everything here is genuinely absent — nothing in this
+list is shipped, and nothing shipped is in this list.
 
-**Independent of it:** printing and sharing, batch processing,
-automation rules, metadata editing, image watermarks, photographed signatures,
-custom and date stamps, and reshaping individual ink points.
+**Content creation (brief phase 7)** — the unfinished half of SP-4:
+
+- **Adding text to a page.** Folio can annotate a page but cannot put a text
+  box on it.
+- **Adding an image to a page.** The foundations exist — Folio writes image
+  XObjects for redaction and the scanner — but nothing exposes it.
+
+**Metadata editing (phases 14–15).** `PdfMetadata` can already read a
+document's title, author, subject and keywords, and `appendTo` can write them
+— that is how metadata survives every operation. What is missing is any way for
+you to *edit* them. There is no UI at all.
+
+**Extensions of features that did ship:**
+
+- **Image watermarks.** SP-4a does text only.
+- **Photographed signatures.** SP-3d does drawn only. The signatures table
+  already carries `kind` and `imageBytes` columns for this.
+- **Custom and date stamps.** SP-3e ships fixed presets.
+- **Reshaping individual ink points.** SP-3f moves and resizes a whole
+  annotation.
+
+**Deliberate omissions, not gaps:**
+
+- **Lossy image compression** — reducing a photograph's quality to shrink a
+  file. See LIMITATIONS §6.
+- **Protect with password as an automation rule** — it would require storing
+  your password. See LIMITATIONS and the automation screen.
 
 Freehand ink and shapes shipped in SP-3b, editing and deleting saved
 annotations in SP-3c, drawn signatures in SP-3d, notes and stamps in SP-3e,

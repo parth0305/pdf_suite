@@ -846,6 +846,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchClear => 'Clear search';
 
   @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsThemeSystem => 'Match system';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsWorkflow => 'Workflow';
+
+  @override
+  String get settingsAutomationSubtitle =>
+      'Rules that run when you add a document';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsPrivacy => 'Privacy';
+
+  @override
+  String get settingsPrivacyBody =>
+      'Folio works entirely on your device. It has no account, no cloud and no telemetry, and the release build cannot reach the network at all. Printing and sharing are the only two features that send a document elsewhere, and both are things you start yourself.';
+
+  @override
+  String get settingsLicenses => 'Open-source licences';
+
+  @override
+  String get settingsLicensesSubtitle => 'Every library Folio is built on';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override
