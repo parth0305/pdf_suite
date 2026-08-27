@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:folio/core/errors/app_failure.dart';
+import 'package:folio/domain/annotations/pdf_appearance.dart'
+    show pdfStreamBody;
 import 'package:folio/domain/annotations/pdf_object_index.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
 import 'package:folio/domain/annotations/stamp_appearance.dart'
@@ -54,6 +56,27 @@ Uint8List writeWatermark(Uint8List pdf, Watermark mark) {
     out.addAll(latin1.encode('$number 0 obj\n$body\nendobj\n'));
   }
 
+  /// Emits a content stream, deflated when that makes it smaller.
+  ///
+  /// The bytes are appended directly rather than spliced into a string:
+  /// deflate output is binary and would not survive latin1 round-tripping.
+  /// /Length and /Filter both describe the bytes actually written, never the
+  /// text they came from.
+  void emitStream(int number, String content) {
+    final body = pdfStreamBody(content);
+    offsets[number] = out.length;
+    out
+      ..addAll(
+        latin1.encode(
+          '$number 0 obj\n'
+          '<< /Length ${body.bytes.length}${body.filter} >>\n'
+          'stream\n',
+        ),
+      )
+      ..addAll(body.bytes)
+      ..addAll(latin1.encode('\nendstream\nendobj\n'));
+  }
+
   // One font and one graphics state for the whole document, not one per page.
   final fontNum = nextObj++;
   emit(fontNum, helveticaFontObject());
@@ -72,10 +95,7 @@ Uint8List writeWatermark(Uint8List pdf, Watermark mark) {
     );
 
     final contentNum = nextObj++;
-    emit(
-      contentNum,
-      '<< /Length ${stream.length} >>\nstream\n$stream\nendstream',
-    );
+    emitStream(contentNum, stream);
 
     emit(
       page.objectNumber,

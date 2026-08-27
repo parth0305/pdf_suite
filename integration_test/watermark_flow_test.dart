@@ -1,6 +1,7 @@
 @Timeout(Duration(minutes: 5))
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -162,6 +163,41 @@ void main() {
       await engine.close(h);
 
       expect(text!.fullText, contains('Confidential'));
+    });
+
+    // A watermark stream is deflated only when that actually shrinks the file,
+    // so this uses a mark long enough to qualify. If /Filter or /Length
+    // disagreed with the bytes, PDFium would fail to inflate the stream and
+    // the mark would simply not be there - the reader is the only thing that
+    // can confirm a compressed stream is well-formed.
+    test('the reader inflates the compressed watermark stream', () async {
+      const wordy = Watermark(
+        text: 'CONFIDENTIAL DRAFT - NOT FOR DISTRIBUTION OR REVIEW',
+      );
+
+      final src = await seed('Compressed.pdf');
+      final out = await subject.apply(src.id, wordy);
+
+      final path = await library.resolveReadablePath(out);
+      final raw = await File(path).readAsBytes();
+      final text = latin1.decode(raw, allowInvalid: true);
+
+      expect(
+        text,
+        contains('/FlateDecode'),
+        reason: 'this mark is long enough that compression pays',
+      );
+      expect(
+        text,
+        isNot(contains('CONFIDENTIAL DRAFT')),
+        reason: 'the mark must not be sitting in the file as plain text',
+      );
+
+      final h = await engine.open(FileSource(path));
+      final extracted = await engine.extractText(h, 0);
+      await engine.close(h);
+
+      expect(extracted!.fullText, contains('CONFIDENTIAL DRAFT'));
     });
   });
 }
