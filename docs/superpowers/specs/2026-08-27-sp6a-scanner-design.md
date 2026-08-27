@@ -146,11 +146,19 @@ tests can only prove the bytes were copied, not that a reader accepts them.
 
 Also: page count, and that a two-page scan keeps its order.
 
+**One mutation the device cannot observe.** Declaring `/DeviceRGB` for a
+single-component JPEG was expected to render as noise. It does not: PDFium's
+libjpeg reads the component count out of the JPEG itself and renders correctly
+regardless of what the dictionary claims. The unit test asserting `/DeviceGray`
+is therefore the only guard, and the integration test's comment says so rather
+than implying a coverage it does not have. Other readers are not promised to be
+as forgiving, which is why the dictionary is still written correctly.
+
 ### Planned mutations
 
 | Mutation | Must fail |
 |---|---|
-| `/DeviceRGB` hardcoded regardless of component count | the grayscale unit test |
+| `/DeviceRGB` hardcoded regardless of component count | the grayscale **unit** test only - see below |
 | `/Length` set to something other than the JPEG length | the byte-count test |
 | Progressive detection removed | the SOF2 test |
 | Page order reversed | the order test |

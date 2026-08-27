@@ -255,6 +255,18 @@ nothing until the mutation is shown to have changed the file. Every mutation in
 this slice is now applied by a script that asserts its anchor exists and
 compares the file afterwards.
 
+**A tenth, from SP-6a: sometimes the reader is too forgiving to notice.**
+Declaring `/DeviceRGB` for a single-component JPEG should produce a corrupt
+image. PDFium renders it correctly anyway - libjpeg reads the component count
+out of the JPEG itself and ignores what the dictionary claims. No render
+assertion can catch that mutation, so the unit test asserting `/DeviceGray` is
+the only guard. The integration test's comment says so, rather than leaving a
+reader to assume it covers what it cannot.
+
+This is the second property in the project with no observable failure, after
+AES IV reuse. Both are still written correctly, because the next reader may be
+less forgiving than PDFium.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 
