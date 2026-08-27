@@ -1,3 +1,4 @@
+import 'package:folio/domain/annotations/ink_reshape.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -44,8 +45,12 @@ class AnnotationEditRepositoryImpl implements AnnotationEditRepository {
     required Set<int> deleted,
     required Map<int, AnnotationStyle> restyled,
     required Map<int, TextRect> moved,
+    Map<int, InkReshape> reshaped = const {},
   }) async {
-    if (deleted.isEmpty && restyled.isEmpty && moved.isEmpty) {
+    if (deleted.isEmpty &&
+        restyled.isEmpty &&
+        moved.isEmpty &&
+        reshaped.isEmpty) {
       throw ArgumentError('nothing to save');
     }
 
@@ -59,6 +64,7 @@ class AnnotationEditRepositoryImpl implements AnnotationEditRepository {
       deleted: deleted,
       restyled: restyled,
       moved: moved,
+      reshaped: reshaped,
     );
 
     if (doc.createdByFolio && doc.isManaged) {

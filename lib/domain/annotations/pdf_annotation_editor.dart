@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/annotation.dart';
+import 'package:folio/domain/annotations/ink_reshape.dart';
 import 'package:folio/domain/annotations/drawing_appearance.dart';
 import 'package:folio/domain/annotations/pdf_annotation_reader.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart';
@@ -50,8 +51,14 @@ Uint8List applyAnnotationEdits(
   required Set<int> deleted,
   required Map<int, AnnotationStyle> restyled,
   required Map<int, TextRect> moved,
+  Map<int, InkReshape> reshaped = const {},
 }) {
-  if (deleted.isEmpty && restyled.isEmpty && moved.isEmpty) return pdf;
+  if (deleted.isEmpty &&
+      restyled.isEmpty &&
+      moved.isEmpty &&
+      reshaped.isEmpty) {
+    return pdf;
+  }
 
   final text = latin1.decode(pdf, allowInvalid: true);
   final pages = PdfObjectReader.parse(text);
@@ -97,17 +104,19 @@ Uint8List applyAnnotationEdits(
 
   // The union, walked once. Emitting a second override of the same object
   // number means the later one wins and the earlier change vanishes.
-  final touched = {...restyled.keys, ...moved.keys};
+  final touched = {...restyled.keys, ...moved.keys, ...reshaped.keys};
   for (final objectNumber in touched) {
     final target = _find(saved, objectNumber);
     if (target == null) continue;
 
     final destinationRect = moved[objectNumber];
     final requestedStyle = restyled[objectNumber];
+    final newShape = reshaped[objectNumber];
     // A restyle we cannot honour - no reconstruction, so no appearance to
     // regenerate - and no move either means there is nothing to write. An
     // identical override would append an xref and a trailer for no change.
     if (destinationRect == null &&
+        newShape == null &&
         (requestedStyle == null || target.reconstructed == null)) {
       continue;
     }
@@ -121,6 +130,31 @@ Uint8List applyAnnotationEdits(
         from: target.rectPt,
         to: destinationRect,
       );
+    }
+
+    // A reshape replaces the geometry outright, so it is written from the
+    // reconstructed strokes rather than transformed out of the old dictionary.
+    // Only ink has points to reshape.
+    final ink = target.reconstructed;
+    if (newShape != null && ink is DrawingAnnotation) {
+      final reshapedAnnotation = DrawingAnnotation(
+        kind: ink.kind,
+        pageIndex: ink.pageIndex,
+        strokes: newShape.strokes,
+        colorArgb: requestedStyle?.colorArgb ?? ink.colorArgb,
+        strokeWidth: requestedStyle?.strokeWidth ?? ink.strokeWidth,
+      );
+
+      final stream = drawingAppearanceStream(reshapedAnnotation);
+      final apNum = nextObj++;
+      emit(
+        apNum,
+        '${drawingAppearanceDict(reshapedAnnotation, stream.length)}\n'
+        'stream\n${stream}endstream',
+      );
+
+      emit(objectNumber, _inkDictionary(dict, newShape, apNum));
+      continue;
     }
 
     if (requestedStyle == null || target.reconstructed == null) {
@@ -275,4 +309,46 @@ String _restyledDictionary(String source, AnnotationStyle style, int? apNum) {
   body = body.replaceAll(RegExp(r'\s+'), ' ').trim();
 
   return '<< $body $c$bs$ap >>';
+}
+
+/// The annotation dictionary with a reshaped /InkList, /Rect and /AP.
+///
+/// The rectangle MUST follow the points: one left where it was clips the
+/// appearance, so the reshaped stroke is drawn and then cut off - which looks
+/// like the reshape failed rather than like a stale rectangle.
+String _inkDictionary(String dict, InkReshape shape, int apNum) {
+  final inkList = shape.strokes
+      .map(
+        (stroke) =>
+            '[${stroke.map((p) => '${pdfNumber(p.x)} ${pdfNumber(p.y)}').join(' ')}]',
+      )
+      .join(' ');
+
+  var out = dict.replaceFirst(
+    RegExp(r'/InkList\s*\[.*?\]\s*\]', dotAll: true),
+    '/InkList [$inkList]',
+  );
+
+  final r = shape.rect;
+  out = out.replaceFirst(
+    RegExp(r'/Rect\s*\[[^\]]*\]'),
+    '/Rect [${pdfNumber(r.left)} ${pdfNumber(r.bottom)} '
+    '${pdfNumber(r.right)} ${pdfNumber(r.top)}]',
+  );
+
+  // Matches the /AP entry ALONE. A looser pattern - `<<[^>]*>>\\s*>>` - also
+  // swallowed the dictionary's own closing braces, and the annotation was
+  // emitted unterminated: the appearance was correct and nothing could read
+  // the dictionary that pointed at it.
+  final replaced = out.replaceFirst(
+    RegExp(r'/AP\s*<<\s*/N\s+\d+\s+\d+\s+R\s*>>'),
+    '/AP << /N $apNum 0 R >>',
+  );
+
+  // An annotation that had no appearance yet gets one.
+  if (replaced == out) {
+    return out.replaceFirst(RegExp(r'>>\s*$'), '/AP << /N $apNum 0 R >> >>');
+  }
+
+  return replaced;
 }

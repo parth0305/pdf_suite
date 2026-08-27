@@ -1,3 +1,4 @@
+import 'package:folio/domain/annotations/ink_reshape.dart';
 import 'package:folio/domain/annotations/pdf_annotation_editor.dart';
 import 'package:folio/domain/annotations/pdf_annotation_reader.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
@@ -14,5 +15,6 @@ abstract interface class AnnotationEditRepository {
     required Set<int> deleted,
     required Map<int, AnnotationStyle> restyled,
     required Map<int, TextRect> moved,
+    Map<int, InkReshape> reshaped = const {},
   });
 }

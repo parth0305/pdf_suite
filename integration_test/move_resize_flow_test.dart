@@ -2,6 +2,7 @@
 library;
 
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:drift/native.dart';
@@ -14,6 +15,8 @@ import 'package:folio/data/repositories/annotation_repository_impl.dart';
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
 import 'package:folio/domain/annotations/annotation.dart';
+import 'package:folio/domain/annotations/pdf_annotation_reader.dart';
+import 'package:folio/domain/annotations/ink_reshape.dart';
 import 'package:folio/domain/annotations/pdf_annotation_editor.dart';
 import 'package:folio/domain/annotations/pdf_point.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
@@ -319,6 +322,111 @@ void main() {
       );
 
       expect(sha256.convert(await File(path).readAsBytes()).toString(), before);
+    });
+  });
+
+  // Moving and resizing change the whole annotation. Reshaping moves ONE
+  // point, which is the thing SP-3f could not do.
+  group('reshaping one ink point', () {
+    test('the stroke changes shape and the page still renders', () async {
+      final src = await seed('Reshape.pdf');
+
+      final drawn = await annotations.saveAnnotations(
+        sourceDocumentId: src.id,
+        annotations: [
+          const DrawingAnnotation(
+            kind: DrawingKind.ink,
+            pageIndex: 0,
+            strokes: [
+              [PdfPoint(100, 400), PdfPoint(200, 400), PdfPoint(300, 400)],
+            ],
+            colorArgb: 0xFF000000,
+            strokeWidth: 4,
+          ),
+        ],
+      );
+      final before = await render(drawn);
+
+      final ink = PdfAnnotationReader.parse(
+        latin1.decode(
+          await File(await library.resolveReadablePath(drawn)).readAsBytes(),
+          allowInvalid: true,
+        ),
+      ).onPage(0).firstWhere((a) => a.subtype == 'Ink');
+      final reshape = reshapeInk(
+        ink.reconstructed! as DrawingAnnotation,
+        const InkPointRef(stroke: 0, point: 1),
+        // Pull the middle point well above the line.
+        const PdfPoint(200, 600),
+      )!;
+
+      final out = await edits.save(
+        documentId: drawn.id,
+        deleted: const {},
+        restyled: const {},
+        moved: const {},
+        reshaped: {ink.objectNumber: reshape},
+      );
+
+      expect(diff(before, await render(out)), greaterThan(200));
+    });
+
+    // The /Rect must follow the points. One left where it was clips the
+    // appearance, so the reshaped stroke is drawn and then cut off - and the
+    // pixels above the old rectangle would stay empty.
+    test('the rectangle grows so the new shape is not clipped', () async {
+      final src = await seed('Clip.pdf');
+
+      final drawn = await annotations.saveAnnotations(
+        sourceDocumentId: src.id,
+        annotations: [
+          const DrawingAnnotation(
+            kind: DrawingKind.ink,
+            pageIndex: 0,
+            strokes: [
+              [PdfPoint(100, 400), PdfPoint(200, 400), PdfPoint(300, 400)],
+            ],
+            colorArgb: 0xFF000000,
+            strokeWidth: 4,
+          ),
+        ],
+      );
+
+      final ink = PdfAnnotationReader.parse(
+        latin1.decode(
+          await File(await library.resolveReadablePath(drawn)).readAsBytes(),
+          allowInvalid: true,
+        ),
+      ).onPage(0).firstWhere((a) => a.subtype == 'Ink');
+      final reshape = reshapeInk(
+        ink.reconstructed! as DrawingAnnotation,
+        const InkPointRef(stroke: 0, point: 1),
+        const PdfPoint(200, 620),
+      )!;
+
+      final out = await edits.save(
+        documentId: drawn.id,
+        deleted: const {},
+        restyled: const {},
+        moved: const {},
+        reshaped: {ink.objectNumber: reshape},
+      );
+
+      // The moved point is at y=620pt on an 842pt page: render row
+      // (842-620)/842*566 = 149. Well above the original stroke at row 297.
+      final pixels = await render(out);
+      var darkNearTheTop = 0;
+      for (var y = 130; y < 175; y++) {
+        for (var x = 120; x < 280; x++) {
+          if (pixels[(y * 400 + x) * 4] < 128) darkNearTheTop++;
+        }
+      }
+
+      expect(
+        darkNearTheTop,
+        greaterThan(10),
+        reason: 'the new peak is drawn, not clipped away by a stale /Rect',
+      );
     });
   });
 }

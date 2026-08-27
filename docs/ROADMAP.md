@@ -8,12 +8,6 @@ has been decided on, and removed when it ships or is ruled out.
 
 ## Next
 
-### Reshaping individual ink points
-Moving and resizing a whole annotation shipped in SP-3f. Dragging one point of
-a drawn stroke does not exist. The geometry is already read back and rewritten
-per point, so the writer needs little; the work is the hit-testing and the
-handles.
-
 ### PDF to JPG
 Export pages as images. Folio already renders pages to pixels for redaction and
 OCR, and already encodes PNG for the signature preview. Mostly plumbing plus a

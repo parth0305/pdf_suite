@@ -486,11 +486,10 @@ you to *edit* them. There is no UI at all.
 
 **Extensions of features that did ship:**
 
-- **Image watermarks.** Watermarking does text only.
 
-- **Custom and date stamps.** SP-3e ships fixed presets.
-- **Reshaping individual ink points.** SP-3f moves and resizes a whole
-  annotation.
+
+
+
 
 **Deliberate omissions, not gaps:**
 
