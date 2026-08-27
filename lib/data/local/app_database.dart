@@ -56,7 +56,28 @@ class Documents extends Table {
   )();
 }
 
-@DriftDatabase(tables: [Documents, Collections, Signatures])
+/// Rules that run when a document enters the library.
+///
+/// `protect` is deliberately not a storable action: a rule that runs
+/// unattended would need its password at rest, which is what protection exists
+/// to avoid.
+@DataClassName('AutomationRuleRow')
+class AutomationRules extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// One of AutomationAction's names.
+  TextColumn get action => text()();
+
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+
+  TextColumn get nameContains => text().nullable()();
+  IntColumn get minSizeBytes => integer().nullable()();
+  TextColumn get watermarkText => text().nullable()();
+
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+@DriftDatabase(tables: [Documents, Collections, Signatures, AutomationRules])
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
     : super(
@@ -74,7 +95,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -91,6 +112,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         await m.createTable(signatures);
+      }
+      if (from < 5) {
+        await m.createTable(automationRules);
       }
     },
     beforeOpen: (details) async {

@@ -11,6 +11,7 @@ import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/home/widgets/library_toolbar.dart';
 import 'package:folio/domain/batch/batch_outcome.dart';
 import 'package:folio/domain/watermark/watermark.dart';
+import 'package:folio/features/automation/automation_screen.dart';
 import 'package:folio/features/batch/batch_providers.dart';
 import 'package:folio/features/batch/batch_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
@@ -64,6 +65,15 @@ class LibraryScreen extends ConsumerWidget {
               child: Text(l10n.libraryExitSelect),
             ),
           ] else ...[
+            IconButton(
+              tooltip: l10n.automationTitle,
+              icon: const Icon(Icons.auto_awesome_motion_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const AutomationScreen(),
+                ),
+              ),
+            ),
             IconButton(
               tooltip: l10n.scanTitle,
               icon: const Icon(Icons.document_scanner_outlined),

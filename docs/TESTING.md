@@ -309,6 +309,16 @@ alongside AES IV reuse and the JPEG `/ColorSpace`:
   compressed image data happens to read as `6 0 R` is impractical, so the unit
   test - which does exactly that with plain bytes - is the guard.
 
+**A fourteenth, from SP-8b: a test that could not tell "never attempted" from
+"attempted and swallowed".** A watermark rule with no text is refused before it
+runs. Removing that guard changed nothing observable: the null assertion throws
+instead, and automation's catch-all swallows it, so the same rule produces the
+same result either way. The guard is kept — relying on a thrown exception for
+ordinary control flow means a malformed rule costs an exception on every import,
+forever — and the code says plainly that no test distinguishes it.
+
+That is the fifth property recorded as unobservable rather than papered over.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 

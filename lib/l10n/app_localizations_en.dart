@@ -782,6 +782,48 @@ class AppLocalizationsEn extends AppLocalizations {
       'This reads every page and can take several minutes.';
 
   @override
+  String get automationTitle => 'Automation';
+
+  @override
+  String get automationEmpty =>
+      'No rules yet. A rule runs when you add a document to your library.';
+
+  @override
+  String get automationAdd => 'Add rule';
+
+  @override
+  String get automationDelete => 'Delete rule';
+
+  @override
+  String get automationWhen => 'When a document is added';
+
+  @override
+  String get automationNameContains => 'and its name contains (optional)';
+
+  @override
+  String get automationMinSize => 'and it is at least this many KB (optional)';
+
+  @override
+  String get automationWatermarkText => 'Watermark text';
+
+  @override
+  String get automationInPlace =>
+      'Compressing and OCR replace the document. Watermarking makes a new one, because it changes how the page looks.';
+
+  @override
+  String get automationNoProtect =>
+      'Protecting with a password cannot be automated: a rule that ran on its own would have to store your password.';
+
+  @override
+  String get automationRuleCompress => 'Compress it';
+
+  @override
+  String get automationRuleOcr => 'Make it searchable';
+
+  @override
+  String get automationRuleWatermark => 'Watermark it';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override
