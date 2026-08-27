@@ -2,8 +2,29 @@
 
 ## Summary
 
-Your documents never leave your device. There is no account, no cloud, no
-telemetry, and no AI.
+There is no account, no cloud, no telemetry, and no AI. Folio makes no network
+requests of its own, ever.
+
+Your documents leave your device in exactly two situations, both of which you
+start deliberately:
+
+- **Printing.** The whole document goes to your operating system's print
+  service, which may send it to a printer on your network or beyond, and may
+  spool it to disk outside Folio's storage.
+- **Sharing.** The file is handed to another application you choose. What
+  happens to it afterwards is outside Folio.
+
+Nothing else — reading, annotating, signing, encrypting, redacting, OCR,
+compression, automation — involves the network at all. OCR in particular runs
+on the device with a bundled model; no page is ever uploaded to recognise its
+text.
+
+### What Folio cannot protect you from
+
+Every operation leaves the original in your library beside the result, so a
+redacted document sits next to its unredacted original with a similar name.
+**Sharing the wrong one is a mistake Folio cannot prevent.** It names the
+document it is sending, which is the most it can honestly do.
 
 ## What is stored, and where
 

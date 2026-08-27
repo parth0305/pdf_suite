@@ -21,6 +21,7 @@ import 'package:integration_test/integration_test.dart';
 import 'annotation_edit_flow_test.dart' as annotation_edit_flow;
 import 'compression_flow_test.dart' as compression_flow;
 import 'drawing_flow_test.dart' as drawing_flow;
+import 'export_flow_test.dart' as export_flow;
 import 'library_flow_test.dart' as library_flow;
 import 'markup_flow_test.dart' as markup_flow;
 import 'move_resize_flow_test.dart' as move_resize_flow;
@@ -60,4 +61,5 @@ void main() {
   group('scanner_flow', scanner_flow.main);
   group('ocr_flow', ocr_flow.main);
   group('compression_flow', compression_flow.main);
+  group('export_flow', export_flow.main);
 }

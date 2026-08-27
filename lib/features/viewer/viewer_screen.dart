@@ -24,6 +24,7 @@ import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
+import 'package:folio/features/viewer/export_providers.dart';
 import 'package:folio/features/viewer/ocr_providers.dart';
 import 'package:folio/features/viewer/redaction_providers.dart';
 import 'package:folio/features/viewer/widgets/redact_confirm_dialog.dart';
@@ -71,6 +72,8 @@ enum _AnnotateTool {
   redact,
   ocr,
   compress,
+  print,
+  share,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -361,6 +364,73 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   /// The work is done once and the result carried into the dialog, so the file
   /// the user accepts is exactly the one that was measured - not a second
   /// compression that might differ.
+  /// Hands the document to the operating system's print dialog.
+  ///
+  /// This is one of only two places a document leaves the device, so the
+  /// refusal path matters: a protected document is stopped here rather than
+  /// failing inside the print service where nothing explains why.
+  Future<void> _printDocument() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final export = await ref
+          .read(exportRepositoryProvider)
+          .prepare(widget.document.id);
+
+      final refusal = ref.read(exportRepositoryProvider).refusalFor(export);
+      if (refusal != null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.printProtected)));
+        return;
+      }
+
+      await ref.read(platformExportProvider).print(export);
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    } on Object {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.printFailed)));
+    }
+  }
+
+  /// Hands the document to the system share sheet.
+  ///
+  /// An encrypted document shares perfectly well - it stays encrypted - so
+  /// there is no refusal here, unlike printing.
+  Future<void> _shareDocument() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    // iPad anchors the share sheet to whatever was tapped.
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box == null
+        ? null
+        : box.localToGlobal(Offset.zero) & box.size;
+
+    try {
+      final export = await ref
+          .read(exportRepositoryProvider)
+          .prepare(widget.document.id);
+
+      if (!mounted) return;
+      // Names which document is going, because operations leave the original
+      // alongside the result and the two look alike in a list.
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.shareWhich(export.displayName))),
+      );
+
+      await ref.read(platformExportProvider).share(export, origin: origin);
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
   Future<void> _compressDocument() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -1317,6 +1387,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   ? _leavePagesMode()
                   : _enterPagesMode(),
       ),
+      // Print and share sit in the same menu, for the same width reason.
+      // They are the only two actions here that send the document off the
+      // device, which is why the menu names them plainly rather than using
+      // bare icons.
       // One menu rather than one icon per tool: the action bar was already at
       // the width limit, and a second annotation icon overflowed it. Sticky
       // notes and stamps land here too rather than pushing it over again.
@@ -1337,6 +1411,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.redact => _enterRedactMode(),
             _AnnotateTool.ocr => _runOcr(),
             _AnnotateTool.compress => _compressDocument(),
+            _AnnotateTool.print => _printDocument(),
+            _AnnotateTool.share => _shareDocument(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -1368,6 +1444,22 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.approval_outlined),
                 title: Text(l10n.stampMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.share,
+              child: ListTile(
+                leading: const Icon(Icons.ios_share),
+                title: Text(l10n.shareAction),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.print,
+              child: ListTile(
+                leading: const Icon(Icons.print_outlined),
+                title: Text(l10n.printAction),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

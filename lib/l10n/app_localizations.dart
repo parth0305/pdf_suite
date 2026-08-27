@@ -1570,6 +1570,42 @@ abstract class AppLocalizations {
   /// **'Watermark it'**
   String get automationRuleWatermark;
 
+  /// No description provided for @printAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printAction;
+
+  /// No description provided for @shareAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareAction;
+
+  /// No description provided for @printProtected.
+  ///
+  /// In en, this message translates to:
+  /// **'A protected document cannot be printed. Folio does not hand your password to the printing service.'**
+  String get printProtected;
+
+  /// No description provided for @shareLeavesDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing sends this document out of Folio. Everything else Folio does stays on your device.'**
+  String get shareLeavesDevice;
+
+  /// No description provided for @shareWhich.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing {name}'**
+  String shareWhich(String name);
+
+  /// No description provided for @printFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The printing service could not be reached.'**
+  String get printFailed;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:
