@@ -24,8 +24,8 @@ Document metadata — title, author, subject, keywords — is carried through pa
 operations. Folio never adds a `/Producer` or `/ModDate` of its own: a document
 you edit does not start advertising which tool touched it, or when.
 
-Not yet possible: printing, batch processing, and compressing documents Folio
-did not write. Scanned documents have no text layer until you run OCR on them,
+Not yet possible: printing and batch processing. Compression is lossless only —
+Folio will not reduce image quality to shrink a file. Scanned documents have no text layer until you run OCR on them,
 which happens entirely on your device. See [FEATURES.md](docs/FEATURES.md) for what is
 implemented and verified on which platform.
 

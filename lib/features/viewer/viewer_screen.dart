@@ -23,6 +23,7 @@ import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
+import 'package:folio/features/viewer/compression_providers.dart';
 import 'package:folio/features/viewer/ocr_providers.dart';
 import 'package:folio/features/viewer/redaction_providers.dart';
 import 'package:folio/features/viewer/widgets/redact_confirm_dialog.dart';
@@ -69,6 +70,7 @@ enum _AnnotateTool {
   protect,
   redact,
   ocr,
+  compress,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -352,6 +354,96 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (!mounted) return;
     ref.read(annotationSessionProvider.notifier).reset();
     setState(() => _mode = _ViewerMode.read);
+  }
+
+  /// Compresses only after showing what it will save.
+  ///
+  /// The work is done once and the result carried into the dialog, so the file
+  /// the user accepts is exactly the one that was measured - not a second
+  /// compression that might differ.
+  Future<void> _compressDocument() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.compressChecking),
+        duration: const Duration(minutes: 2),
+      ),
+    );
+
+    try {
+      final result = await ref
+          .read(compressionRepositoryProvider)
+          .analyse(widget.document.id);
+      if (!mounted) return;
+      messenger.hideCurrentSnackBar();
+
+      // An already-compressed document is the common case for scans, and a
+      // button that appears to do nothing reads as broken.
+      if (!result.worthDoing) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.compressNothing)));
+        return;
+      }
+
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text(l10n.compressMode),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.compressOffer(
+                  _formatBytes(result.savedBytes),
+                  (result.savedFraction * 100).toStringAsFixed(0),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.compressLossless,
+                style: Theme.of(c).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(c).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(c).pop(true),
+              child: Text(l10n.compressApply),
+            ),
+          ],
+        ),
+      );
+
+      if (accepted != true || !mounted) return;
+
+      final compressed = await ref
+          .read(compressionRepositoryProvider)
+          .save(widget.document.id, result);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.compressDone(compressed.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
+  }
+
+  static String _formatBytes(int bytes) {
+    if (bytes >= 1024 * 1024) {
+      return '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
+    }
+    return '${(bytes / 1024).toStringAsFixed(0)} KB';
   }
 
   /// Tesseract is bundled for Android and iOS only; there is no Windows
@@ -1244,6 +1336,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.protect => _protectDocument(),
             _AnnotateTool.redact => _enterRedactMode(),
             _AnnotateTool.ocr => _runOcr(),
+            _AnnotateTool.compress => _compressDocument(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -1275,6 +1368,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.approval_outlined),
                 title: Text(l10n.stampMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.compress,
+              child: ListTile(
+                leading: const Icon(Icons.compress),
+                title: Text(l10n.compressMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

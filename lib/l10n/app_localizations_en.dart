@@ -696,6 +696,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'On this platform Folio can read the words but not where they sit, so search will find them but highlight only the right area.';
 
   @override
+  String get compressMode => 'Compress';
+
+  @override
+  String get compressChecking => 'Checking what can be saved…';
+
+  @override
+  String get compressNothing =>
+      'This document is already well compressed. Nothing worth saving.';
+
+  @override
+  String compressOffer(String saved, String percent) {
+    return 'Can save $saved ($percent%). The pages will look exactly the same.';
+  }
+
+  @override
+  String get compressApply => 'Compress';
+
+  @override
+  String compressDone(String name) {
+    return 'Compressed to $name';
+  }
+
+  @override
+  String get compressLossless =>
+      'Folio only compresses losslessly: nothing is removed and no image quality is reduced.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

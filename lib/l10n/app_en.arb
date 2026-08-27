@@ -313,6 +313,19 @@
   "ocrNothingFound": "No text was recognised in this document.",
   "ocrUnavailable": "OCR is not available on this platform.",
   "ocrApproximate": "On this platform Folio can read the words but not where they sit, so search will find them but highlight only the right area.",
+  "compressMode": "Compress",
+  "compressChecking": "Checking what can be saved\u2026",
+  "compressNothing": "This document is already well compressed. Nothing worth saving.",
+  "compressOffer": "Can save {saved} ({percent}%). The pages will look exactly the same.",
+  "@compressOffer": {
+    "placeholders": { "saved": { "type": "String" }, "percent": { "type": "String" } }
+  },
+  "compressApply": "Compress",
+  "compressDone": "Compressed to {name}",
+  "@compressDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "compressLossless": "Folio only compresses losslessly: nothing is removed and no image quality is reduced.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",
