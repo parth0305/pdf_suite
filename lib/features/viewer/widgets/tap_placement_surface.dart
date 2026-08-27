@@ -84,6 +84,25 @@ class _StagedPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final a in annotations) {
       switch (a) {
+        // Staged photographed signatures preview as their outline. Drawing the
+        // photograph itself would mean decoding it on every frame; the outline
+        // is enough to show where it will land, and the real thing appears the
+        // moment it is saved.
+        case ImageAnnotation():
+          final topLeft = _at(PdfPoint(a.rect.left, a.rect.top));
+          canvas.drawRect(
+            Rect.fromLTWH(
+              topLeft.dx,
+              topLeft.dy,
+              a.rect.width * _scale,
+              a.rect.height * _scale,
+            ),
+            Paint()
+              ..color = const Color(0x992F5D62)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2,
+          );
+
         case StickyNote():
           final origin = _at(a.anchorPt);
           final side = StickyNote.iconSizePt * _scale;

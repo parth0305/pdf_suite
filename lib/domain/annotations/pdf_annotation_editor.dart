@@ -136,8 +136,18 @@ Uint8List applyAnnotationEdits(
     // A note has no appearance stream; adding one would disagree with the icon
     // every viewer already draws.
     int? apNum;
-    if (restyledAnnotation is! StickyNote) {
+    // ImageAnnotation is excluded with StickyNote, for a different reason:
+    // a note has no appearance, and a photographed signature has one that no
+    // restyle could regenerate. Neither is reachable here - the editor rebuilds
+    // annotations it READ from a PDF, and it never reads an image back as one -
+    // but the sealed switch has to say so.
+    if (restyledAnnotation is! StickyNote &&
+        restyledAnnotation is! ImageAnnotation) {
       final (stream, apDict) = switch (restyledAnnotation) {
+        // Excluded by the guard above; the sealed switch still requires it.
+        ImageAnnotation() => throw StateError(
+          'image annotations are not restyled',
+        ),
         TextMarkup() => (
           appearanceStream(restyledAnnotation),
           appearanceDict(
@@ -216,6 +226,9 @@ SavedAnnotation? _find(PdfAnnotationReader reader, int objectNumber) {
 
 Annotation _withStyle(Annotation annotation, AnnotationStyle style) =>
     switch (annotation) {
+      // A photograph has no colour or stroke width to restyle. Returned
+      // unchanged rather than silently dropped.
+      ImageAnnotation() => annotation,
       TextMarkup() => TextMarkup(
         kind: annotation.kind,
         pageIndex: annotation.pageIndex,

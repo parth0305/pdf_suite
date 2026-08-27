@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/domain/annotations/drawing_appearance.dart';
+import 'package:folio/domain/annotations/image_appearance.dart';
 import 'package:folio/domain/annotations/pdf_appearance.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
 import 'package:folio/domain/annotations/stamp_appearance.dart';
@@ -61,6 +62,20 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
   /// deflate output is binary and would not survive latin1 round-tripping.
   /// [dictWithoutLength] must not carry /Length or /Filter - both are derived
   /// from the bytes actually written.
+  /// Emits an object whose stream is already-compressed BINARY.
+  ///
+  /// Separate from [emitStream], which takes text and decides whether to
+  /// deflate it. Image samples are deflated by the caller and must be written
+  /// through untouched; running them through the text path would try to
+  /// latin1-encode bytes that are not text.
+  void emitBinary(int number, String dict, List<int> bytes) {
+    offsets[number] = out.length;
+    out
+      ..addAll(latin1.encode('$number 0 obj\n$dict\nstream\n'))
+      ..addAll(bytes)
+      ..addAll(latin1.encode('\nendstream\nendobj\n'));
+  }
+
   void emitStream(int number, String dictWithoutLength, String content) {
     final body = pdfStreamBody(content);
     offsets[number] = out.length;
@@ -101,6 +116,33 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
 
     final newRefs = <String>[];
     for (final annotation in entry.value) {
+      // An image annotation is emitted separately: its appearance references
+      // two binary objects that must exist first, which the shared
+      // (stream, dict) shape below cannot express.
+      if (annotation is ImageAnnotation) {
+        final parts = imageAppearanceParts(annotation);
+
+        final maskNum = nextObj++;
+        emitBinary(maskNum, maskXObjectDict(parts), parts.alpha);
+
+        final imageNum = nextObj++;
+        emitBinary(imageNum, imageXObjectDict(parts, maskNum), parts.rgb);
+
+        final apNum = nextObj++;
+        emitStream(
+          apNum,
+          _withoutLength(
+            imageAppearanceDict(annotation, parts, 0, '', imageNum),
+          ),
+          parts.content,
+        );
+
+        final annotNum = nextObj++;
+        emit(annotNum, _annotationDict(annotation, apNum));
+        newRefs.add('$annotNum 0 R');
+        continue;
+      }
+
       // Nullable: a /Text note has no appearance stream at all.
       final (String, String)? appearance = switch (annotation) {
         TextMarkup() => (
@@ -123,6 +165,8 @@ Uint8List writeAnnotations(Uint8List pdf, List<Annotation> annotations) {
           ),
         ),
         StickyNote() => null,
+        // Handled above; it never reaches here.
+        ImageAnnotation() => null,
       };
 
       int? apNum;
@@ -185,6 +229,13 @@ String _annotationDict(Annotation annotation, int? apNum) {
           '/Contents ${pdfString(annotation.contents)} '
           '/Name /Note /C [${_colourOf(annotation.colorArgb)}] /CA 1 /F 4'
           '$ap >>';
+
+    case ImageAnnotation():
+      final r = annotation.rect;
+      return '<< /Type /Annot /Subtype /Stamp '
+          '/Rect [${pdfNumber(r.left)} ${pdfNumber(r.bottom)} '
+          '${pdfNumber(r.right)} ${pdfNumber(r.top)}] '
+          '/Name /Signature /CA 1 /F 4$ap >>';
 
     case Stamp():
       final r = annotation.anchorPt;

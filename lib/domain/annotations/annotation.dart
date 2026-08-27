@@ -2,6 +2,7 @@ import 'package:folio/domain/annotations/pdf_point.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 
 part 'drawing_annotation.dart';
+part 'image_annotation.dart';
 part 'stamp.dart';
 part 'sticky_note.dart';
 part 'text_markup.dart';
