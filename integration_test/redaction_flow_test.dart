@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/core/storage/safe_file_writer.dart';
 import 'package:folio/data/local/app_database.dart';
@@ -16,6 +18,10 @@ import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/redaction/redaction_box.dart';
+import 'package:folio/features/home/providers.dart';
+import 'package:folio/features/viewer/redaction_providers.dart';
+import 'package:folio/features/viewer/viewer_screen.dart';
+import 'package:folio/l10n/app_localizations.dart';
 import 'package:folio/engine/pdfrx_engine.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -296,6 +302,101 @@ void main() {
       final src = await seed('Empty.pdf');
 
       await expectLater(subject.apply(src.id, const []), throwsArgumentError);
+    });
+  });
+
+  group('redact mode', () {
+    Widget harness(LibraryDocument doc) => ProviderScope(
+      overrides: [
+        libraryRepositoryProvider.overrideWithValue(library),
+        redactionRepositoryProvider.overrideWithValue(subject),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ViewerScreen(document: doc),
+      ),
+    );
+
+    testWidgets('drawing a box and applying it produces a document', (
+      tester,
+    ) async {
+      final src = await seed('UiFlow.pdf');
+      await tester.pumpWidget(harness(src));
+      await pumpUntilMenuEnabled(tester, Icons.edit_outlined);
+
+      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Redact'));
+      await tester.pumpAndSettle();
+
+      // Apply is disabled until a box exists: an empty redaction would write
+      // a new document identical to the original.
+      final apply = find.widgetWithText(FilledButton, 'Apply redactions');
+      expect(tester.widget<FilledButton>(apply).onPressed, isNull);
+
+      // Drag a box across the middle of the page.
+      final centre = tester.getCenter(find.byType(PdfViewer));
+      await tester.dragFrom(
+        centre - const Offset(90, 20),
+        const Offset(180, 40),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<FilledButton>(apply).onPressed,
+        isNotNull,
+        reason: 'a drawn box enables Apply',
+      );
+
+      await tester.tap(apply);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Redact'));
+
+      await pumpUntilAsync(
+        tester,
+        () async => (await library.all()).any(
+          (d) => d.displayName.contains('redacted'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        (await library.all()).where((d) => d.displayName.contains('redacted')),
+        hasLength(1),
+      );
+    });
+
+    testWidgets('the confirmation names what is not covered', (tester) async {
+      final src = await seed('UiWarn.pdf');
+      await tester.pumpWidget(harness(src));
+      await pumpUntilMenuEnabled(tester, Icons.edit_outlined);
+
+      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Redact'));
+      await tester.pumpAndSettle();
+
+      final centre = tester.getCenter(find.byType(PdfViewer));
+      await tester.dragFrom(
+        centre - const Offset(90, 20),
+        const Offset(180, 40),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Apply redactions'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Not covered'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(
+        (await library.all()).where((d) => d.displayName.contains('redacted')),
+        isEmpty,
+        reason: 'cancelling must write nothing',
+      );
     });
   });
 }

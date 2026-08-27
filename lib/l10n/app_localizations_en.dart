@@ -592,6 +592,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get watermarkEmpty => 'A watermark needs some text.';
 
   @override
+  String get redactMode => 'Redact';
+
+  @override
+  String get redactHint => 'Drag over anything you want removed.';
+
+  @override
+  String get redactApply => 'Apply redactions';
+
+  @override
+  String get redactClear => 'Clear';
+
+  @override
+  String get redactNone => 'Draw at least one box first.';
+
+  @override
+  String get redactConfirmTitle => 'Apply redactions?';
+
+  @override
+  String get redactConfirmBody =>
+      'The content under each box will be removed from the new document. It cannot be recovered from it.';
+
+  @override
+  String get redactConfirmNotCovered =>
+      'Not covered: document title and author, bookmarks, and attachments. Redacted pages become images, so their text is rebuilt and may lose accents or non-Latin characters.';
+
+  @override
+  String get redactConfirmAction => 'Redact';
+
+  @override
+  String redactDone(String name) {
+    return 'Redacted $name';
+  }
+
+  @override
+  String get redactDiscardTitle => 'Discard redaction boxes?';
+
+  @override
+  String get redactDiscardBody =>
+      'The boxes you drew have not been applied. The original document is untouched either way.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override
