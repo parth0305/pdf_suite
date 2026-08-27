@@ -899,6 +899,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionsSendNote => 'Leaves your device';
 
   @override
+  String get actionsGroupView => 'View';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

@@ -1708,6 +1708,12 @@ abstract class AppLocalizations {
   /// **'Leaves your device'**
   String get actionsSendNote;
 
+  /// No description provided for @actionsGroupView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get actionsGroupView;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

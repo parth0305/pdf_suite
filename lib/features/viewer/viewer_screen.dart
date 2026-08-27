@@ -354,8 +354,25 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   /// This is one of only two places a document leaves the device, so the
   /// refusal path matters: a protected document is stopped here rather than
   /// failing inside the print service where nothing explains why.
+  /// Whether the app bar can carry every view control.
+  ///
+  /// In read mode the bar held eight buttons, which is too many across a
+  /// phone: they crowd to the point where the target sizes shrink and the
+  /// title has nowhere to go. Below this width, thumbnails, outline, full
+  /// screen and the two zoom buttons move into the actions sheet - pinch
+  /// already zooms, so the zoom pair is no loss on touch.
+  ///
+  /// 600 is the same breakpoint AdaptiveScaffold uses for its navigation rail.
+  bool get _hasRoomForFullToolbar => MediaQuery.sizeOf(context).width >= 600;
+
   Future<void> _runAction(DocumentAction action) async {
     switch (action) {
+      case DocumentAction.thumbnails:
+        setState(() => _panel = _SidePanel.thumbnails);
+      case DocumentAction.outline:
+        setState(() => _panel = _SidePanel.outline);
+      case DocumentAction.fullScreen:
+        setState(() => _fullScreen = true);
       case DocumentAction.markup:
         _enterMarkupMode();
       case DocumentAction.draw:
@@ -1438,7 +1455,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           onPressed: _totalPages == 0
               ? null
               : () async {
-                  final action = await showDocumentActionsSheet(context);
+                  // On a phone the View group joins the sheet, because those
+                  // three buttons have just been taken out of the bar.
+                  final action = await showDocumentActionsSheet(
+                    context,
+                    includeView: !_hasRoomForFullToolbar,
+                  );
                   if (action == null || !mounted) return;
                   await _runAction(action);
                 },
@@ -1449,7 +1471,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           icon: const Icon(Icons.call_split),
           onPressed: _totalPages == 0 ? null : _splitDocument,
         ),
-      if (_mode == _ViewerMode.read) ...[
+      if (_mode == _ViewerMode.read && _hasRoomForFullToolbar) ...[
         IconButton(
           tooltip: l10n.viewerThumbnails,
           icon: const Icon(Icons.grid_view),

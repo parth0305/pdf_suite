@@ -3,6 +3,9 @@ import 'package:folio/l10n/app_localizations.dart';
 
 /// Everything the viewer can do to the open document.
 enum DocumentAction {
+  thumbnails,
+  outline,
+  fullScreen,
   markup,
   draw,
   note,
@@ -25,10 +28,18 @@ enum DocumentAction {
 /// to a printer", and hid both under a pencil icon. Sections make it
 /// scannable; a bottom sheet suits a phone better than a tall popup.
 ///
+/// The View group appears only on a narrow screen. On a phone the app bar had
+/// eight buttons in read mode; thumbnails, outline and full screen move here so
+/// three remain. On a tablet or desktop there is room, and they stay in the bar
+/// where they are one tap rather than two.
+///
 /// **Send is separated deliberately.** Print and share are the only two
 /// actions that put the document somewhere Folio cannot reach, and the group
 /// says so rather than sitting them beside Markup as though they were alike.
-Future<DocumentAction?> showDocumentActionsSheet(BuildContext context) {
+Future<DocumentAction?> showDocumentActionsSheet(
+  BuildContext context, {
+  bool includeView = false,
+}) {
   return showModalBottomSheet<DocumentAction>(
     context: context,
     showDragHandle: true,
@@ -73,6 +84,20 @@ Future<DocumentAction?> showDocumentActionsSheet(BuildContext context) {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (includeView) ...[
+                group(l10n.actionsGroupView),
+                item(
+                  DocumentAction.thumbnails,
+                  Icons.grid_view,
+                  l10n.viewerThumbnails,
+                ),
+                item(DocumentAction.outline, Icons.list, l10n.viewerOutline),
+                item(
+                  DocumentAction.fullScreen,
+                  Icons.fullscreen,
+                  l10n.viewerFullScreen,
+                ),
+              ],
               group(l10n.actionsGroupAnnotate),
               item(
                 DocumentAction.markup,

@@ -398,6 +398,7 @@
   "actionsGroupProtect": "Protect",
   "actionsGroupSend": "Send",
   "actionsSendNote": "Leaves your device",
+  "actionsGroupView": "View",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",
