@@ -22,7 +22,7 @@ layer's full rewrite so the original content stream never reaches the output.
 - Resolution constant: 200 DPI.
 - Resource names: `/RdIm0` (image), `/RdF1` (font).
 
-**Tasks 1-4 COMPLETE.** Task 1 probe: PDFium rendered a Flate raw-RGB image
+**ALL TASKS COMPLETE.** Task 1 probe: PDFium rendered a Flate raw-RGB image
 XObject on both iOS and Android, exact colours. Probe deleted as throwaway.
 
 ---
