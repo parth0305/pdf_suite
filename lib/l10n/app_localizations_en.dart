@@ -633,6 +633,48 @@ class AppLocalizationsEn extends AppLocalizations {
       'The boxes you drew have not been applied. The original document is untouched either way.';
 
   @override
+  String get scanTitle => 'Scan';
+
+  @override
+  String get scanEmpty => 'No pages yet. Take a photo or import images.';
+
+  @override
+  String get scanCamera => 'Camera';
+
+  @override
+  String get scanImport => 'Import images';
+
+  @override
+  String get scanSave => 'Save as PDF';
+
+  @override
+  String get scanRemove => 'Remove page';
+
+  @override
+  String get scanNoTextWarning =>
+      'A scan has no text layer. It cannot be searched, and its text cannot be selected or copied.';
+
+  @override
+  String scanPageLabel(int number) {
+    return 'Page $number';
+  }
+
+  @override
+  String scanSaved(String name) {
+    return 'Saved $name';
+  }
+
+  @override
+  String get scanDiscardTitle => 'Discard this scan?';
+
+  @override
+  String get scanDiscardBody => 'The pages you captured have not been saved.';
+
+  @override
+  String get scanUnsupportedImage =>
+      'That image is not a baseline JPEG and cannot be added.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

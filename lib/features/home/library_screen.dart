@@ -9,6 +9,7 @@ import 'package:folio/features/home/widgets/document_tile.dart';
 import 'package:folio/features/home/widgets/empty_state.dart';
 import 'package:folio/features/pages/providers.dart';
 import 'package:folio/features/home/widgets/library_toolbar.dart';
+import 'package:folio/features/scanner/scanner_screen.dart';
 import 'package:folio/l10n/app_localizations.dart';
 
 class LibraryScreen extends ConsumerWidget {
@@ -47,13 +48,26 @@ class LibraryScreen extends ConsumerWidget {
               },
               child: Text(l10n.libraryExitSelect),
             ),
-          ] else
+          ] else ...[
+            IconButton(
+              tooltip: l10n.scanTitle,
+              icon: const Icon(Icons.document_scanner_outlined),
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ScannerScreen(),
+                  ),
+                );
+                await ref.read(libraryControllerProvider.notifier).refresh();
+              },
+            ),
             IconButton(
               tooltip: l10n.librarySelectMode,
               icon: const Icon(Icons.checklist),
               onPressed: () =>
                   ref.read(librarySelectModeProvider.notifier).value = true,
             ),
+          ],
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(144),

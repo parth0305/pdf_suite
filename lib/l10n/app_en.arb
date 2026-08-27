@@ -286,6 +286,24 @@
   },
   "redactDiscardTitle": "Discard redaction boxes?",
   "redactDiscardBody": "The boxes you drew have not been applied. The original document is untouched either way.",
+  "scanTitle": "Scan",
+  "scanEmpty": "No pages yet. Take a photo or import images.",
+  "scanCamera": "Camera",
+  "scanImport": "Import images",
+  "scanSave": "Save as PDF",
+  "scanRemove": "Remove page",
+  "scanNoTextWarning": "A scan has no text layer. It cannot be searched, and its text cannot be selected or copied.",
+  "scanPageLabel": "Page {number}",
+  "@scanPageLabel": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "scanSaved": "Saved {name}",
+  "@scanSaved": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "scanDiscardTitle": "Discard this scan?",
+  "scanDiscardBody": "The pages you captured have not been saved.",
+  "scanUnsupportedImage": "That image is not a baseline JPEG and cannot be added.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",
