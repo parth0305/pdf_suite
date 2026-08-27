@@ -117,33 +117,6 @@ Future<void> pumpUntilEnabled(
   throw StateError('timed out waiting for a button to become enabled');
 }
 
-/// Pumps until the `PopupMenuButton` wrapping [icon] is actually tappable.
-///
-/// The same trap as [pumpUntilEnabled], one widget type over: a
-/// `PopupMenuButton` with `enabled: false` still matches `find.byIcon`, and
-/// tapping it opens nothing. The viewer's annotate menu stays disabled until
-/// the page count arrives.
-Future<void> pumpUntilMenuEnabled(
-  WidgetTester tester,
-  IconData icon, {
-  Duration timeout = const Duration(seconds: 30),
-}) async {
-  final deadline = DateTime.now().add(timeout);
-  final buttons = find.ancestor(
-    of: find.byIcon(icon),
-    matching: find.byWidgetPredicate((w) => w is PopupMenuButton),
-  );
-
-  while (DateTime.now().isBefore(deadline)) {
-    await tester.pump(const Duration(milliseconds: 100));
-    if (buttons.evaluate().isNotEmpty &&
-        (buttons.evaluate().first.widget as PopupMenuButton).enabled) {
-      return;
-    }
-  }
-  throw StateError('timed out waiting for a menu to become enabled');
-}
-
 /// Pumps until [condition] holds, or throws when it never does.
 ///
 /// `pumpAndSettle` returns once the widget tree is idle, which says nothing

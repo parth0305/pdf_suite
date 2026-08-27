@@ -323,9 +323,11 @@ void main() {
     ) async {
       final src = await seed('UiFlow.pdf');
       await tester.pumpWidget(harness(src));
-      await pumpUntilMenuEnabled(tester, Icons.edit_outlined);
+      // The actions menu is a bottom sheet now, opened from a single
+      // overflow button, with Redact under the "Protect" group.
+      await pumpUntilEnabled(tester, Icons.more_horiz);
 
-      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Redact'));
       await tester.pumpAndSettle();
@@ -370,9 +372,11 @@ void main() {
     testWidgets('the confirmation names what is not covered', (tester) async {
       final src = await seed('UiWarn.pdf');
       await tester.pumpWidget(harness(src));
-      await pumpUntilMenuEnabled(tester, Icons.edit_outlined);
+      // The actions menu is a bottom sheet now, opened from a single
+      // overflow button, with Redact under the "Protect" group.
+      await pumpUntilEnabled(tester, Icons.more_horiz);
 
-      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Redact'));
       await tester.pumpAndSettle();

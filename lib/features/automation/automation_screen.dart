@@ -181,28 +181,23 @@ class _AddRuleDialogState extends ConsumerState<_AddRuleDialog> {
               onChanged: (v) => setState(() => _action = v ?? _action),
             ),
             if (needsText) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              _FieldLabel(l10n.automationWatermarkText),
               TextField(
                 controller: _watermark,
-                decoration: InputDecoration(
-                  labelText: l10n.automationWatermarkText,
-                ),
                 onChanged: (_) => setState(() {}),
               ),
             ],
             const SizedBox(height: 8),
-            TextField(
-              controller: _name,
-              decoration: InputDecoration(
-                labelText: l10n.automationNameContains,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _size,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: l10n.automationMinSize),
-            ),
+            // These labels are sentences, not words, and a dialog on a phone
+            // is narrow: as `labelText` they were truncated to
+            // "and its name contains (opti..." with no way to read the rest.
+            // Above the field they wrap.
+            _FieldLabel(l10n.automationNameContains),
+            TextField(controller: _name),
+            const SizedBox(height: 12),
+            _FieldLabel(l10n.automationMinSize),
+            TextField(controller: _size, keyboardType: TextInputType.number),
           ],
         ),
       ),
@@ -236,4 +231,20 @@ class _AddRuleDialogState extends ConsumerState<_AddRuleDialog> {
       ],
     );
   }
+}
+
+/// A wrapping label above a field.
+///
+/// `InputDecoration.labelText` is a single line that ellipsises, which is
+/// right for a word and wrong for a sentence.
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+  );
 }

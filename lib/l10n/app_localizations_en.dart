@@ -437,9 +437,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Discard your drawings? The original document is untouched either way.';
 
   @override
-  String get annotateMode => 'Annotate';
-
-  @override
   String get annotationsMode => 'Edit annotations';
 
   @override
@@ -882,6 +879,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLicensesSubtitle => 'Every library Folio is built on';
+
+  @override
+  String get actionsTitle => 'Actions';
+
+  @override
+  String get actionsGroupAnnotate => 'Annotate';
+
+  @override
+  String get actionsGroupDocument => 'Document';
+
+  @override
+  String get actionsGroupProtect => 'Protect';
+
+  @override
+  String get actionsGroupSend => 'Send';
+
+  @override
+  String get actionsSendNote => 'Leaves your device';
 
   @override
   String get protectMode => 'Protect with password';

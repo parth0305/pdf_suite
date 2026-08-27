@@ -886,12 +886,6 @@ abstract class AppLocalizations {
   /// **'Discard your drawings? The original document is untouched either way.'**
   String get drawDiscardPrompt;
 
-  /// No description provided for @annotateMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Annotate'**
-  String get annotateMode;
-
   /// No description provided for @annotationsMode.
   ///
   /// In en, this message translates to:
@@ -1677,6 +1671,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Every library Folio is built on'**
   String get settingsLicensesSubtitle;
+
+  /// No description provided for @actionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actionsTitle;
+
+  /// No description provided for @actionsGroupAnnotate.
+  ///
+  /// In en, this message translates to:
+  /// **'Annotate'**
+  String get actionsGroupAnnotate;
+
+  /// No description provided for @actionsGroupDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get actionsGroupDocument;
+
+  /// No description provided for @actionsGroupProtect.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect'**
+  String get actionsGroupProtect;
+
+  /// No description provided for @actionsGroupSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get actionsGroupSend;
+
+  /// No description provided for @actionsSendNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaves your device'**
+  String get actionsSendNote;
 
   /// No description provided for @protectMode.
   ///

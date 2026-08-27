@@ -22,6 +22,7 @@ import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
+import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
 import 'package:folio/features/viewer/export_providers.dart';
@@ -58,22 +59,6 @@ enum _ViewerMode {
   note,
   stamp,
   redact,
-}
-
-enum _AnnotateTool {
-  markup,
-  draw,
-  annotations,
-  signature,
-  note,
-  stamp,
-  watermark,
-  protect,
-  redact,
-  ocr,
-  compress,
-  print,
-  share,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -369,6 +354,37 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   /// This is one of only two places a document leaves the device, so the
   /// refusal path matters: a protected document is stopped here rather than
   /// failing inside the print service where nothing explains why.
+  Future<void> _runAction(DocumentAction action) async {
+    switch (action) {
+      case DocumentAction.markup:
+        _enterMarkupMode();
+      case DocumentAction.draw:
+        _enterDrawMode();
+      case DocumentAction.annotations:
+        await _enterAnnotationsMode();
+      case DocumentAction.signature:
+        await _enterSignatureMode();
+      case DocumentAction.note:
+        _enterNoteMode();
+      case DocumentAction.stamp:
+        _enterStampMode();
+      case DocumentAction.watermark:
+        await _applyWatermark();
+      case DocumentAction.protect:
+        await _protectDocument();
+      case DocumentAction.redact:
+        _enterRedactMode();
+      case DocumentAction.ocr:
+        await _runOcr();
+      case DocumentAction.compress:
+        await _compressDocument();
+      case DocumentAction.print:
+        await _printDocument();
+      case DocumentAction.share:
+        await _shareDocument();
+    }
+  }
+
   Future<void> _printDocument() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -1416,132 +1432,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       // the width limit, and a second annotation icon overflowed it. Sticky
       // notes and stamps land here too rather than pushing it over again.
       if (_mode == _ViewerMode.read)
-        PopupMenuButton<_AnnotateTool>(
-          tooltip: l10n.annotateMode,
-          icon: const Icon(Icons.edit_outlined),
-          enabled: _totalPages != 0,
-          onSelected: (tool) => switch (tool) {
-            _AnnotateTool.markup => _enterMarkupMode(),
-            _AnnotateTool.draw => _enterDrawMode(),
-            _AnnotateTool.annotations => _enterAnnotationsMode(),
-            _AnnotateTool.signature => _enterSignatureMode(),
-            _AnnotateTool.note => _enterNoteMode(),
-            _AnnotateTool.stamp => _enterStampMode(),
-            _AnnotateTool.watermark => _applyWatermark(),
-            _AnnotateTool.protect => _protectDocument(),
-            _AnnotateTool.redact => _enterRedactMode(),
-            _AnnotateTool.ocr => _runOcr(),
-            _AnnotateTool.compress => _compressDocument(),
-            _AnnotateTool.print => _printDocument(),
-            _AnnotateTool.share => _shareDocument(),
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: _AnnotateTool.markup,
-              child: ListTile(
-                leading: const Icon(Icons.format_color_fill),
-                title: Text(l10n.markupMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.draw,
-              child: ListTile(
-                leading: const Icon(Icons.draw_outlined),
-                title: Text(l10n.drawMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.note,
-              child: ListTile(
-                leading: const Icon(Icons.sticky_note_2_outlined),
-                title: Text(l10n.noteMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.stamp,
-              child: ListTile(
-                leading: const Icon(Icons.approval_outlined),
-                title: Text(l10n.stampMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.share,
-              child: ListTile(
-                leading: const Icon(Icons.ios_share),
-                title: Text(l10n.shareAction),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.print,
-              child: ListTile(
-                leading: const Icon(Icons.print_outlined),
-                title: Text(l10n.printAction),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.compress,
-              child: ListTile(
-                leading: const Icon(Icons.compress),
-                title: Text(l10n.compressMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.ocr,
-              enabled: _ocrAvailable,
-              child: ListTile(
-                leading: const Icon(Icons.text_snippet_outlined),
-                title: Text(l10n.ocrMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.redact,
-              child: ListTile(
-                leading: const Icon(Icons.format_color_reset_outlined),
-                title: Text(l10n.redactMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.protect,
-              child: ListTile(
-                leading: const Icon(Icons.lock_outline),
-                title: Text(l10n.protectMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.watermark,
-              child: ListTile(
-                leading: const Icon(Icons.branding_watermark_outlined),
-                title: Text(l10n.watermarkMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.signature,
-              child: ListTile(
-                leading: const Icon(Icons.draw),
-                title: Text(l10n.signMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _AnnotateTool.annotations,
-              child: ListTile(
-                leading: const Icon(Icons.edit_note),
-                title: Text(l10n.annotationsMode),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
+        IconButton(
+          tooltip: l10n.actionsTitle,
+          icon: const Icon(Icons.more_horiz),
+          onPressed: _totalPages == 0
+              ? null
+              : () async {
+                  final action = await showDocumentActionsSheet(context);
+                  if (action == null || !mounted) return;
+                  await _runAction(action);
+                },
         ),
       if (_mode == _ViewerMode.pages)
         IconButton(
