@@ -24,9 +24,9 @@ Document metadata — title, author, subject, keywords — is carried through pa
 operations. Folio never adds a `/Producer` or `/ModDate` of its own: a document
 you edit does not start advertising which tool touched it, or when.
 
-Not yet possible: OCR, printing, batch processing, and compressing documents
-Folio did not write. Scanned documents therefore have no text layer and cannot
-be searched. See [FEATURES.md](docs/FEATURES.md) for what is
+Not yet possible: printing, batch processing, and compressing documents Folio
+did not write. Scanned documents have no text layer until you run OCR on them,
+which happens entirely on your device. See [FEATURES.md](docs/FEATURES.md) for what is
 implemented and verified on which platform.
 
 ## What it deliberately is not

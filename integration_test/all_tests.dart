@@ -25,6 +25,7 @@ import 'markup_flow_test.dart' as markup_flow;
 import 'move_resize_flow_test.dart' as move_resize_flow;
 import 'notes_stamps_flow_test.dart' as notes_stamps_flow;
 import 'object_layer_flow_test.dart' as object_layer_flow;
+import 'ocr_flow_test.dart' as ocr_flow;
 import 'page_editor_test.dart' as page_editor;
 import 'page_operations_flow_test.dart' as page_operations_flow;
 import 'pages_mode_test.dart' as pages_mode;
@@ -56,4 +57,5 @@ void main() {
   group('object_layer_flow', object_layer_flow.main);
   group('redaction_flow', redaction_flow.main);
   group('scanner_flow', scanner_flow.main);
+  group('ocr_flow', ocr_flow.main);
 }

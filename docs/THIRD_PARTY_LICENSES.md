@@ -104,3 +104,18 @@ BSD-3-Clause, maintained by the Flutter team. Camera and gallery access for the
 scanner. Requested with `maxWidth` and `imageQuality` so the platform resizes
 and re-encodes: that step bakes EXIF orientation into the pixels, and PDF
 ignores EXIF entirely, so without it portrait scans would embed sideways.
+
+## flutter_tesseract_ocr
+
+BSD-3-Clause. Wraps Tesseract 4 for OCR, via Tesseract4Android (Apache-2.0) on
+Android and SwiftyTesseract (MIT) on iOS. All three licences are permissive;
+none is copyleft.
+
+The bundled `assets/tessdata/eng.traineddata` is Tesseract's own English model,
+Apache-2.0, taken from the `tessdata_fast` set — 3.9MB rather than the 23MB of
+the full model.
+
+**Android and iOS only.** There is no Windows implementation, which is why OCR
+is unavailable there. SwiftyTesseract's `libtesseract.xcframework` also ships no
+arm64-simulator slice, so the iOS simulator is built for x86_64; real devices
+are arm64 and unaffected.

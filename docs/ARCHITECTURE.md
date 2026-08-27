@@ -287,6 +287,40 @@ pixels, which is most portrait shots. `image_picker` is asked for `maxWidth` and
 orientation into the pixels**. The size reduction is welcome; the orientation is
 the reason.
 
+## OCR adds a layer; it never touches the page
+
+An OCR pass appends an **incremental update**. Nothing is being removed, so the
+original bytes staying at the front of the file is exactly right — the opposite
+of redaction, and the reason those two features write so differently despite
+both producing a text layer.
+
+The page dictionary's `/Contents` is **appended to**, never replaced: the scan
+still has to be drawn. `/Resources` are **merged**, never substituted —
+replacing them would strip the page's own font and image, which for a scanned
+page means losing the scan. A device test asserts OCR changes zero pixels,
+which is the only thing that would catch either mistake.
+
+### Two paths, because one platform cannot supply positions
+
+Tesseract can report each word's bounding box through hOCR. Folio uses that on
+Android and places every word where it appears, so a search highlight lands on
+the word.
+
+On iOS the plugin's `extractHocr` **blocks the platform thread indefinitely** —
+a 90-second Dart timeout never fired, so this is measured rather than inferred.
+That platform gets plain text, and `ocrTextLayer` falls back to placing whole
+lines by reading order.
+
+The fallback is a real compromise and is labelled as one everywhere it appears:
+in the UI, in `FEATURES.md`, and in `LIMITATIONS.md` §5. What it preserves is
+reading order and searchability; what it loses is precise position.
+
+Only one test observes the difference — the others pass on either path, because
+both produce extractable text. It compares the gap between two adjacent lines
+against a quarter of the page, and separately checks the title is in the top
+half: the gap alone is mirror-symmetric, so a missing y-flip passes it
+upside-down.
+
 ## Redaction: why it rewrites, and why the text layer is rebuilt
 
 Redaction is the one feature where an incremental update is not merely

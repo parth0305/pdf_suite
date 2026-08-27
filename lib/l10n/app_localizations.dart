@@ -1324,6 +1324,42 @@ abstract class AppLocalizations {
   /// **'That image is not a baseline JPEG and cannot be added.'**
   String get scanUnsupportedImage;
 
+  /// No description provided for @ocrMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Make searchable (OCR)'**
+  String get ocrMode;
+
+  /// No description provided for @ocrRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading text… this can take a while.'**
+  String get ocrRunning;
+
+  /// No description provided for @ocrDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Made {name} searchable'**
+  String ocrDone(String name);
+
+  /// No description provided for @ocrNothingFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No text was recognised in this document.'**
+  String get ocrNothingFound;
+
+  /// No description provided for @ocrUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'OCR is not available on this platform.'**
+  String get ocrUnavailable;
+
+  /// No description provided for @ocrApproximate.
+  ///
+  /// In en, this message translates to:
+  /// **'On this platform Folio can read the words but not where they sit, so search will find them but highlight only the right area.'**
+  String get ocrApproximate;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:
