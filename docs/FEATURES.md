@@ -213,11 +213,39 @@ The owner password opens the document with every right, ignoring the
 restrictions. Leave it empty and the reader password does both jobs — a
 restriction nobody can lift restricts the author too.
 
+## SP-5d — Redaction
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Remove content under a drawn box | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Under the annotate menu → **Redact**. Drag a box over anything that should go,
+tap a box to remove it, then **Apply redactions**. Nothing is written until the
+confirmation is accepted, and the result is a new document.
+
+**This removes the content; it does not cover it.** The bytes are gone from the
+output file — not hidden under a rectangle, not sitting in an earlier revision.
+Folio proves this on every build: the test suite redacts a token, inflates every
+compressed stream in the result, and searches for it.
+
+The way it works has consequences worth knowing before you rely on it:
+
+- **The redacted page becomes an image** at 200 DPI. Text on that page is
+  rebuilt as an invisible layer so search and selection keep working, but the
+  page is no longer vector art.
+- **The rebuilt text is approximate.** It uses the standard-14 Helvetica, so
+  characters outside WinAnsiEncoding — CJK, Devanagari, most emoji — stay
+  visible in the image but drop out of the searchable layer.
+- **Metadata is not redacted.** A name in the title or author field survives.
+  Folio says so in the confirmation rather than leaving you to find out.
+- **Bookmarks and attachments are not redacted** either.
+
+Pages you did not draw on are untouched, and render pixel-identically.
+
 ## Not built yet
 
-**Behind the object layer:** redaction, and compressing documents Folio did
-not write. The object layer itself landed in SP-5a, so these are now a matter
-of building them rather than of missing foundations.
+**Behind the object layer:** compressing documents Folio did not write.
+Redaction landed in SP-5d.
 
 **Independent of it:** scanner, OCR, printing and sharing, batch processing,
 automation rules, metadata editing, image watermarks, photographed signatures,

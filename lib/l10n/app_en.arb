@@ -271,6 +271,21 @@
     }
   },
   "watermarkEmpty": "A watermark needs some text.",
+  "redactMode": "Redact",
+  "redactHint": "Drag over anything you want removed.",
+  "redactApply": "Apply redactions",
+  "redactClear": "Clear",
+  "redactNone": "Draw at least one box first.",
+  "redactConfirmTitle": "Apply redactions?",
+  "redactConfirmBody": "The content under each box will be removed from the new document. It cannot be recovered from it.",
+  "redactConfirmNotCovered": "Not covered: document title and author, bookmarks, and attachments. Redacted pages become images, so their text is rebuilt and may lose accents or non-Latin characters.",
+  "redactConfirmAction": "Redact",
+  "redactDone": "Redacted {name}",
+  "@redactDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "redactDiscardTitle": "Discard redaction boxes?",
+  "redactDiscardBody": "The boxes you drew have not been applied. The original document is untouched either way.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",

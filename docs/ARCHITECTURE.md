@@ -260,6 +260,50 @@ A consequence worth remembering when writing tests: a five-letter watermark is
 **not** compressed, so a test that expects `/FlateDecode` must use a mark long
 enough to earn it.
 
+## Redaction: why it rewrites, and why the text layer is rebuilt
+
+Redaction is the one feature where an incremental update is not merely
+suboptimal but **wrong**. An incremental update appends: the original bytes stay
+at the front of the file. Redacting that way would leave the content stream
+carrying the redacted text fully intact, ahead of the update that hides it, and
+any text editor would find it. Redaction goes through `writePdfDocument` and
+omits the old content stream objects from the list entirely.
+
+It also omits XObjects that only the redacted pages referenced. An image under a
+black box lives in an XObject, not in the content stream — dropping the content
+stream alone leaves it recoverable. An XObject a surviving page still uses is
+**kept**: it is visible in the output anyway, so removing it would break that
+page and conceal nothing.
+
+### The text layer is rebuilt, not edited
+
+The alternative design was operator surgery: parse the content stream and cut
+out the text-showing operators. It was rejected. It needs a content-stream
+parser Folio does not have, its correctness turns on font encodings, `TJ`
+kerning arrays and text-matrix accumulation, and it does nothing about an image
+under the box. Worst of all, its failure mode looks exactly like success.
+
+Instead the page is thrown away and rebuilt: rasterised at 200 DPI with the
+boxes painted in, then the surviving characters are re-emitted as invisible text
+(`3 Tr`) from the rectangles PDFium already reports. Folio never subtracts the
+redacted text from anything, which is what makes the removal unconditional.
+
+### Two things the device told us that no unit test could
+
+**One `Tj` per character destroys search.** PDFium inserts a word-break space
+wherever it sees a gap between glyphs, so a page whose every character is its
+own text object extracts as `C o n f id e n t ia l`. Characters are emitted in
+**runs**; within a single `Tj` the reader spaces glyphs by the font's own
+advances.
+
+**Runs must not be split on glyph geometry.** The first attempt broke a run when
+rect bottoms differed, on the theory that this detected a line change. A
+descender sits lower than its neighbours and a hyphen sits higher, so `rupees`
+became `ru p ees` and `REDACT-ME-9931` became `REDACT - ME - 9931`. PDFium
+already reports newlines between lines, so the text's own whitespace is the only
+separator needed — and a removed character, which must also end a run or the
+halves either side of a redaction would join into a word that never existed.
+
 ## Moving is a rect rewrite, and the appearance follows
 
 Probed on device: changing only `/Rect` moved a mark from columns 20..59 to

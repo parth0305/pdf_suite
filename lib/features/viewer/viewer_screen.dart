@@ -21,6 +21,9 @@ import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
+import 'package:folio/features/viewer/redaction_providers.dart';
+import 'package:folio/features/viewer/widgets/redact_confirm_dialog.dart';
+import 'package:folio/features/viewer/widgets/redact_overlay.dart';
 import 'package:folio/features/viewer/widgets/signature_sheet.dart';
 import 'package:folio/features/viewer/widgets/stamp_picker.dart';
 import 'package:folio/features/viewer/protection_providers.dart';
@@ -49,6 +52,7 @@ enum _ViewerMode {
   signature,
   note,
   stamp,
+  redact,
 }
 
 enum _AnnotateTool {
@@ -60,6 +64,7 @@ enum _AnnotateTool {
   stamp,
   watermark,
   protect,
+  redact,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -343,6 +348,112 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (!mounted) return;
     ref.read(annotationSessionProvider.notifier).reset();
     setState(() => _mode = _ViewerMode.read);
+  }
+
+  void _enterRedactMode() {
+    ref.read(redactionSessionProvider.notifier).clear();
+    setState(() => _mode = _ViewerMode.redact);
+  }
+
+  Future<void> _exitRedactMode() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (ref.read(redactionSessionProvider).isNotEmpty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text(l10n.redactDiscardTitle),
+          content: Text(l10n.redactDiscardBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(c).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(c).pop(true),
+              child: Text(l10n.pagesDiscard),
+            ),
+          ],
+        ),
+      );
+      if (discard != true) return;
+    }
+    if (!mounted) return;
+
+    ref.read(redactionSessionProvider.notifier).clear();
+    setState(() => _mode = _ViewerMode.read);
+  }
+
+  Future<void> _applyRedactions() async {
+    final l10n = AppLocalizations.of(context)!;
+    final boxes = ref.read(redactionSessionProvider);
+
+    if (boxes.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.redactNone)));
+      return;
+    }
+
+    if (!await showRedactConfirmDialog(context, boxes.length) || !mounted) {
+      return;
+    }
+
+    try {
+      final redacted = await ref
+          .read(redactionRepositoryProvider)
+          .apply(widget.document.id, boxes);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      ref.read(redactionSessionProvider.notifier).clear();
+      setState(() => _mode = _ViewerMode.read);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.redactDone(redacted.displayName))),
+      );
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
+  }
+
+  Widget _redactToolbar(AppLocalizations l10n) {
+    final count = ref.watch(redactionSessionProvider).length;
+
+    return Material(
+      elevation: 8,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: l10n.cancelAction,
+              onPressed: _exitRedactMode,
+            ),
+            Expanded(
+              child: Text(
+                count == 0 ? l10n.redactHint : '$count',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            TextButton(
+              onPressed: count == 0
+                  ? null
+                  : () => ref.read(redactionSessionProvider.notifier).clear(),
+              child: Text(l10n.redactClear),
+            ),
+            FilledButton.icon(
+              icon: const Icon(Icons.format_color_reset_outlined),
+              label: Text(l10n.redactApply),
+              onPressed: count == 0 ? null : _applyRedactions,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _protectDocument() async {
@@ -746,14 +857,23 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 _mode != _ViewerMode.annotations &&
                 _mode != _ViewerMode.signature &&
                 _mode != _ViewerMode.note &&
-                _mode != _ViewerMode.stamp)
+                _mode != _ViewerMode.stamp &&
+                _mode != _ViewerMode.redact)
             ? null
             : (context, pageRect, page) => [
                 // The overlay is positioned at the page, so its own local
                 // space starts at the page's top-left. Passing the viewer
                 // space rect would offset every stroke and every hit test by
                 // the page origin.
-                if (_mode == _ViewerMode.note || _mode == _ViewerMode.stamp)
+                if (_mode == _ViewerMode.redact)
+                  RedactOverlay(
+                    pageRect: Offset.zero & pageRect.size,
+                    pageWidthPt: page.width,
+                    pageHeightPt: page.height,
+                    pageIndex: page.pageNumber - 1,
+                  )
+                else if (_mode == _ViewerMode.note ||
+                    _mode == _ViewerMode.stamp)
                   TapPlacementSurface(
                     pageRect: Offset.zero & pageRect.size,
                     pageWidthPt: page.width,
@@ -848,6 +968,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ],
                   ),
           ),
+          if (_mode == _ViewerMode.redact) _redactToolbar(l10n),
           if (_mode == _ViewerMode.note || _mode == _ViewerMode.stamp)
             _stagingToolbar(l10n),
           if (_mode == _ViewerMode.signature) _signatureToolbar(l10n),
@@ -1019,6 +1140,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         icon: const Icon(Icons.arrow_back),
         onPressed: _leaveDrawMode,
       ),
+      _ViewerMode.redact => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: _exitRedactMode,
+      ),
       _ViewerMode.annotations => IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: _leaveAnnotationsMode,
@@ -1065,6 +1190,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.stamp => _enterStampMode(),
             _AnnotateTool.watermark => _applyWatermark(),
             _AnnotateTool.protect => _protectDocument(),
+            _AnnotateTool.redact => _enterRedactMode(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -1096,6 +1222,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.approval_outlined),
                 title: Text(l10n.stampMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.redact,
+              child: ListTile(
+                leading: const Icon(Icons.format_color_reset_outlined),
+                title: Text(l10n.redactMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

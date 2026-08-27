@@ -49,4 +49,34 @@ void main() {
       expect(splitPartName('Invoice.pdf', 12), 'Invoice (part 12).pdf');
     });
   });
+
+  group('redactedName', () {
+    test('names a redacted document', () {
+      expect(redactedName('Invoice.pdf'), 'Invoice (redacted).pdf');
+    });
+
+    // Redacting a document someone already cleaned is plausible, and
+    // "(redacted) (redacted)" is not a name.
+    test('counts up rather than accumulating suffixes', () {
+      expect(
+        redactedName('Invoice (redacted).pdf'),
+        'Invoice (redacted 2).pdf',
+      );
+      expect(
+        redactedName('Invoice (redacted 2).pdf'),
+        'Invoice (redacted 3).pdf',
+      );
+    });
+
+    test('does not confuse itself with an edited suffix', () {
+      expect(
+        redactedName('Invoice (edited).pdf'),
+        'Invoice (edited) (redacted).pdf',
+      );
+    });
+
+    test('a name with no extension still works', () {
+      expect(redactedName('Invoice'), 'Invoice (redacted)');
+    });
+  });
 }

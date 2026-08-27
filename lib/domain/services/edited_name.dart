@@ -6,6 +6,7 @@
 library;
 
 final RegExp _editedSuffix = RegExp(r'^(.*?)\s*\(edited(?:\s+(\d+))?\)$');
+final RegExp _redactedSuffix = RegExp(r'^(.*?)\s*\(redacted(?:\s+(\d+))?\)$');
 
 ({String stem, String extension}) _split(String name) {
   final dot = name.lastIndexOf('.');
@@ -35,4 +36,23 @@ String extractedName(String original, int pageCount) {
 String splitPartName(String original, int part) {
   final parts = _split(original);
   return '${parts.stem} (part $part)${parts.extension}';
+}
+
+/// Names the result of redacting [original].
+///
+/// Redaction always produces a new document, so the name has to say which is
+/// which at a glance in the library. Redacting twice is plausible - a second
+/// pass over a document someone already cleaned - so this counts up the way
+/// [editedName] does rather than accumulating suffixes.
+String redactedName(String original) {
+  final parts = _split(original);
+  final match = _redactedSuffix.firstMatch(parts.stem);
+
+  if (match == null) {
+    return '${parts.stem} (redacted)${parts.extension}';
+  }
+
+  final base = match.group(1)!;
+  final current = int.tryParse(match.group(2) ?? '') ?? 1;
+  return '$base (redacted ${current + 1})${parts.extension}';
 }

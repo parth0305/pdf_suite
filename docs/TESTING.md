@@ -228,6 +228,33 @@ The test that catches it compares the finished document against what it would
 weigh with those streams stored raw. A compression feature has to be measured
 on the artefact it claims to shrink, not on the part that shrank.
 
+**A seventh, from SP-5d: compression can blind an assertion completely.** The
+decisive redaction test searched the output file's raw bytes for the redacted
+token, on the reasoning that text extraction alone could be fooled. A redacted
+page's content stream is Flate-compressed, so that search could not see **any**
+text in it — the assertion passed against a build that deliberately kept every
+redacted character. It was measuring nothing at all.
+
+The test now inflates every Flate stream before searching, and a companion test
+proves that machinery works by finding the token in a document where nothing was
+redacted. Without that premise check a broken inflater would make the whole
+assertion hollow again, silently.
+
+**An eighth, from the same slice: `diff() > n` proves the wrong thing.** The
+assertion that a black box was painted compared the page before and after and
+required more than 200 changed pixels. Rasterising a page changes thousands of
+pixels by itself, so it passed against a build that painted no box at all. It
+now samples the box's own centre and requires it to be black, plus a point
+outside it that is not.
+
+**A ninth, about mutation testing itself.** Three mutations in Task 4 appeared
+not to fire, which read as three hollow tests. All three were **no-ops**:
+`dart format` had wrapped the lines the `sed` targeted, so the file was never
+modified and the same unmutated build was being re-run. A mutation result means
+nothing until the mutation is shown to have changed the file. Every mutation in
+this slice is now applied by a script that asserts its anchor exists and
+compares the file afterwards.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 
@@ -239,6 +266,10 @@ this codebase are asserted by deliberate mutation rather than assumption:
   which recovers the file key the way a reader does rather than re-reading what
   the writer wrote. Five mutations fire against it, including hashing the user
   password into `/O` and dropping `/U` from the owner hash.
+- Redaction is proven by inflating every stream in the output and searching for
+  the redacted token, not by extracting text. The rebuild half is proven
+  separately by requiring a different word on the same page to still extract -
+  without it, emitting no text at all would pass every removal assertion.
 - Permission bits are read back through PDFium as a **raw integer**. pdfrx's
   own `allowsCopying`/`allowsPrinting` getters name bits 4 and 16 the reverse
   of ISO 32000-1 Table 22, so asserting through them would make a swapped-bit

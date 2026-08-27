@@ -1180,6 +1180,78 @@ abstract class AppLocalizations {
   /// **'A watermark needs some text.'**
   String get watermarkEmpty;
 
+  /// No description provided for @redactMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Redact'**
+  String get redactMode;
+
+  /// No description provided for @redactHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag over anything you want removed.'**
+  String get redactHint;
+
+  /// No description provided for @redactApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply redactions'**
+  String get redactApply;
+
+  /// No description provided for @redactClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get redactClear;
+
+  /// No description provided for @redactNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw at least one box first.'**
+  String get redactNone;
+
+  /// No description provided for @redactConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply redactions?'**
+  String get redactConfirmTitle;
+
+  /// No description provided for @redactConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The content under each box will be removed from the new document. It cannot be recovered from it.'**
+  String get redactConfirmBody;
+
+  /// No description provided for @redactConfirmNotCovered.
+  ///
+  /// In en, this message translates to:
+  /// **'Not covered: document title and author, bookmarks, and attachments. Redacted pages become images, so their text is rebuilt and may lose accents or non-Latin characters.'**
+  String get redactConfirmNotCovered;
+
+  /// No description provided for @redactConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Redact'**
+  String get redactConfirmAction;
+
+  /// No description provided for @redactDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Redacted {name}'**
+  String redactDone(String name);
+
+  /// No description provided for @redactDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard redaction boxes?'**
+  String get redactDiscardTitle;
+
+  /// No description provided for @redactDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The boxes you drew have not been applied. The original document is untouched either way.'**
+  String get redactDiscardBody;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

@@ -121,9 +121,11 @@ typedef StreamObject = ({String dict, String stream});
 
 /// Builds an RC4-encrypted PDF (standard security handler, revision 2).
 ///
-/// [permissions] is the /P value. Bit 3 (value 4) grants copying and bit 5
-/// (value 16) grants printing; ISO 32000-1 Table 22. -44 grants print and copy
-/// while denying modification; -60 denies copying.
+/// [permissions] is the /P value. Per ISO 32000-1 Table 22, bit 3 (value 4)
+/// grants PRINTING and bit 5 (value 16) grants COPYING - the reverse of what
+/// this comment used to say, and the same swap that makes pdfrx's
+/// `allowsCopying`/`allowsPrinting` getters untrustworthy. -44 grants print
+/// and copy while denying modification; -60 additionally denies copying.
 List<int> buildEncryptedPdf(
   List<PageSpec> pages, {
   required String userPassword,
