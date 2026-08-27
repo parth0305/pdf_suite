@@ -13,6 +13,7 @@ enum DocumentAction {
   signature,
   annotations,
   watermark,
+  removeWatermark,
   compress,
   ocr,
   redact,
@@ -131,6 +132,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 DocumentAction.watermark,
                 Icons.branding_watermark_outlined,
                 l10n.watermarkMode,
+              ),
+              item(
+                DocumentAction.removeWatermark,
+                Icons.layers_clear_outlined,
+                l10n.watermarkRemove,
               ),
               item(DocumentAction.compress, Icons.compress, l10n.compressMode),
               item(

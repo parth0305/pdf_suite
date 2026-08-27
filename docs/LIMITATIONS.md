@@ -223,19 +223,37 @@ in `PRIVACY.md`.
 
 Only English is bundled. Adding a language means adding another few megabytes.
 
-## 9. Android open-in-place requires a SAF URI
+## 9. Only Folio's own watermarks can be removed
+
+Folio names the resources it adds when watermarking, so it can find and remove
+them with certainty. Nothing equivalent exists for a mark another application
+applied: PDF has no "this is a watermark" flag, and deciding which drawing
+instructions belong to the mark rather than the page is the same problem as
+redaction.
+
+This was measured rather than assumed. Eighteen real PDFs were examined for
+every signal a watermark is conventionally said to leave — transparency groups,
+rotated placements, optional-content groups, `/Artifact` marks, the words
+DRAFT/CONFIDENTIAL/SAMPLE — and not one carried any of them. There was nothing
+to develop a detector against and nothing to validate one on.
+
+Folio therefore refuses, and explains why. A "remove watermark" button that
+silently half-removes something, or removes part of the page, would be worse
+than not having one.
+
+## 10. Android open-in-place requires a SAF URI
 
 `PlatformHandles.capture()` on Android accepts only a `content://` URI from the
 system picker. A filesystem path cannot be granted a persistable permission, so
 it is rejected with `UnsupportedFeature` rather than producing a handle that
 would fail silently on next launch.
 
-## 10. English only
+## 11. English only
 
 The architecture supports localisation — all strings live in ARB files from the
 first commit — but no translations exist.
 
-## 11. Both native dependencies use Dart native assets
+## 12. Both native dependencies use Dart native assets
 
 `pdfrx` (PDFium) and `sqlite3` (via drift) build through Dart's newer native
 assets / build hooks mechanism rather than classic Flutter plugins. The iOS
@@ -244,7 +262,7 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 12. Redaction does not cover metadata, bookmarks or attachments
+## 13. Redaction does not cover metadata, bookmarks or attachments
 
 **This is the limitation most likely to hurt someone.** Redaction removes what
 is under the boxes from the page. It does not touch `/Title`, `/Author` or
@@ -256,7 +274,7 @@ Folio states this in the confirmation dialog, in an error-coloured panel, rather
 than leaving it to be discovered. It is stated here too because a limitation
 that only appears in a dialog someone dismissed once is not documented.
 
-## 13. A redacted page becomes an image, and its text is rebuilt
+## 14. A redacted page becomes an image, and its text is rebuilt
 
 Redaction rasterises the page at 200 DPI and replaces its content with that
 image. This is what makes removal unconditional: the original content stream
@@ -277,7 +295,7 @@ approximate:
   can sit slightly off the ink.
 - Ligatures in the original arrive as whatever PDFium extracted them as.
 
-## 14. A scan is refused unless it is a baseline JPEG
+## 15. A scan is refused unless it is a baseline JPEG
 
 `/DCTDecode`, the PDF filter that carries a JPEG untouched, supports baseline
 JPEG. A progressive or arithmetic-coded JPEG renders as garbage in some readers
@@ -291,7 +309,7 @@ is enforced anyway, because "should not happen" is not a guarantee.
 That same re-encode is what bakes EXIF orientation into the pixels. PDF ignores
 EXIF entirely, so without it a portrait photograph would embed sideways.
 
-## 15. Redaction refuses a shared content stream
+## 16. Redaction refuses a shared content stream
 
 If a page being redacted draws a content stream that a page you did **not**
 select also draws, there is no correct answer available: dropping it breaks the
@@ -301,7 +319,7 @@ still carrying the content.
 
 Sharing a content stream between pages is unusual, so this should be rare.
 
-## 16. Permissions are advisory, and readers disagree about the bits
+## 17. Permissions are advisory, and readers disagree about the bits
 
 Folio writes the `/P` bit field a document asks for, and `/Perms` so a reader
 can tell it was not tampered with. Nothing beyond that is possible: a
@@ -319,7 +337,7 @@ Re-protecting a document Folio already protected is not supported: Folio does
 not decrypt, so the second pass would encrypt ciphertext. Protect the original
 instead.
 
-## 17. Test fixtures are generated, not committed
+## 18. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their

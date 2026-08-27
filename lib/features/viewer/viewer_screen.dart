@@ -387,6 +387,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _enterStampMode();
       case DocumentAction.watermark:
         await _applyWatermark();
+      case DocumentAction.removeWatermark:
+        await _removeWatermark();
       case DocumentAction.protect:
         await _protectDocument();
       case DocumentAction.redact:
@@ -464,6 +466,42 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       );
 
       await ref.read(platformExportProvider).share(export, origin: origin);
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
+  /// Removes a watermark Folio applied.
+  ///
+  /// Folio can only remove its own: it names its watermark resources, which is
+  /// what makes them identifiable with certainty. A mark another tool applied
+  /// leaves no such marker, and the refusal says so rather than reporting a
+  /// success that removed nothing.
+  Future<void> _removeWatermark() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final cleaned = await ref
+          .read(watermarkRepositoryProvider)
+          .remove(widget.document.id);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.watermarkRemoved(cleaned.displayName))),
+      );
+    } on UnsupportedPdfStructure {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.watermarkNoneFound),
+          duration: const Duration(seconds: 6),
+        ),
+      );
     } on AppFailure catch (f) {
       if (!mounted) return;
       messenger.showSnackBar(

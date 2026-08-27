@@ -405,6 +405,12 @@
   "signPhotoCamera": "Camera",
   "signPhotoGallery": "Choose a photo",
   "signPhotoLabel": "Name this signature",
+  "watermarkRemove": "Remove watermark",
+  "watermarkRemoved": "Removed the watermark from {name}",
+  "@watermarkRemoved": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "watermarkNoneFound": "No watermark that Folio applied. Folio can only remove its own: a mark added by another app leaves nothing it can identify with certainty.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",

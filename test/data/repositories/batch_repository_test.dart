@@ -66,6 +66,10 @@ class FakeOcr implements OcrRepository {
 }
 
 class FakeWatermark implements WatermarkRepository {
+  @override
+  Future<LibraryDocument> remove(int documentId) =>
+      throw UnimplementedError('removal is not exercised here');
+
   final marks = <int, Watermark>{};
 
   @override

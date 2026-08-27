@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/core/storage/safe_file_writer.dart';
 import 'package:folio/data/local/app_database.dart';
 import 'package:folio/data/local/library_dao.dart';
@@ -198,6 +199,82 @@ void main() {
       await engine.close(h);
 
       expect(extracted!.fullText, contains('CONFIDENTIAL DRAFT'));
+    });
+  });
+
+  group('removing a watermark Folio applied', () {
+    const wordy = Watermark(
+      text: 'CONFIDENTIAL DRAFT - NOT FOR DISTRIBUTION OR REVIEW',
+    );
+
+    // The decisive one: after removal the page must render exactly as it did
+    // before the mark was ever applied.
+    test('the page returns to how it looked before', () async {
+      final src = await seed('Undo.pdf');
+      final before = await render(src, 0);
+
+      final marked = await subject.apply(src.id, wordy);
+      expect(
+        diff(before, await render(marked, 0)),
+        greaterThan(200),
+        reason: 'the premise: the watermark visibly changed the page',
+      );
+
+      final cleaned = await subject.remove(marked.id);
+
+      expect(diff(before, await render(cleaned, 0)), 0);
+    });
+
+    test('every page is cleaned, not just the first', () async {
+      final src = await seed('UndoAll.pdf');
+      final before = [for (var i = 0; i < 3; i++) await render(src, i)];
+
+      final marked = await subject.apply(src.id, wordy);
+      final cleaned = await subject.remove(marked.id);
+
+      for (var i = 0; i < 3; i++) {
+        expect(diff(before[i], await render(cleaned, i)), 0, reason: 'page $i');
+      }
+    });
+
+    test('the text is still extractable afterwards', () async {
+      final src = await seed('UndoText.pdf');
+      final marked = await subject.apply(src.id, wordy);
+      final cleaned = await subject.remove(marked.id);
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(cleaned)),
+      );
+      final text = await engine.extractText(h, 0);
+      await engine.close(h);
+
+      expect(text!.fullText, contains('Confidential'));
+      expect(text.fullText, isNot(contains('NOT FOR DISTRIBUTION')));
+    });
+
+    // A mark Folio did not apply leaves nothing it can identify.
+    test('a document with no Folio watermark is refused', () async {
+      final src = await seed('Unmarked.pdf');
+
+      await expectLater(
+        subject.remove(src.id),
+        throwsA(isA<UnsupportedPdfStructure>()),
+      );
+    });
+
+    test('the watermarked document is left alone', () async {
+      final src = await seed('Keep.pdf');
+      final marked = await subject.apply(src.id, wordy);
+      final markedBytes = await File(
+        await library.resolveReadablePath(marked),
+      ).readAsBytes();
+
+      await subject.remove(marked.id);
+
+      expect(
+        await File(await library.resolveReadablePath(marked)).readAsBytes(),
+        markedBytes,
+      );
     });
   });
 }

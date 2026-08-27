@@ -922,6 +922,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signPhotoLabel => 'Name this signature';
 
   @override
+  String get watermarkRemove => 'Remove watermark';
+
+  @override
+  String watermarkRemoved(String name) {
+    return 'Removed the watermark from $name';
+  }
+
+  @override
+  String get watermarkNoneFound =>
+      'No watermark that Folio applied. Folio can only remove its own: a mark added by another app leaves nothing it can identify with certainty.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

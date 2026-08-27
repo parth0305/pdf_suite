@@ -1750,6 +1750,24 @@ abstract class AppLocalizations {
   /// **'Name this signature'**
   String get signPhotoLabel;
 
+  /// No description provided for @watermarkRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove watermark'**
+  String get watermarkRemove;
+
+  /// No description provided for @watermarkRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed the watermark from {name}'**
+  String watermarkRemoved(String name);
+
+  /// No description provided for @watermarkNoneFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No watermark that Folio applied. Folio can only remove its own: a mark added by another app leaves nothing it can identify with certainty.'**
+  String get watermarkNoneFound;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

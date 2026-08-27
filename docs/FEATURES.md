@@ -416,6 +416,31 @@ document works normally — it stays encrypted on the way out.
 No print-range or scaling options: every platform's own print dialog already
 offers both, and a worse duplicate would be worse than none.
 
+## Removing a watermark
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Remove a watermark **Folio applied** | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Remove watermark**. The page comes back exactly as it was before
+the mark was applied — the test suite asserts pixel-identical on every page.
+
+**Folio can only remove its own watermarks, and says so.** It names the
+resources it adds, which is what lets it find them with certainty. A mark
+another application added leaves no such marker, and deciding which parts of a
+page's drawing instructions belong to it is the same problem as redaction, with
+no reliable general answer.
+
+This is not a guess about other tools. Eighteen real PDFs were examined for the
+signals a watermark is supposed to leave — transparency groups, rotated
+placements, optional-content groups, `/Artifact` marks, the words themselves —
+and none carried any of them. There was nothing to build a detector against and
+nothing to test one on, so Folio refuses that case with an explanation instead
+of shipping heuristics that cannot be verified.
+
+The removal is a full rewrite, not another appended update: the watermark's
+objects are dropped from the file rather than merely stopped from drawing.
+
 ## Photographed signatures
 
 | Feature | iPhone | iPad | Android | Windows | Offline |
@@ -461,7 +486,7 @@ you to *edit* them. There is no UI at all.
 
 **Extensions of features that did ship:**
 
-- **Image watermarks.** SP-4a does text only.
+- **Image watermarks.** Watermarking does text only.
 
 - **Custom and date stamps.** SP-3e ships fixed presets.
 - **Reshaping individual ink points.** SP-3f moves and resizes a whole
