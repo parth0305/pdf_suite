@@ -1252,6 +1252,78 @@ abstract class AppLocalizations {
   /// **'The boxes you drew have not been applied. The original document is untouched either way.'**
   String get redactDiscardBody;
 
+  /// No description provided for @scanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get scanTitle;
+
+  /// No description provided for @scanEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No pages yet. Take a photo or import images.'**
+  String get scanEmpty;
+
+  /// No description provided for @scanCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get scanCamera;
+
+  /// No description provided for @scanImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import images'**
+  String get scanImport;
+
+  /// No description provided for @scanSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as PDF'**
+  String get scanSave;
+
+  /// No description provided for @scanRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove page'**
+  String get scanRemove;
+
+  /// No description provided for @scanNoTextWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'A scan has no text layer. It cannot be searched, and its text cannot be selected or copied.'**
+  String get scanNoTextWarning;
+
+  /// No description provided for @scanPageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {number}'**
+  String scanPageLabel(int number);
+
+  /// No description provided for @scanSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {name}'**
+  String scanSaved(String name);
+
+  /// No description provided for @scanDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard this scan?'**
+  String get scanDiscardTitle;
+
+  /// No description provided for @scanDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The pages you captured have not been saved.'**
+  String get scanDiscardBody;
+
+  /// No description provided for @scanUnsupportedImage.
+  ///
+  /// In en, this message translates to:
+  /// **'That image is not a baseline JPEG and cannot be added.'**
+  String get scanUnsupportedImage;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

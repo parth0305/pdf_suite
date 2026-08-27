@@ -2,6 +2,8 @@ PODS:
   - file_selector_ios (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - image_picker_ios (0.0.1):
+    - Flutter
   - integration_test (0.0.1):
     - Flutter
   - pdfium_flutter (0.1.5):
@@ -13,6 +15,7 @@ PODS:
 DEPENDENCIES:
   - file_selector_ios (from `.symlinks/plugins/file_selector_ios/ios`)
   - Flutter (from `Flutter`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - pdfium_flutter (from `.symlinks/plugins/pdfium_flutter/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
@@ -22,6 +25,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_selector_ios/ios"
   Flutter:
     :path: Flutter
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
   pdfium_flutter:
@@ -32,6 +37,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   file_selector_ios: ec57ec07954363dd730b642e765e58f199bb621a
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   pdfium_flutter: e5a6e881af0b182d5b0465ebad23a8a20caa28d4
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b

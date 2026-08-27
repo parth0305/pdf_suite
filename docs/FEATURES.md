@@ -242,12 +242,32 @@ The way it works has consequences worth knowing before you rely on it:
 
 Pages you did not draw on are untouched, and render pixel-identically.
 
+## SP-6a — Scanner
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Photograph pages into a PDF | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Import existing images into a PDF | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+The scan icon in the library. Take photos or import images, reorder and remove
+pages, then save as a new PDF.
+
+**A scan has no text layer.** It cannot be searched, and its text cannot be
+selected or copied. Folio says this on the scanner screen itself, before you
+save, because Folio is now the thing producing such documents. OCR would fix
+it and is not built — see below.
+
+Pages are stored as the JPEG the camera produced, embedded untouched. A
+ten-page scan is the size of ten photographs rather than of ten bitmaps.
+Progressive JPEGs are refused rather than written into a file that some readers
+render as garbage.
+
 ## Not built yet
 
 **Behind the object layer:** compressing documents Folio did not write.
 Redaction landed in SP-5d.
 
-**Independent of it:** scanner, OCR, printing and sharing, batch processing,
+**Independent of it:** OCR, printing and sharing, batch processing,
 automation rules, metadata editing, image watermarks, photographed signatures,
 custom and date stamps, and reshaping individual ink points.
 

@@ -101,11 +101,24 @@ Appearance streams are generated for every markup. PDFium renders markup without
 them, but portability to other viewers could not be measured on this machine, and
 portability is the whole reason annotations are written into the file.
 
-## 4. Search finds nothing in scanned documents
+## 4. Scanned documents have no text layer — including the ones Folio makes
 
-A PDF with no text layer yields empty text. This is correct behaviour, not a
-bug — OCR arrives in SP-6. The `scanned_no_text.pdf` fixture asserts it returns
-empty rather than failing.
+A PDF with no text layer yields empty text. That was always true of scanned
+documents Folio *opened*. Since SP-6a it is also true of the ones Folio
+**creates**: the scanner captures photographs, and a photograph of a page is not
+text.
+
+Such a document cannot be searched, and its text cannot be selected or copied.
+The scanner screen says so before you save.
+
+OCR would fix this and is deliberately not built. The project brief forbids AI,
+and every viable offline OCR engine — Tesseract since v4, Apple Vision, Windows
+OCR — is neural. Whether those count as "AI OCR" under the brief is a decision
+for the project owner, not something to settle quietly in a commit.
+
+The `scanned_no_text.pdf` fixture asserts extraction returns empty rather than
+failing, and an integration test asserts the same of a scan Folio produced — so
+the day OCR does arrive, that test fails and has to be updated deliberately.
 
 ## 5. Android open-in-place requires a SAF URI
 
@@ -161,7 +174,21 @@ approximate:
   can sit slightly off the ink.
 - Ligatures in the original arrive as whatever PDFium extracted them as.
 
-## 10. Redaction refuses a shared content stream
+## 10. A scan is refused unless it is a baseline JPEG
+
+`/DCTDecode`, the PDF filter that carries a JPEG untouched, supports baseline
+JPEG. A progressive or arithmetic-coded JPEG renders as garbage in some readers
+and not at all in others, so Folio refuses to add one rather than writing a file
+that looks fine on the machine that made it.
+
+`image_picker` is asked for `maxWidth` and `imageQuality`, which makes the
+platform re-encode to baseline output, so this should not fire in practice. It
+is enforced anyway, because "should not happen" is not a guarantee.
+
+That same re-encode is what bakes EXIF orientation into the pixels. PDF ignores
+EXIF entirely, so without it a portrait photograph would embed sideways.
+
+## 11. Redaction refuses a shared content stream
 
 If a page being redacted draws a content stream that a page you did **not**
 select also draws, there is no correct answer available: dropping it breaks the
@@ -171,7 +198,7 @@ still carrying the content.
 
 Sharing a content stream between pages is unusual, so this should be rare.
 
-## 11. Permissions are advisory, and readers disagree about the bits
+## 12. Permissions are advisory, and readers disagree about the bits
 
 Folio writes the `/P` bit field a document asks for, and `/Perms` so a reader
 can tell it was not tampered with. Nothing beyond that is possible: a
@@ -189,7 +216,7 @@ Re-protecting a document Folio already protected is not supported: Folio does
 not decrypt, so the second pass would encrypt ciphertext. Protect the original
 instead.
 
-## 12. Test fixtures are generated, not committed
+## 13. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their

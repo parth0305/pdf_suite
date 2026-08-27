@@ -260,6 +260,33 @@ A consequence worth remembering when writing tests: a five-letter watermark is
 **not** compressed, so a test that expects `/FlateDecode` must use a mark long
 enough to earn it.
 
+## Two ways to put an image in a PDF, and when each applies
+
+Folio writes images two ways, and the choice is about where the pixels came
+from.
+
+**Raw RGB under `/FlateDecode`** (SP-5d, redaction). The pixels are a rendering
+Folio produced at a resolution Folio chose. There is no compressed original to
+preserve, and deflate is already in `dart:io`.
+
+**The JPEG untouched under `/DCTDecode`** (SP-6a, scanner). The pixels arrived
+as a photograph that is already compressed. Decoding it to re-encode it would be
+worse in every direction: a twelve-megapixel photo is 36 MB as raw RGB,
+photographs barely deflate, and it would need an image codec Folio does not
+have. `/DCTDecode` has been in PDF since 1.2 precisely for this.
+
+Both shapes were proven by a throwaway device probe before anything was built on
+them, because Folio had never written an image XObject of either kind.
+
+### EXIF is not optional detail
+
+PDF ignores EXIF orientation completely. A camera JPEG embedded as-is appears
+rotated whenever the phone recorded orientation in metadata rather than in the
+pixels, which is most portrait shots. `image_picker` is asked for `maxWidth` and
+`imageQuality` so the platform resizes and re-encodes, and **that step bakes
+orientation into the pixels**. The size reduction is welcome; the orientation is
+the reason.
+
 ## Redaction: why it rewrites, and why the text layer is rebuilt
 
 Redaction is the one feature where an incremental update is not merely

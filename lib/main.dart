@@ -7,6 +7,8 @@ import 'package:folio/data/local/app_database.dart';
 import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
 import 'package:folio/data/repositories/redaction_repository_impl.dart';
+import 'package:folio/data/repositories/scanner_repository_impl.dart';
+import 'package:folio/data/scanner/image_source.dart';
 import 'package:folio/data/local/signature_dao.dart';
 import 'package:folio/data/repositories/annotation_edit_repository_impl.dart';
 import 'package:folio/data/repositories/annotation_repository_impl.dart';
@@ -25,6 +27,7 @@ import 'package:folio/features/viewer/annotation_providers.dart';
 import 'package:folio/features/viewer/signature_providers.dart';
 import 'package:folio/features/viewer/protection_providers.dart';
 import 'package:folio/features/viewer/redaction_providers.dart';
+import 'package:folio/features/scanner/scanner_providers.dart';
 import 'package:folio/features/viewer/watermark_providers.dart';
 import 'package:pdfrx/pdfrx.dart';
 
@@ -56,6 +59,7 @@ Future<void> main() async {
     library: library,
     documents: documentWriter,
   );
+  final scanner = ScannerRepositoryImpl(documents: documentWriter);
   final redaction = RedactionRepositoryImpl(
     library: library,
     documents: documentWriter,
@@ -94,6 +98,8 @@ Future<void> main() async {
         watermarkRepositoryProvider.overrideWithValue(watermarks),
         protectionRepositoryProvider.overrideWithValue(protection),
         redactionRepositoryProvider.overrideWithValue(redaction),
+        scannerRepositoryProvider.overrideWithValue(scanner),
+        scanImageSourceProvider.overrideWithValue(PlatformImageSource()),
       ],
       child: const FolioApp(),
     ),

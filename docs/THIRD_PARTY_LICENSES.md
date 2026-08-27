@@ -97,3 +97,10 @@ paid OCR or analytics SDK.
 
 MIT (Bouncy Castle). Provides AES-256 for PDF 2.0 encryption; the Dart SDK
 ships no AES implementation.
+
+## image_picker
+
+BSD-3-Clause, maintained by the Flutter team. Camera and gallery access for the
+scanner. Requested with `maxWidth` and `imageQuality` so the platform resizes
+and re-encodes: that step bakes EXIF orientation into the pixels, and PDF
+ignores EXIF entirely, so without it portrait scans would embed sideways.

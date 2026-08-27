@@ -49,6 +49,11 @@ dependencies:
   drift_flutter: 0.3.1
   file_selector: 1.1.0
   flutter_riverpod: ^3.3.2
+  # Camera and gallery access for the scanner. BSD-3, maintained by the
+  # Flutter team. maxWidth/imageQuality are not just size limits: the
+  # platform-side resize bakes EXIF orientation into the pixels, and PDF
+  # ignores EXIF entirely.
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:

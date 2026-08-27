@@ -29,6 +29,7 @@ import 'page_editor_test.dart' as page_editor;
 import 'page_operations_flow_test.dart' as page_operations_flow;
 import 'pages_mode_test.dart' as pages_mode;
 import 'redaction_flow_test.dart' as redaction_flow;
+import 'scanner_flow_test.dart' as scanner_flow;
 import 'signature_flow_test.dart' as signature_flow;
 import 'pdfrx_engine_test.dart' as pdfrx_engine;
 import 'platform_handles_test.dart' as platform_handles;
@@ -54,4 +55,5 @@ void main() {
   group('watermark_flow', watermark_flow.main);
   group('object_layer_flow', object_layer_flow.main);
   group('redaction_flow', redaction_flow.main);
+  group('scanner_flow', scanner_flow.main);
 }
