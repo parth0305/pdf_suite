@@ -111,28 +111,50 @@ text.
 Such a document cannot be searched, and its text cannot be selected or copied.
 The scanner screen says so before you save.
 
-OCR would fix this and is deliberately not built. The project brief forbids AI,
-and every viable offline OCR engine — Tesseract since v4, Apple Vision, Windows
-OCR — is neural. Whether those count as "AI OCR" under the brief is a decision
-for the project owner, not something to settle quietly in a commit.
+**OCR fixes this on iOS, iPadOS and Android** — see §5. It is a separate,
+explicit step, so a scan is not searchable until you ask for it.
 
 The `scanned_no_text.pdf` fixture asserts extraction returns empty rather than
-failing, and an integration test asserts the same of a scan Folio produced — so
-the day OCR does arrive, that test fails and has to be updated deliberately.
+failing, and an integration test asserts the same of a fresh scan before OCR
+runs, which is what makes that step's effect observable.
 
-## 5. Android open-in-place requires a SAF URI
+## 5. OCR: no Windows, and positions only on Android
+
+Folio's OCR is Tesseract, bundled and run on the device. Three limits follow.
+
+**There is no Windows build.** The binding Folio uses implements Android and
+iOS only, and the menu entry is disabled on Windows rather than failing when
+tapped. Writing a Windows implementation would mean maintaining a native
+Tesseract build that this project has no way to test — see §1.
+
+**Word positions are Android-only.** Tesseract can report each word's box
+through hOCR, and Folio uses that on Android to place every word exactly where
+it appears, so search highlights land on the word. On iOS the plugin's hOCR
+call blocks the platform thread indefinitely — measured, not assumed: a
+90-second Dart timeout never fired. iOS therefore uses plain text, and lines
+are placed by reading order. The text is fully searchable and copyable; a
+highlight shows the right area rather than the exact word. Folio says this in
+the UI rather than presenting the two as equivalent.
+
+**English only, and imperfect.** The bundled model is `eng.traineddata` from
+Tesseract's `tessdata_fast` set, 3.9MB rather than the 23MB full model. OCR
+misreads things — especially poor photographs, unusual fonts and handwriting.
+Nothing in Folio treats OCR output as authoritative: it adds a searchable
+layer, and never alters the page you can see.
+
+## 6. Android open-in-place requires a SAF URI
 
 `PlatformHandles.capture()` on Android accepts only a `content://` URI from the
 system picker. A filesystem path cannot be granted a persistable permission, so
 it is rejected with `UnsupportedFeature` rather than producing a handle that
 would fail silently on next launch.
 
-## 6. English only
+## 7. English only
 
 The architecture supports localisation — all strings live in ARB files from the
 first commit — but no translations exist.
 
-## 7. Both native dependencies use Dart native assets
+## 8. Both native dependencies use Dart native assets
 
 `pdfrx` (PDFium) and `sqlite3` (via drift) build through Dart's newer native
 assets / build hooks mechanism rather than classic Flutter plugins. The iOS
@@ -141,7 +163,7 @@ was not provided`. Both currently build green on all four platforms including
 the Windows runner, but this is the most likely source of future
 cross-platform build breakage.
 
-## 8. Redaction does not cover metadata, bookmarks or attachments
+## 9. Redaction does not cover metadata, bookmarks or attachments
 
 **This is the limitation most likely to hurt someone.** Redaction removes what
 is under the boxes from the page. It does not touch `/Title`, `/Author` or
@@ -153,7 +175,7 @@ Folio states this in the confirmation dialog, in an error-coloured panel, rather
 than leaving it to be discovered. It is stated here too because a limitation
 that only appears in a dialog someone dismissed once is not documented.
 
-## 9. A redacted page becomes an image, and its text is rebuilt
+## 10. A redacted page becomes an image, and its text is rebuilt
 
 Redaction rasterises the page at 200 DPI and replaces its content with that
 image. This is what makes removal unconditional: the original content stream
@@ -174,7 +196,7 @@ approximate:
   can sit slightly off the ink.
 - Ligatures in the original arrive as whatever PDFium extracted them as.
 
-## 10. A scan is refused unless it is a baseline JPEG
+## 11. A scan is refused unless it is a baseline JPEG
 
 `/DCTDecode`, the PDF filter that carries a JPEG untouched, supports baseline
 JPEG. A progressive or arithmetic-coded JPEG renders as garbage in some readers
@@ -188,7 +210,7 @@ is enforced anyway, because "should not happen" is not a guarantee.
 That same re-encode is what bakes EXIF orientation into the pixels. PDF ignores
 EXIF entirely, so without it a portrait photograph would embed sideways.
 
-## 11. Redaction refuses a shared content stream
+## 12. Redaction refuses a shared content stream
 
 If a page being redacted draws a content stream that a page you did **not**
 select also draws, there is no correct answer available: dropping it breaks the
@@ -198,7 +220,7 @@ still carrying the content.
 
 Sharing a content stream between pages is unusual, so this should be rare.
 
-## 12. Permissions are advisory, and readers disagree about the bits
+## 13. Permissions are advisory, and readers disagree about the bits
 
 Folio writes the `/P` bit field a document asks for, and `/Perms` so a reader
 can tell it was not tampered with. Nothing beyond that is possible: a
@@ -216,7 +238,7 @@ Re-protecting a document Folio already protected is not supported: Folio does
 not decrypt, so the second pass would encrypt ciphertext. Protect the original
 instead.
 
-## 13. Test fixtures are generated, not committed
+## 14. Test fixtures are generated, not committed
 
 `test_documents/` is gitignored. Run `dart run scripts/make_fixtures.dart`
 before any test that needs host-side fixtures. Integration tests build their

@@ -304,6 +304,15 @@
   "scanDiscardTitle": "Discard this scan?",
   "scanDiscardBody": "The pages you captured have not been saved.",
   "scanUnsupportedImage": "That image is not a baseline JPEG and cannot be added.",
+  "ocrMode": "Make searchable (OCR)",
+  "ocrRunning": "Reading text\u2026 this can take a while.",
+  "ocrDone": "Made {name} searchable",
+  "@ocrDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "ocrNothingFound": "No text was recognised in this document.",
+  "ocrUnavailable": "OCR is not available on this platform.",
+  "ocrApproximate": "On this platform Folio can read the words but not where they sit, so search will find them but highlight only the right area.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",

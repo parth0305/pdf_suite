@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:folio/core/constants/breakpoints.dart';
@@ -21,6 +23,7 @@ import 'package:folio/features/viewer/widgets/drawing_surface.dart';
 import 'package:folio/features/viewer/widgets/signature_placement_surface.dart';
 import 'package:folio/features/viewer/widgets/note_dialog.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
+import 'package:folio/features/viewer/ocr_providers.dart';
 import 'package:folio/features/viewer/redaction_providers.dart';
 import 'package:folio/features/viewer/widgets/redact_confirm_dialog.dart';
 import 'package:folio/features/viewer/widgets/redact_overlay.dart';
@@ -65,6 +68,7 @@ enum _AnnotateTool {
   watermark,
   protect,
   redact,
+  ocr,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -348,6 +352,54 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (!mounted) return;
     ref.read(annotationSessionProvider.notifier).reset();
     setState(() => _mode = _ViewerMode.read);
+  }
+
+  /// Tesseract is bundled for Android and iOS only; there is no Windows
+  /// implementation, so the entry is disabled rather than failing on tap.
+  bool get _ocrAvailable => Platform.isAndroid || Platform.isIOS;
+
+  Future<void> _runOcr() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (!_ocrAvailable) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.ocrUnavailable)));
+      return;
+    }
+
+    // Recognition takes seconds per page, so the banner is not decoration -
+    // without it the app looks frozen.
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.ocrRunning),
+        duration: const Duration(minutes: 5),
+      ),
+    );
+
+    try {
+      final recognised = await ref
+          .read(ocrRepositoryProvider)
+          .recognise(widget.document.id);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.ocrDone(recognised.displayName))),
+        );
+    } on ArgumentError {
+      // Thrown when no page yielded any text at all.
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.ocrNothingFound)));
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(failureMessage(f, l10n).title)));
+    }
   }
 
   void _enterRedactMode() {
@@ -1191,6 +1243,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _AnnotateTool.watermark => _applyWatermark(),
             _AnnotateTool.protect => _protectDocument(),
             _AnnotateTool.redact => _enterRedactMode(),
+            _AnnotateTool.ocr => _runOcr(),
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -1222,6 +1275,15 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: ListTile(
                 leading: const Icon(Icons.approval_outlined),
                 title: Text(l10n.stampMode),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: _AnnotateTool.ocr,
+              enabled: _ocrAvailable,
+              child: ListTile(
+                leading: const Icon(Icons.text_snippet_outlined),
+                title: Text(l10n.ocrMode),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

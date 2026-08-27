@@ -267,6 +267,25 @@ This is the second property in the project with no observable failure, after
 AES IV reuse. Both are still written correctly, because the next reader may be
 less forgiving than PDFium.
 
+**An eleventh, from SP-6b: two code paths, one of which no test could tell
+apart.** OCR places words accurately on Android and approximately on iOS. Every
+integration assertion — text extracted, pixels unchanged, source untouched —
+passed identically whether the accurate path ran or not, because both produce
+extractable text. Forcing Android onto the fallback was green.
+
+The test that catches it measures the gap between two adjacent lines: real
+positions keep neighbours adjacent, while the fallback spreads lines a quarter
+of a page apart. That still was not enough — the gap is mirror-symmetric, so
+removing the y-flip passed it upside-down. It now also asserts the title sits
+in the top half of the page.
+
+**A twelfth, and the same trap as SP-4a's:** the assertion that `/Info` is
+carried into a new trailer used `contains` on the whole file. An incremental
+update leaves the original bytes at the front, so the ORIGINAL `/Info` satisfies
+it and the test passed against a writer that dropped it. It now reads only the
+last trailer. Anything asserted about an incremental update's new trailer must
+be scoped to that trailer.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 

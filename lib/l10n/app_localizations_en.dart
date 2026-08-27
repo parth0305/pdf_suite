@@ -675,6 +675,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'That image is not a baseline JPEG and cannot be added.';
 
   @override
+  String get ocrMode => 'Make searchable (OCR)';
+
+  @override
+  String get ocrRunning => 'Reading text… this can take a while.';
+
+  @override
+  String ocrDone(String name) {
+    return 'Made $name searchable';
+  }
+
+  @override
+  String get ocrNothingFound => 'No text was recognised in this document.';
+
+  @override
+  String get ocrUnavailable => 'OCR is not available on this platform.';
+
+  @override
+  String get ocrApproximate =>
+      'On this platform Folio can read the words but not where they sit, so search will find them but highlight only the right area.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

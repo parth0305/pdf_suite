@@ -262,12 +262,40 @@ ten-page scan is the size of ten photographs rather than of ten bitmaps.
 Progressive JPEGs are refused rather than written into a file that some readers
 render as garbage.
 
+## SP-6b — OCR
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Make a scan searchable | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Search highlights land on the word | 🟡 | 🟡 | ✅ | ❌ | — |
+
+Annotate menu → **Make searchable (OCR)**. Folio reads the words on each page
+and adds an invisible text layer, so the document becomes searchable and its
+text can be selected and copied. The picture is untouched — not one pixel
+changes.
+
+Runs entirely on the device. Nothing is uploaded, and it works with no network
+at all.
+
+**Accuracy of position differs by platform, and Folio does not pretend
+otherwise.** On Android, Folio gets word boxes and places each word exactly
+where it appears, so a search highlight lands on the word. On iPhone and iPad
+the OCR engine can report the words but not their positions, so lines are
+placed by reading order: search still finds the text and copying still works,
+but a highlight shows the right area rather than the exact word.
+
+**Not available on Windows.** The OCR engine Folio uses has no Windows
+implementation, and the menu entry is disabled there rather than failing when
+tapped.
+
+English only. The bundled language model is 3.9MB.
+
 ## Not built yet
 
 **Behind the object layer:** compressing documents Folio did not write.
 Redaction landed in SP-5d.
 
-**Independent of it:** OCR, printing and sharing, batch processing,
+**Independent of it:** printing and sharing, batch processing,
 automation rules, metadata editing, image watermarks, photographed signatures,
 custom and date stamps, and reshaping individual ink points.
 
