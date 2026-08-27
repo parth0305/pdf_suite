@@ -26,6 +26,8 @@ import 'package:folio/features/viewer/widgets/custom_stamp_dialog.dart';
 import 'package:folio/data/signature/signature_photo_source.dart';
 import 'package:folio/features/scanner/scanner_providers.dart';
 import 'package:folio/features/viewer/widgets/image_placement_surface.dart';
+import 'package:folio/features/viewer/metadata_providers.dart';
+import 'package:folio/features/viewer/widgets/metadata_dialog.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
@@ -399,6 +401,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _enterNoteMode();
       case DocumentAction.stamp:
         _enterStampMode();
+      case DocumentAction.metadata:
+        await _editMetadata();
       case DocumentAction.watermark:
         await _applyWatermark();
       case DocumentAction.removeWatermark:
@@ -518,6 +522,40 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.insertImageUnsupported)),
+      );
+    }
+  }
+
+  /// Edits the document's title, author, subject and keywords.
+  Future<void> _editMetadata() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final current = await ref
+          .read(metadataRepositoryProvider)
+          .read(widget.document.id);
+      if (!mounted) return;
+
+      final edited = await showMetadataDialog(context, current);
+      if (edited == null || !mounted) return;
+
+      final saved = await ref
+          .read(metadataRepositoryProvider)
+          .save(widget.document.id, edited);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.metadataSaved(saved.displayName))),
+      );
+    } on ArgumentError {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.metadataEmpty)));
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
       );
     }
   }

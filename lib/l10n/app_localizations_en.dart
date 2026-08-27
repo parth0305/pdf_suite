@@ -955,6 +955,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stampCustomLabel => 'Stamp text';
 
   @override
+  String get metadataMode => 'Document details';
+
+  @override
+  String get metadataTitle => 'Title';
+
+  @override
+  String get metadataAuthor => 'Author';
+
+  @override
+  String get metadataSubject => 'Subject';
+
+  @override
+  String get metadataKeywords => 'Keywords';
+
+  @override
+  String get metadataSave => 'Save details';
+
+  @override
+  String metadataSaved(String name) {
+    return 'Saved details to $name';
+  }
+
+  @override
+  String get metadataEmpty => 'Fill in at least one field.';
+
+  @override
+  String get metadataNote =>
+      'These travel with the document. Anyone you share it with can read them, and redaction does not remove them.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

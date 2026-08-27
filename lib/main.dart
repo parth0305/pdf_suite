@@ -12,6 +12,7 @@ import 'package:folio/data/local/automation_dao.dart';
 import 'package:folio/data/local/preferences_dao.dart';
 import 'package:folio/data/repositories/automation_repository_impl.dart';
 import 'package:folio/data/repositories/export_repository_impl.dart';
+import 'package:folio/data/repositories/metadata_repository_impl.dart';
 import 'package:folio/data/sharing/platform_export.dart';
 import 'package:folio/data/repositories/batch_repository_impl.dart';
 import 'package:folio/data/repositories/compression_repository_impl.dart';
@@ -40,6 +41,7 @@ import 'package:folio/features/scanner/scanner_providers.dart';
 import 'package:folio/features/automation/automation_providers.dart';
 import 'package:folio/features/settings/settings_providers.dart';
 import 'package:folio/features/viewer/export_providers.dart';
+import 'package:folio/features/viewer/metadata_providers.dart';
 import 'package:folio/features/batch/batch_providers.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
 import 'package:folio/features/viewer/ocr_providers.dart';
@@ -127,6 +129,9 @@ Future<void> main() async {
         ocrRepositoryProvider.overrideWithValue(ocr),
         compressionRepositoryProvider.overrideWithValue(compression),
         preferencesDaoProvider.overrideWithValue(PreferencesDao(db)),
+        metadataRepositoryProvider.overrideWithValue(
+          MetadataRepositoryImpl(library: library, documents: documentWriter),
+        ),
         exportRepositoryProvider.overrideWithValue(
           ExportRepositoryImpl(library: library),
         ),

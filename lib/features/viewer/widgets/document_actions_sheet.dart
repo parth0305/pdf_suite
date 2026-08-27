@@ -13,6 +13,7 @@ enum DocumentAction {
   stamp,
   signature,
   annotations,
+  metadata,
   watermark,
   removeWatermark,
   compress,
@@ -134,6 +135,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
               ),
 
               group(l10n.actionsGroupDocument),
+              item(
+                DocumentAction.metadata,
+                Icons.info_outline,
+                l10n.metadataMode,
+              ),
               item(
                 DocumentAction.watermark,
                 Icons.branding_watermark_outlined,

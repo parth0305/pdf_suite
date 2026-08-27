@@ -1810,6 +1810,60 @@ abstract class AppLocalizations {
   /// **'Stamp text'**
   String get stampCustomLabel;
 
+  /// No description provided for @metadataMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Document details'**
+  String get metadataMode;
+
+  /// No description provided for @metadataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get metadataTitle;
+
+  /// No description provided for @metadataAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get metadataAuthor;
+
+  /// No description provided for @metadataSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get metadataSubject;
+
+  /// No description provided for @metadataKeywords.
+  ///
+  /// In en, this message translates to:
+  /// **'Keywords'**
+  String get metadataKeywords;
+
+  /// No description provided for @metadataSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save details'**
+  String get metadataSave;
+
+  /// No description provided for @metadataSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved details to {name}'**
+  String metadataSaved(String name);
+
+  /// No description provided for @metadataEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in at least one field.'**
+  String get metadataEmpty;
+
+  /// No description provided for @metadataNote.
+  ///
+  /// In en, this message translates to:
+  /// **'These travel with the document. Anyone you share it with can read them, and redaction does not remove them.'**
+  String get metadataNote;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

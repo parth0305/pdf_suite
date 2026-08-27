@@ -418,6 +418,18 @@
   "stampCustom": "Custom text\u2026",
   "stampDate": "Today's date",
   "stampCustomLabel": "Stamp text",
+  "metadataMode": "Document details",
+  "metadataTitle": "Title",
+  "metadataAuthor": "Author",
+  "metadataSubject": "Subject",
+  "metadataKeywords": "Keywords",
+  "metadataSave": "Save details",
+  "metadataSaved": "Saved details to {name}",
+  "@metadataSaved": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "metadataEmpty": "Fill in at least one field.",
+  "metadataNote": "These travel with the document. Anyone you share it with can read them, and redaction does not remove them.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",
