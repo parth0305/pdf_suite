@@ -39,5 +39,27 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # SwiftyTesseract's libtesseract.xcframework ships ios-arm64 and
+    # ios-x86_64-simulator, but NO ios-arm64-simulator slice. Without this the
+    # simulator build fails with "Could not find module 'SwiftyTesseract' for
+    # target 'arm64-apple-ios-simulator'".
+    #
+    # This only affects the SIMULATOR. Real iPhones and iPads are arm64
+    # devices and use the ios-arm64 slice, which is why CI's `flutter build
+    # ios` passes. The consequence is that the simulator must run x86_64,
+    # which Rosetta handles on Apple Silicon but is slower there.
+    target.build_configurations.each do |config|
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+    end
+  end
+
+  installer.aggregate_targets.each do |target|
+    target.user_project.native_targets.each do |native_target|
+      native_target.build_configurations.each do |config|
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      end
+    end
+    target.user_project.save
   end
 end
