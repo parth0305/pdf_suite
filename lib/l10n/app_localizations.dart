@@ -1402,6 +1402,96 @@ abstract class AppLocalizations {
   /// **'Folio only compresses losslessly: nothing is removed and no image quality is reduced.'**
   String get compressLossless;
 
+  /// No description provided for @batchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to {count} documents'**
+  String batchTitle(int count);
+
+  /// No description provided for @batchCompress.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get batchCompress;
+
+  /// No description provided for @batchOcr.
+  ///
+  /// In en, this message translates to:
+  /// **'Make searchable (OCR)'**
+  String get batchOcr;
+
+  /// No description provided for @batchWatermark.
+  ///
+  /// In en, this message translates to:
+  /// **'Watermark'**
+  String get batchWatermark;
+
+  /// No description provided for @batchProtect.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect with password'**
+  String get batchProtect;
+
+  /// No description provided for @batchRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} done'**
+  String batchRunning(int done, int total);
+
+  /// No description provided for @batchCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get batchCancel;
+
+  /// No description provided for @batchStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped. Documents already finished were kept.'**
+  String get batchStopped;
+
+  /// No description provided for @batchDoneAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count} done'**
+  String batchDoneAll(int count);
+
+  /// No description provided for @batchDoneSome.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} done, {skipped} skipped'**
+  String batchDoneSome(int done, int skipped);
+
+  /// No description provided for @batchDoneNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was produced'**
+  String get batchDoneNone;
+
+  /// No description provided for @batchSkipNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} had nothing to gain'**
+  String batchSkipNothing(int count);
+
+  /// No description provided for @batchSkipFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} could not be processed'**
+  String batchSkipFailed(int count);
+
+  /// No description provided for @batchNewDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Each result is a new document. Your originals are untouched.'**
+  String get batchNewDocuments;
+
+  /// No description provided for @batchSlowWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This reads every page and can take several minutes.'**
+  String get batchSlowWarning;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

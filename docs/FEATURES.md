@@ -324,10 +324,40 @@ images. Folio says so instead of offering a button that appears to do nothing.
 **Folio will not reduce image quality to make a file smaller.** That is what
 most apps mean by "compress", and it is lossy — see LIMITATIONS.
 
+## SP-8a — Batch
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Apply one operation to many documents | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Select documents in the library, then the batch button. Four operations can be
+applied to many documents at once: **Compress**, **Make searchable (OCR)**,
+**Watermark** and **Protect with password**.
+
+Redaction and page editing are deliberately absent. They need boxes or page
+numbers chosen against each individual document, and quietly applying one
+document's choices to another would be worse than not offering it.
+
+**A batch always runs to completion.** One document that fails does not abandon
+the rest, and the result says exactly what happened: *"7 done, 3 skipped — 2 had
+nothing to gain · 1 could not be processed"*. A batch that stopped at the first
+error would leave you with some documents processed and no record of which.
+
+**Skipped is reported separately from failed.** A document that was already well
+compressed had nothing to gain — that is information, not an error, and lumping
+the two together would train you to ignore the errors.
+
+**Stop actually stops**, and everything already finished stays. Cancelling does
+not undo completed work.
+
+Each result is a new document; your originals are untouched, as everywhere else
+in Folio.
+
 ## Not built yet
 
-Lossy image compression — reducing a photograph's quality to shrink a file — is
-the main thing still absent, and it is a deliberate omission rather than a gap.
+Still absent: printing and sharing, and automation rules ("when a document is
+added, do X"). Lossy image compression — reducing a photograph's quality to
+shrink a file — is a deliberate omission rather than a gap.
 
 **Independent of it:** printing and sharing, batch processing,
 automation rules, metadata editing, image watermarks, photographed signatures,

@@ -287,6 +287,33 @@ pixels, which is most portrait shots. `image_picker` is asked for `maxWidth` and
 orientation into the pixels**. The size reduction is welcome; the orientation is
 the reason.
 
+## Batch owns no PDF logic
+
+`BatchRepositoryImpl` delegates every action to the repository that already
+does that job for one document. It contains no PDF code at all, which is the
+point: a batch cannot drift from what the single-document path does, because it
+IS the single-document path in a loop.
+
+Three rules shape it, and each exists because the obvious alternative misleads
+someone.
+
+**It runs to completion.** A batch that aborts on the first error leaves the
+user with some documents processed and no record of which. A failure is
+recorded and the loop continues.
+
+**Skipped is not failed.** A document already well compressed, or one where OCR
+found no text, produced no new file — and neither is an error. They are counted
+separately, because a summary that reports them as failures trains people to
+ignore failures.
+
+**Cancelling keeps what finished.** The documents are already in the library;
+undoing them would be a rollback nobody asked for. `shouldContinue` is checked
+before each document, never mid-document.
+
+Only the failure path catches broadly, and it records the exception's runtime
+type rather than its message: a message can carry a filename or a password, and
+a batch summary is not the place for either.
+
 ## Compression: measured first, and lossless by necessity
 
 Compression was designed backwards from a measurement. Task 1 analysed sixteen

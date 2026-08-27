@@ -723,6 +723,65 @@ class AppLocalizationsEn extends AppLocalizations {
       'Folio only compresses losslessly: nothing is removed and no image quality is reduced.';
 
   @override
+  String batchTitle(int count) {
+    return 'Apply to $count documents';
+  }
+
+  @override
+  String get batchCompress => 'Compress';
+
+  @override
+  String get batchOcr => 'Make searchable (OCR)';
+
+  @override
+  String get batchWatermark => 'Watermark';
+
+  @override
+  String get batchProtect => 'Protect with password';
+
+  @override
+  String batchRunning(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String get batchCancel => 'Stop';
+
+  @override
+  String get batchStopped => 'Stopped. Documents already finished were kept.';
+
+  @override
+  String batchDoneAll(int count) {
+    return 'All $count done';
+  }
+
+  @override
+  String batchDoneSome(int done, int skipped) {
+    return '$done done, $skipped skipped';
+  }
+
+  @override
+  String get batchDoneNone => 'Nothing was produced';
+
+  @override
+  String batchSkipNothing(int count) {
+    return '$count had nothing to gain';
+  }
+
+  @override
+  String batchSkipFailed(int count) {
+    return '$count could not be processed';
+  }
+
+  @override
+  String get batchNewDocuments =>
+      'Each result is a new document. Your originals are untouched.';
+
+  @override
+  String get batchSlowWarning =>
+      'This reads every page and can take several minutes.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override
