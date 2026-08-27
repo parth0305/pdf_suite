@@ -94,25 +94,93 @@ void main() {
       expect(streamFor('AB', const []), contains('3 Tr'));
     });
 
-    test('a surviving character is in the stream', () {
-      expect(streamFor('AB', const []), contains('(A)'));
-      expect(streamFor('AB', const []), contains('(B)'));
+    // One Tj per RUN, not per character: a page whose every glyph is its own
+    // text object extracts as 'C o n f i d e n t i a l', which no search
+    // matches.
+    test('adjacent characters share one run', () {
+      final stream = streamFor('AB', const []);
+
+      expect(stream, contains('(AB)'));
+      expect(RegExp(r'Tj').allMatches(stream).length, 1);
     });
 
     // The whole point: a redacted character must not appear anywhere.
     test('a redacted character is absent', () {
       final stream = streamFor('AB', [boxOver(left: -1, right: 5)]);
 
-      expect(stream, isNot(contains('(A)')));
+      expect(stream, isNot(contains('A')));
       expect(stream, contains('(B)'));
     });
 
-    test('each character is positioned at its own rect', () {
-      final stream = streamFor('AB', const []);
+    // Without this the halves either side of a redaction would be joined into
+    // a word that never existed, and a search for it would hit.
+    test('a removed character splits the run', () {
+      // 'ABCDE', box over C only (12..18).
+      final stream = streamFor('ABCDE', [boxOver(left: 12.5, right: 17.5)]);
 
-      // A sits at left 0, B at left 6, both with bottom 100.
+      expect(stream, contains('(AB)'));
+      expect(stream, contains('(DE)'));
+      expect(
+        stream,
+        isNot(contains('(ABDE)')),
+        reason: 'the run must break where the character was removed',
+      );
+    });
+
+    test('a run is positioned at its first character', () {
+      // 'ABCDE' with C removed: the second run starts at D, left 18.
+      final stream = streamFor('ABCDE', [boxOver(left: 12.5, right: 17.5)]);
+
       expect(stream, contains('1 0 0 1 0 100 Tm'));
-      expect(stream, contains('1 0 0 1 6 100 Tm'));
+      expect(stream, contains('1 0 0 1 18 100 Tm'));
+    });
+
+    test('a line break ends a run', () {
+      const text = PageText(
+        fullText: 'A\nB',
+        charRects: [
+          TextRect(left: 0, right: 6, top: 110, bottom: 100),
+          TextRect(left: 6, right: 7, top: 110, bottom: 100),
+          TextRect(left: 0, right: 6, top: 90, bottom: 80),
+        ],
+      );
+
+      expect(
+        RegExp(
+          r'Tj',
+        ).allMatches(invisibleTextStream(text, const [0, 1, 2])).length,
+        2,
+      );
+    });
+
+    // A descender's glyph box sits lower than its neighbours' and a hyphen's
+    // sits higher. Splitting runs on that geometry turns 'rupees' into
+    // 'ru p ees' and 'REDACT-ME-9931' into 'REDACT - ME - 9931' - measured on
+    // a real page, not hypothesised.
+    test('a descender does not split a run', () {
+      const text = PageText(
+        fullText: 'rup',
+        charRects: [
+          TextRect(left: 0, right: 6, top: 106, bottom: 100),
+          TextRect(left: 6, right: 12, top: 106, bottom: 100),
+          TextRect(left: 12, right: 18, top: 106, bottom: 94),
+        ],
+      );
+
+      expect(invisibleTextStream(text, const [0, 1, 2]), contains('(rup)'));
+    });
+
+    test('a hyphen does not split a run', () {
+      const text = PageText(
+        fullText: 'A-B',
+        charRects: [
+          TextRect(left: 0, right: 6, top: 110, bottom: 100),
+          TextRect(left: 6, right: 10, top: 106, bottom: 104),
+          TextRect(left: 10, right: 16, top: 110, bottom: 100),
+        ],
+      );
+
+      expect(invisibleTextStream(text, const [0, 1, 2]), contains('(A-B)'));
     });
 
     test('parentheses and backslashes are escaped', () {

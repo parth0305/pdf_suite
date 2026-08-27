@@ -33,22 +33,48 @@ bool _intersects(TextRect a, TextRect b) =>
 /// The invisible text a redacted page carries so search and selection still
 /// work for everything that was not removed.
 ///
-/// Text render mode 3 paints nothing but remains extractable. Each character
-/// is positioned by its own text matrix from the rect PDFium reported, because
-/// word and line structure is not reconstructed - extraction only needs the
-/// characters in their original order.
+/// Characters are emitted in **runs**, not one at a time. PDFium inserts a
+/// word-break space wherever it sees a gap between glyphs, and a page whose
+/// every character is its own text object extracts as `C o n f i d e n t i a l`
+/// - which no search would match. Within a single `Tj` the reader spaces
+/// glyphs by the font's own advances, so a run comes back as one word.
+///
+/// A run breaks wherever the original text did: at any character with no
+/// glyph - which is every space and every line break PDFium reports - and,
+/// critically, wherever a character was **removed**. Without that last rule
+/// the halves either side of a redaction would be joined into a word that
+/// never existed.
+///
+/// Runs are NOT broken by comparing glyph rectangles. A descender sits lower
+/// than its neighbours and a hyphen sits higher, so a same-line test on rect
+/// geometry splits `rupees` into `ru p ees` and `REDACT-ME-9931` into
+/// `REDACT - ME - 9931`. The text's own whitespace is the only reliable
+/// separator.
 String invisibleTextStream(PageText text, List<int> keep) {
   final buffer = StringBuffer();
+  final kept = keep.toSet();
 
-  for (final i in keep) {
-    final c = text.fullText[i];
-    if (!_isDrawable(c)) continue;
+  var i = 0;
+  while (i < text.charRects.length) {
+    if (!kept.contains(i) || !_isDrawable(text.fullText[i])) {
+      i++;
+      continue;
+    }
 
-    final rect = text.charRects[i];
+    final start = i;
+    final run = StringBuffer();
+    while (i < text.charRects.length &&
+        kept.contains(i) &&
+        _isDrawable(text.fullText[i])) {
+      run.write(text.fullText[i]);
+      i++;
+    }
+
+    final rect = text.charRects[start];
     buffer.writeln(
       'BT 3 Tr /RdF1 ${_number(rect.height)} Tf '
       '1 0 0 1 ${_number(rect.left)} ${_number(rect.bottom)} Tm '
-      '${_escaped(c)} Tj ET',
+      '${_escaped(run.toString())} Tj ET',
     );
   }
 
@@ -62,12 +88,13 @@ String invisibleTextStream(PageText text, List<int> keep) {
 bool _isDrawable(String c) {
   final code = c.codeUnitAt(0);
   if (code > 0xFF) return false;
-  // Control characters and the space have no glyph worth positioning.
+  // Control characters and the space have no glyph worth positioning; they
+  // also end a run, which is what puts a space back in the extracted text.
   return code > 0x20;
 }
 
-String _escaped(String c) =>
-    '(${c.replaceAllMapped(RegExp(r'[\\()]'), (m) => '\\${m[0]}')})';
+String _escaped(String s) =>
+    '(${s.replaceAllMapped(RegExp(r'[\\()]'), (m) => '\\${m[0]}')})';
 
 /// Trims a trailing `.0` so the stream reads like the rest of Folio's output.
 String _number(double v) {
