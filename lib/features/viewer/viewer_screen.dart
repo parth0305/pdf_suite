@@ -654,6 +654,18 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
+  /// The back button shared by every editing mode.
+  ///
+  /// Eight copies of this existed, none with a tooltip - a screen reader
+  /// announced each as "button" and nothing more. One helper fixes the label
+  /// and the duplication together.
+  Widget _leaveModeButton(VoidCallback onPressed, AppLocalizations l10n) =>
+      IconButton(
+        icon: const Icon(Icons.arrow_back),
+        tooltip: l10n.viewerLeaveMode,
+        onPressed: onPressed,
+      );
+
   Widget _redactToolbar(AppLocalizations l10n) {
     final count = ref.watch(redactionSessionProvider).length;
 
@@ -1371,34 +1383,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       overflow: TextOverflow.ellipsis,
     ),
     leading: switch (_mode) {
-      _ViewerMode.pages => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: _leavePagesMode,
-      ),
-      _ViewerMode.markup => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: _leaveMarkupMode,
-      ),
-      _ViewerMode.draw => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: _leaveDrawMode,
-      ),
-      _ViewerMode.redact => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: _exitRedactMode,
-      ),
-      _ViewerMode.annotations => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: _leaveAnnotationsMode,
-      ),
-      _ViewerMode.signature => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: _leaveSignatureMode,
-      ),
-      _ViewerMode.note || _ViewerMode.stamp => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: _leaveStagingMode,
-      ),
+      _ViewerMode.pages => _leaveModeButton(_leavePagesMode, l10n),
+      _ViewerMode.markup => _leaveModeButton(_leaveMarkupMode, l10n),
+      _ViewerMode.draw => _leaveModeButton(_leaveDrawMode, l10n),
+      _ViewerMode.redact => _leaveModeButton(_exitRedactMode, l10n),
+      _ViewerMode.annotations => _leaveModeButton(_leaveAnnotationsMode, l10n),
+      _ViewerMode.signature => _leaveModeButton(_leaveSignatureMode, l10n),
+      _ViewerMode.note ||
+      _ViewerMode.stamp => _leaveModeButton(_leaveStagingMode, l10n),
       _ViewerMode.read => null,
     },
     actions: [

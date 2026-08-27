@@ -47,6 +47,7 @@ class _LibraryToolbarState extends ConsumerState<LibraryToolbar> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.clear),
+                        tooltip: l10n.searchClear,
                         onPressed: () {
                           _field.clear();
                           ref.read(searchQueryProvider.notifier).value = '';

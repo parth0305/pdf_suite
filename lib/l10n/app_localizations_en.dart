@@ -840,6 +840,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get printFailed => 'The printing service could not be reached.';
 
   @override
+  String get viewerLeaveMode => 'Back to reading';
+
+  @override
+  String get searchClear => 'Clear search';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

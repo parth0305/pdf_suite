@@ -333,6 +333,18 @@ messages already shown elsewhere. In a project whose documentation makes
 specific claims about what the app tells you, an unused string is not a
 harmless leftover.
 
+**A sixteenth, also from SP-10: a checker with a window instead of a parser.**
+The first accessibility audit searched 400 characters after each `IconButton(`
+for a `tooltip:` and reported eleven unlabelled buttons. Nine had tooltips — the
+attribute simply sat past the window's edge, because `icon:` often comes first
+and wraps over several lines. Acting on that output would have meant "fixing"
+nine controls that were already correct, and it would have hidden the two that
+were genuinely wrong.
+
+`test/widgets/controls_are_labelled_test.dart` balances parentheses and skips
+string literals instead. It found exactly two real cases. A source check that
+guesses at extent will tell you confident, specific, wrong things.
+
 A green suite proves nothing until a mutation makes it red. Two properties in
 this codebase are asserted by deliberate mutation rather than assumption:
 

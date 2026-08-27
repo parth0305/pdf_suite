@@ -379,6 +379,8 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "printFailed": "The printing service could not be reached.",
+  "viewerLeaveMode": "Back to reading",
+  "searchClear": "Clear search",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",

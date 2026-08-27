@@ -1594,6 +1594,18 @@ abstract class AppLocalizations {
   /// **'The printing service could not be reached.'**
   String get printFailed;
 
+  /// No description provided for @viewerLeaveMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to reading'**
+  String get viewerLeaveMode;
+
+  /// No description provided for @searchClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get searchClear;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

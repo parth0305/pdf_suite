@@ -97,8 +97,14 @@ PDFium plus Tesseract's native library, and 3.9 MB is the English OCR model.
 - [ ] No failing tests on any platform that has a test path
 - [ ] Licence audit passes
 - [ ] Corruption fixtures fail safely rather than crashing
-- [ ] Password-protected documents open correctly
+      (`corrupt_truncated.pdf`, `malformed_xref.pdf` — both exercised by the
+      integration suite, so a green run covers this)
+- [ ] Password-protected documents open correctly (`encrypted_user_pw.pdf`)
 - [ ] Large-document fixtures open without exhausting memory
+      (`pages_1000.pdf` — exercised by `pdfrx_engine_test` and
+      `page_editor_test`)
+- [ ] A document with embedded JavaScript opens without executing anything
+      (`embedded_javascript.pdf`)
 - [ ] Offline operation verified by hand
 - [ ] `FEATURES.md` status marks match what was actually verified
 - [ ] `LIMITATIONS.md` lists every known gap, including anything discovered
