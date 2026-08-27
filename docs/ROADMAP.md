@@ -61,15 +61,54 @@ A compliance standard, not a feature: embedded fonts, colour profiles, XMP
 metadata, and validation against the profile claimed. Folio currently embeds no
 fonts at all, which is the first thing PDF/A would change.
 
+## Office conversion — agreed, and the two directions are not one job
+
+Added on request. They belong in the plan, but calling them a single feature
+would be dishonest: one direction is hard work and the other is a research
+project.
+
+### PDF to Word, Excel and PowerPoint — feasible
+
+Folio already has the hard half. PDFium reports **per-character rectangles**,
+which is what OCR and redaction are built on, so the text and its positions are
+in hand. The output formats are OOXML: XML inside a ZIP, and writing XML is
+mechanical.
+
+The honest limits, which should be said in the UI rather than discovered:
+
+- **Layout is reconstructed, not preserved.** A PDF records where glyphs sit,
+  not that they form a paragraph. Grouping characters into words, lines and
+  paragraphs is inference, and it will get some documents wrong.
+- **Excel only makes sense for tables**, and finding a table in a PDF means
+  inferring one from alignment. A PDF has no notion of a cell.
+- **PowerPoint is the weakest.** One slide per page with the text placed on it
+  is achievable; anything resembling the original design is not.
+
+It needs a **ZIP writer**, which Folio does not have. `dart:io` provides
+deflate, so the container is a bounded piece of work rather than a dependency —
+but it is new code that has to be right, because a malformed ZIP produces a file
+Word refuses to open at all.
+
+### Word, Excel and PowerPoint to PDF — much harder
+
+This direction means parsing OOXML and **laying it out**: line breaking,
+justification, tables, floats, sections, headers, and fonts that must be
+measured to be placed. That is a word processor's layout engine, and it is why
+every web tool runs LibreOffice on a server to do it.
+
+Folio also embeds no fonts today. Rendering a document written in a font the
+device does not have means either substituting one — changing the pagination
+the author saw — or bundling fonts, which is megabytes each.
+
+Not ruled out, but it should not be started until the other direction has
+shipped and been used: PDF-to-Office will teach us how much layout fidelity
+people actually expect.
+
 ## Ruled out, with reasons
 
-**Format conversion** — PDF to and from Word, Excel, PowerPoint, ODF, HTML,
-EPUB, RTF, TXT, CSV, Pages, HWP. About seventeen features on a typical
-competitor's list, and they ship cheaply because a server runs LibreOffice.
-On-device means bundling a document engine or writing a parser and renderer per
-format. Folio is already 37 MB because PDFium and Tesseract are bundled. This is
-the price of having no server, and it is a deliberate non-goal rather than a
-backlog item.
+**The remaining conversions** — ODF, HTML, EPUB, RTF, TXT, CSV, Pages, HWP.
+Each is a separate parser for a separate format, and unlike Office they are not
+what most people are asking for. Reconsider individually if asked; not planned.
 
 **Request signatures** — uploading a document, emailing a link, tracking who
 signed. It is a cloud service, and it contradicts `PRIVACY.md` directly.
