@@ -1471,6 +1471,17 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           icon: const Icon(Icons.call_split),
           onPressed: _totalPages == 0 ? null : _splitDocument,
         ),
+      // Search stays in the bar at every width. It is the most-used control in
+      // a document reader, and burying it behind a sheet to save one slot
+      // would be the wrong trade.
+      if (_mode == _ViewerMode.read)
+        IconButton(
+          tooltip: l10n.viewerSearch,
+          icon: const Icon(Icons.search),
+          onPressed: _searcher == null
+              ? null
+              : () => setState(() => _searchOpen = !_searchOpen),
+        ),
       if (_mode == _ViewerMode.read && _hasRoomForFullToolbar) ...[
         IconButton(
           tooltip: l10n.viewerThumbnails,
@@ -1483,13 +1494,6 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           icon: const Icon(Icons.list),
           isSelected: _panel == _SidePanel.outline,
           onPressed: () => _togglePanel(_SidePanel.outline),
-        ),
-        IconButton(
-          tooltip: l10n.viewerSearch,
-          icon: const Icon(Icons.search),
-          onPressed: _searcher == null
-              ? null
-              : () => setState(() => _searchOpen = !_searchOpen),
         ),
         IconButton(
           tooltip: l10n.viewerZoomOut,

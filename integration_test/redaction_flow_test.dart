@@ -329,6 +329,14 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
+
+      // The sheet is grouped and scrolls; Redact sits under "Protect", below
+      // the fold on a phone.
+      await tester.scrollUntilVisible(
+        find.text('Redact'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
       await tester.tap(find.text('Redact'));
       await tester.pumpAndSettle();
 
@@ -378,6 +386,14 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
+
+      // The sheet is grouped and scrolls; Redact sits under "Protect", below
+      // the fold on a phone.
+      await tester.scrollUntilVisible(
+        find.text('Redact'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
       await tester.tap(find.text('Redact'));
       await tester.pumpAndSettle();
 

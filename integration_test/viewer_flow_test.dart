@@ -147,8 +147,13 @@ void main() {
       await pumpUntilFound(tester, find.text('1 of 3'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.fullscreen));
+      // Full screen lives in the actions sheet on a phone: below 600dp the bar
+      // keeps only the pages toggle, search and the overflow.
+      await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Full screen'));
+      await tester.pumpAndSettle();
+
       expect(find.byType(AppBar), findsNothing);
       expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
 
