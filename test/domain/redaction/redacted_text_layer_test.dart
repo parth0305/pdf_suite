@@ -70,7 +70,7 @@ void main() {
 
     test('a box that misses vertically drops nothing', () {
       final keep = survivingIndices(textOf('ABCDEF'), [
-        RedactionBox(
+        const RedactionBox(
           pageIndex: 0,
           // Well above the characters, which sit at 100..110.
           rect: const TextRect(left: 0, right: 100, top: 300, bottom: 200),
