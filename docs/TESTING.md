@@ -470,3 +470,40 @@ flattened field is gone from it while the one that could NOT be flattened
 remains. That second half matters: a field holding a value with no appearance
 to paint is deliberately kept, and a test that just asserted "no form left"
 would have driven the code to delete it.
+
+## 24. An absence obtained by catastrophe
+
+The test for "conversion removes embedded JavaScript" asserted the output did
+not contain `/JavaScript`. It passed. The output also did not contain
+`/Type /Catalog`, because the removal matched any object *mentioning* a script
+and the catalogue had the script inline in its name tree — so conversion was
+deleting the document's root and producing a file with no pages at all.
+
+Everything is absent from a document with no root. An assertion that something
+is missing is only meaningful alongside one that the rest is still there, and
+the test now checks the catalogue, a page and the output intent survive.
+
+The fix distinguishes an object that IS a script from one that MENTIONS one, by
+blanking nested dictionaries before looking.
+
+## 25. A fixture that claimed what it did not have
+
+`scanned_no_text.pdf` had no text and a `/Font` resource anyway, because the
+builder added the font object unconditionally. Nothing noticed until PDF/A
+conversion asked whether the document carried the fonts it declared and
+correctly answered no — refusing to convert the one fixture that exists to
+represent a scan.
+
+The fixture, not the checker, was wrong: a scanned page has no font. Fixtures
+make claims about what they are, and `omitText: true` was making a false one.
+
+## 26. Present in the file, unreachable from the root
+
+A device test read the converted bytes for `/GTS_PDFA1` and found it. Removing
+the line that references the output intent FROM the catalogue left that test
+green: the object was still written, just orphaned — and an output intent
+nothing points at is not an output intent.
+
+The test now walks the file the way a reader does: last trailer, `/Root`,
+catalogue, and only then the objects it names. Both "not referenced" mutations
+fail it.

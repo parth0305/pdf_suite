@@ -1064,6 +1064,67 @@ class AppLocalizationsEn extends AppLocalizations {
       'This document has no annotations that can be painted into its pages.';
 
   @override
+  String get okAction => 'OK';
+
+  @override
+  String get archiveMode => 'Save as PDF/A';
+
+  @override
+  String get archiveTitle => 'Save as PDF/A?';
+
+  @override
+  String get archiveBody =>
+      'PDF/A is the format archives accept: everything the document needs to render is carried inside it. Your original stays in the library.';
+
+  @override
+  String get archiveCannotTitle => 'This cannot be archived';
+
+  @override
+  String get archiveCannotBody =>
+      'PDF/A requires a document to carry everything it needs. This one does not:';
+
+  @override
+  String get archiveConfirm => 'Convert';
+
+  @override
+  String get archiveWillRemove => 'Conversion will remove:';
+
+  @override
+  String get archiveFontNotEmbedded =>
+      'Fonts the pages use are not carried in the file. Folio embeds no fonts, so it cannot supply them.';
+
+  @override
+  String get archiveEncrypted =>
+      'The document is password protected. Remove the protection first.';
+
+  @override
+  String get archiveUnsupportedStructure =>
+      'The document uses a structure Folio cannot rewrite.';
+
+  @override
+  String get archiveLzw =>
+      'The document uses LZW compression, which PDF/A does not allow.';
+
+  @override
+  String get archiveExternalStream =>
+      'Some of the document\'s data lives in another file.';
+
+  @override
+  String get archiveRemovesJavaScript => 'embedded JavaScript';
+
+  @override
+  String get archiveRemovesAttachments => 'attached files';
+
+  @override
+  String get archiveRemovesNeedAppearances =>
+      'the request for the reader to redraw form fields';
+
+  @override
+  String archiveDone(String name) {
+    return 'Saved $name';
+  }
+
+  @override
   String get formMode => 'Fill form';
 
   @override

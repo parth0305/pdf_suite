@@ -2002,6 +2002,108 @@ abstract class AppLocalizations {
   /// **'This document has no annotations that can be painted into its pages.'**
   String get errorNothingToFlattenBody;
 
+  /// No description provided for @okAction.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get okAction;
+
+  /// No description provided for @archiveMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as PDF/A'**
+  String get archiveMode;
+
+  /// No description provided for @archiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as PDF/A?'**
+  String get archiveTitle;
+
+  /// No description provided for @archiveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF/A is the format archives accept: everything the document needs to render is carried inside it. Your original stays in the library.'**
+  String get archiveBody;
+
+  /// No description provided for @archiveCannotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be archived'**
+  String get archiveCannotTitle;
+
+  /// No description provided for @archiveCannotBody.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF/A requires a document to carry everything it needs. This one does not:'**
+  String get archiveCannotBody;
+
+  /// No description provided for @archiveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert'**
+  String get archiveConfirm;
+
+  /// No description provided for @archiveWillRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversion will remove:'**
+  String get archiveWillRemove;
+
+  /// No description provided for @archiveFontNotEmbedded.
+  ///
+  /// In en, this message translates to:
+  /// **'Fonts the pages use are not carried in the file. Folio embeds no fonts, so it cannot supply them.'**
+  String get archiveFontNotEmbedded;
+
+  /// No description provided for @archiveEncrypted.
+  ///
+  /// In en, this message translates to:
+  /// **'The document is password protected. Remove the protection first.'**
+  String get archiveEncrypted;
+
+  /// No description provided for @archiveUnsupportedStructure.
+  ///
+  /// In en, this message translates to:
+  /// **'The document uses a structure Folio cannot rewrite.'**
+  String get archiveUnsupportedStructure;
+
+  /// No description provided for @archiveLzw.
+  ///
+  /// In en, this message translates to:
+  /// **'The document uses LZW compression, which PDF/A does not allow.'**
+  String get archiveLzw;
+
+  /// No description provided for @archiveExternalStream.
+  ///
+  /// In en, this message translates to:
+  /// **'Some of the document\'s data lives in another file.'**
+  String get archiveExternalStream;
+
+  /// No description provided for @archiveRemovesJavaScript.
+  ///
+  /// In en, this message translates to:
+  /// **'embedded JavaScript'**
+  String get archiveRemovesJavaScript;
+
+  /// No description provided for @archiveRemovesAttachments.
+  ///
+  /// In en, this message translates to:
+  /// **'attached files'**
+  String get archiveRemovesAttachments;
+
+  /// No description provided for @archiveRemovesNeedAppearances.
+  ///
+  /// In en, this message translates to:
+  /// **'the request for the reader to redraw form fields'**
+  String get archiveRemovesNeedAppearances;
+
+  /// No description provided for @archiveDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {name}'**
+  String archiveDone(String name);
+
   /// No description provided for @formMode.
   ///
   /// In en, this message translates to:

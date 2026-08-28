@@ -18,6 +18,7 @@ enum DocumentAction {
   crop,
   fillForm,
   flatten,
+  archive,
   exportImages,
   watermark,
   imageWatermark,
@@ -162,6 +163,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 DocumentAction.flatten,
                 Icons.layers_clear,
                 l10n.flattenMode,
+              ),
+              item(
+                DocumentAction.archive,
+                Icons.inventory_2_outlined,
+                l10n.archiveMode,
               ),
               item(
                 DocumentAction.exportImages,

@@ -33,11 +33,13 @@ import 'package:folio/features/viewer/unlock_providers.dart';
 import 'package:folio/features/viewer/widgets/unlock_dialog.dart';
 import 'package:folio/features/viewer/image_export_providers.dart';
 import 'package:folio/features/viewer/widgets/export_images_dialog.dart';
+import 'package:folio/features/viewer/archive_providers.dart';
 import 'package:folio/features/viewer/crop_providers.dart';
 import 'package:folio/features/forms/form_fill_screen.dart';
 import 'package:folio/features/viewer/flatten_providers.dart';
 import 'package:folio/features/viewer/numbering_providers.dart';
 import 'package:folio/features/viewer/widgets/number_pages_sheet.dart';
+import 'package:folio/features/viewer/widgets/archive_dialog.dart';
 import 'package:folio/features/viewer/widgets/crop_sheet.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/flatten_confirm_dialog.dart';
@@ -425,6 +427,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _fillForm();
       case DocumentAction.flatten:
         await _flattenAnnotations();
+      case DocumentAction.archive:
+        await _archiveDocument();
       case DocumentAction.watermark:
         await _applyWatermark();
       case DocumentAction.imageWatermark:
@@ -742,6 +746,33 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         builder: (_) => FormFillScreen(document: widget.document),
       ),
     );
+  }
+
+  Future<void> _archiveDocument() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final archive = ref.read(archiveRepositoryProvider);
+
+    try {
+      final report = await archive.check(widget.document.id);
+      if (!mounted) return;
+
+      // The dialog is shown either way: a refusal that names what is in the
+      // way is more use than a snack bar saying it did not work.
+      if (!await showArchiveDialog(context, report) || !mounted) return;
+
+      final out = await archive.convert(widget.document.id);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.archiveDone(out.displayName))),
+      );
+    } on AppFailure catch (f) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
   }
 
   Future<void> _flattenAnnotations() async {

@@ -14,11 +14,6 @@ operator parser that redaction deliberately avoided, plus font metrics, plus
 reflow. The single hardest item on this list, and the one whose failure modes
 are least visible - text that looks edited but is subtly wrong.
 
-### PDF/A
-A compliance standard, not a feature: embedded fonts, colour profiles, XMP
-metadata, and validation against the profile claimed. Folio currently embeds no
-fonts at all, which is the first thing PDF/A would change.
-
 ## Office conversion — agreed, and the two directions are not one job
 
 Added on request. They belong in the plan, but calling them a single feature

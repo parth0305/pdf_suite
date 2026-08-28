@@ -62,6 +62,7 @@ Uint8List writePdfDocument(
   List<int> original,
   List<PdfObject> objects, {
   PdfEncryption? encryption,
+  String version = '1.4',
 }) {
   if (objects.isEmpty) {
     throw const UnsupportedPdfStructure(
@@ -114,7 +115,9 @@ Uint8List writePdfDocument(
     );
   }
 
-  final out = <int>[...latin1.encode('%PDF-1.4\n%âãÏÓ\n')];
+  // The binary comment on the second line is not decoration: it is how a
+  // transfer program tells a PDF is not text and stops mangling its newlines.
+  final out = <int>[...latin1.encode('%PDF-$version\n%âãÏÓ\n')];
   final offsets = <int, int>{};
 
   for (final o in objects) {

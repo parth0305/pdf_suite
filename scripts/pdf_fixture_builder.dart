@@ -55,10 +55,17 @@ List<int> buildPdf(
   objects.add('<< /Type /Pages /Kids [$kids] /Count ${pages.length} >>');
 
   final fontObj = 3 + pages.length * 2;
+  // A page with no text has no font. Declaring one anyway made the "scanned
+  // document" fixture claim a font it never used, and anything that asks
+  // whether a document carries its fonts - PDF/A conversion - said no.
+  final resources = omitText
+      ? '/Resources << >> '
+      : '/Resources << /Font << /F1 $fontObj 0 R >> >> ';
+
   for (var i = 0; i < pages.length; i++) {
     objects.add(
       '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] '
-      '/Resources << /Font << /F1 $fontObj 0 R >> >> '
+      '$resources'
       '/Contents ${4 + i * 2} 0 R >>',
     );
     // omitText produces a page with no text-showing operators at all, so text
@@ -70,7 +77,9 @@ List<int> buildPdf(
               'BT /F1 10 Tf 60 60 Td (Page ${i + 1} of ${pages.length}) Tj ET\n';
     objects.add('<< /Length ${stream.length} >>\nstream\n${stream}endstream');
   }
-  objects.add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+  if (!omitText) {
+    objects.add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+  }
 
   var trailer = '<< /Size ${objects.length + 1} /Root 1 0 R';
   if (infoDict != null) {

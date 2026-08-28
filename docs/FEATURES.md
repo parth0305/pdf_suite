@@ -467,6 +467,39 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Archiving (PDF/A)
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Save as PDF/A-2b | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Say why a document cannot be | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Save as PDF/A**. PDF/A is the format archives accept: a document
+carries everything it needs to render, so it looks the same in fifty years.
+
+Folio writes **PDF/A-2b**. Part 1 forbids transparency, which would rule out
+every document carrying a signature or an image watermark; level A needs a
+tagged structure tree that cannot be inferred from a scanned page.
+
+The colour profile is **built rather than shipped** — an sRGB ICC v2 profile
+constructed from the published primaries and transfer function, so there is no
+third-party binary to license or to trust.
+
+Conversion is a full rewrite, not an appended revision: an archival file should
+be one document, not a document plus every revision it passed through.
+
+**What it refuses, and why that is the point.** PDF/A requires every font used
+to be carried inside the file. Folio embeds no font programs, so a document
+that names a font it does not carry cannot be converted — and the dialog names
+the fonts rather than saying it failed. A file wrongly stamped PDF/A is worse
+than one honestly refused, because the stamp is exactly what an archive trusts.
+
+Documents with no fonts convert — which is most scans, and scanning is what
+archiving is usually wanted for.
+
+**What it removes**, listed in the dialog before you agree: embedded
+JavaScript, attached files, and the request for a reader to redraw form fields.
+
 ## Forms
 
 | Feature | iPhone | iPad | Android | Windows | Offline |

@@ -7,6 +7,7 @@ library;
 
 final RegExp _editedSuffix = RegExp(r'^(.*?)\s*\(edited(?:\s+(\d+))?\)$');
 final RegExp _redactedSuffix = RegExp(r'^(.*?)\s*\(redacted(?:\s+(\d+))?\)$');
+final RegExp _archivedSuffix = RegExp(r'^(.*?)\s*\(PDF/A(?:\s+(\d+))?\)$');
 
 ({String stem, String extension}) _split(String name) {
   final dot = name.lastIndexOf('.');
@@ -55,4 +56,21 @@ String redactedName(String original) {
   final base = match.group(1)!;
   final current = int.tryParse(match.group(2) ?? '') ?? 1;
   return '$base (redacted ${current + 1})${parts.extension}';
+}
+
+/// Names the result of converting [original] for archiving.
+///
+/// The suffix says the FORMAT rather than the action, because that is what
+/// someone filing it needs to know a year later.
+String archivedName(String original) {
+  final parts = _split(original);
+  final match = _archivedSuffix.firstMatch(parts.stem);
+
+  if (match == null) {
+    return '${parts.stem} (PDF/A)${parts.extension}';
+  }
+
+  final base = match.group(1)!;
+  final current = int.tryParse(match.group(2) ?? '') ?? 1;
+  return '$base (PDF/A ${current + 1})${parts.extension}';
 }
