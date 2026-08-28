@@ -33,6 +33,8 @@ import 'package:folio/features/viewer/unlock_providers.dart';
 import 'package:folio/features/viewer/widgets/unlock_dialog.dart';
 import 'package:folio/features/viewer/image_export_providers.dart';
 import 'package:folio/features/viewer/widgets/export_images_dialog.dart';
+import 'package:folio/features/viewer/numbering_providers.dart';
+import 'package:folio/features/viewer/widgets/number_pages_sheet.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
@@ -410,6 +412,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _editMetadata();
       case DocumentAction.exportImages:
         await _exportImages();
+      case DocumentAction.numberPages:
+        await _numberPages();
       case DocumentAction.watermark:
         await _applyWatermark();
       case DocumentAction.imageWatermark:
@@ -679,6 +683,32 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       await ref
           .read(platformExportProvider)
           .shareFiles(pages.map((p) => p.path).toList());
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
+  /// Stamps page numbers onto every page.
+  Future<void> _numberPages() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final numbering = await showNumberPagesSheet(context);
+    if (numbering == null || !mounted) return;
+
+    try {
+      final out = await ref
+          .read(numberingRepositoryProvider)
+          .apply(widget.document.id, numbering);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.numberPagesDone(out.displayName))),
+      );
     } on AppFailure catch (f) {
       if (!mounted) return;
       messenger.showSnackBar(

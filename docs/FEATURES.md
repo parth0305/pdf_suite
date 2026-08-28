@@ -467,6 +467,21 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Page numbers
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Number the pages | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Number pages**. Choose the format — `7`, `Page 7`, `7 of 12`,
+`Page 7 of 12` — a corner, and whether to start somewhere other than one.
+
+**Leave the first page unnumbered** for a title page. The page after it then
+reads "1", not "2": the numbering starts where the numbers start.
+
+Numbers are page content, not annotations — the same choice watermarking makes.
+A number any viewer can select and delete is not a page number.
+
 ## Exporting pages as images
 
 | Feature | iPhone | iPad | Android | Windows | Offline |

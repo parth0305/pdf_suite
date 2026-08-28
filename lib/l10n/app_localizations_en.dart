@@ -1050,6 +1050,53 @@ class AppLocalizationsEn extends AppLocalizations {
       'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.';
 
   @override
+  String get numberPagesMode => 'Number pages';
+
+  @override
+  String get numberPagesPosition => 'Position';
+
+  @override
+  String get numberPagesFormat => 'Format';
+
+  @override
+  String get numberPagesStartAt => 'Start numbering at';
+
+  @override
+  String get numberPagesSkipFirst => 'Leave the first page unnumbered';
+
+  @override
+  String get numberPagesApply => 'Add numbers';
+
+  @override
+  String numberPagesDone(String name) {
+    return 'Numbered $name';
+  }
+
+  @override
+  String get numberPagesTop => 'Top';
+
+  @override
+  String get numberPagesLeft => 'Left';
+
+  @override
+  String get numberPagesCentre => 'Centre';
+
+  @override
+  String get numberPagesRight => 'Right';
+
+  @override
+  String get numberPagesPlain => '7';
+
+  @override
+  String get numberPagesLabelled => 'Page 7';
+
+  @override
+  String get numberPagesOfTotal => '7 of 12';
+
+  @override
+  String get numberPagesLabelledOfTotal => 'Page 7 of 12';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

@@ -1978,6 +1978,96 @@ abstract class AppLocalizations {
   /// **'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.'**
   String get exportImagesNote;
 
+  /// No description provided for @numberPagesMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Number pages'**
+  String get numberPagesMode;
+
+  /// No description provided for @numberPagesPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get numberPagesPosition;
+
+  /// No description provided for @numberPagesFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get numberPagesFormat;
+
+  /// No description provided for @numberPagesStartAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Start numbering at'**
+  String get numberPagesStartAt;
+
+  /// No description provided for @numberPagesSkipFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the first page unnumbered'**
+  String get numberPagesSkipFirst;
+
+  /// No description provided for @numberPagesApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Add numbers'**
+  String get numberPagesApply;
+
+  /// No description provided for @numberPagesDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbered {name}'**
+  String numberPagesDone(String name);
+
+  /// No description provided for @numberPagesTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Top'**
+  String get numberPagesTop;
+
+  /// No description provided for @numberPagesLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get numberPagesLeft;
+
+  /// No description provided for @numberPagesCentre.
+  ///
+  /// In en, this message translates to:
+  /// **'Centre'**
+  String get numberPagesCentre;
+
+  /// No description provided for @numberPagesRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get numberPagesRight;
+
+  /// No description provided for @numberPagesPlain.
+  ///
+  /// In en, this message translates to:
+  /// **'7'**
+  String get numberPagesPlain;
+
+  /// No description provided for @numberPagesLabelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Page 7'**
+  String get numberPagesLabelled;
+
+  /// No description provided for @numberPagesOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'7 of 12'**
+  String get numberPagesOfTotal;
+
+  /// No description provided for @numberPagesLabelledOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Page 7 of 12'**
+  String get numberPagesLabelledOfTotal;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

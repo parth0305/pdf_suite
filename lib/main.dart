@@ -13,6 +13,7 @@ import 'package:folio/data/local/preferences_dao.dart';
 import 'package:folio/data/repositories/automation_repository_impl.dart';
 import 'package:folio/data/repositories/export_repository_impl.dart';
 import 'package:folio/data/repositories/image_export_repository_impl.dart';
+import 'package:folio/data/repositories/numbering_repository_impl.dart';
 import 'package:folio/data/repositories/metadata_repository_impl.dart';
 import 'package:folio/data/repositories/unlock_repository_impl.dart';
 import 'package:folio/data/sharing/platform_export.dart';
@@ -44,6 +45,7 @@ import 'package:folio/features/automation/automation_providers.dart';
 import 'package:folio/features/settings/settings_providers.dart';
 import 'package:folio/features/viewer/export_providers.dart';
 import 'package:folio/features/viewer/image_export_providers.dart';
+import 'package:folio/features/viewer/numbering_providers.dart';
 import 'package:folio/features/viewer/metadata_providers.dart';
 import 'package:folio/features/viewer/unlock_providers.dart';
 import 'package:folio/features/batch/batch_providers.dart';
@@ -133,6 +135,9 @@ Future<void> main() async {
         ocrRepositoryProvider.overrideWithValue(ocr),
         compressionRepositoryProvider.overrideWithValue(compression),
         preferencesDaoProvider.overrideWithValue(PreferencesDao(db)),
+        numberingRepositoryProvider.overrideWithValue(
+          NumberingRepositoryImpl(library: library, documents: documentWriter),
+        ),
         imageExportRepositoryProvider.overrideWithValue(
           ImageExportRepositoryImpl(library: library, engine: PdfrxEngine()),
         ),

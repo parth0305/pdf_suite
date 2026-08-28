@@ -8,13 +8,6 @@ has been decided on, and removed when it ships or is ruled out.
 
 ## Next
 
-### Number pages
-A content stream per page with a number in it, drawn with the standard-14 font
-that stamps and watermarks already use. Needs a position choice and a starting
-number; "page 3 of 12" is a formatting decision, not an engineering one.
-
-## After that
-
 ### Crop PDF
 A `/CropBox` per page. The writing is small — the work is a UI for choosing the
 crop and previewing it, and deciding whether one crop applies to every page.

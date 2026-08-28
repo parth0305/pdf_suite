@@ -13,6 +13,8 @@ import 'package:folio/data/local/app_database.dart';
 import 'package:folio/data/local/library_dao.dart';
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
+import 'package:folio/data/repositories/numbering_repository_impl.dart';
+import 'package:folio/domain/numbering/page_numbers.dart';
 import 'package:folio/data/repositories/watermark_repository_impl.dart';
 import 'package:folio/domain/editing/pdf_metadata.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
@@ -274,6 +276,109 @@ void main() {
       expect(
         await File(await library.resolveReadablePath(marked)).readAsBytes(),
         markedBytes,
+      );
+    });
+  });
+
+  // Page numbers are page content, like a watermark: a number any viewer can
+  // select and delete is not a page number.
+  group('numbering pages', () {
+    late NumberingRepositoryImpl numbering;
+
+    setUp(() {
+      numbering = NumberingRepositoryImpl(
+        library: library,
+        documents: DocumentWriter(
+          library: library,
+          writer: SafeFileWriter(),
+          libraryRoot: root,
+        ),
+      );
+    });
+
+    test('a number appears on the page and is extractable', () async {
+      final src = await seed('Numbered.pdf');
+      final before = await render(src, 0);
+
+      final out = await numbering.apply(
+        src.id,
+        const PageNumbering(format: NumberFormat.ofTotal),
+      );
+
+      expect(
+        diff(before, await render(out, 0)),
+        greaterThan(20),
+        reason: 'something was drawn near the foot of the page',
+      );
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(out)),
+      );
+      final text = await engine.extractText(h, 0);
+      await engine.close(h);
+
+      expect(text!.fullText, contains('1 of 3'));
+    });
+
+    test('every page is numbered, and each differently', () async {
+      final src = await seed('AllPages.pdf');
+      final out = await numbering.apply(src.id, const PageNumbering());
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(out)),
+      );
+      final texts = [
+        for (var i = 0; i < 3; i++) (await engine.extractText(h, i))!.fullText,
+      ];
+      await engine.close(h);
+
+      expect(texts[0], contains('1'));
+      expect(texts[1], contains('2'));
+      expect(texts[2], contains('3'));
+    });
+
+    // The page's own text must survive: a numbering pass that replaced
+    // /Contents would leave a page with nothing but its number.
+    test('the page keeps its own content', () async {
+      final src = await seed('Keeps.pdf');
+      final out = await numbering.apply(src.id, const PageNumbering());
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(out)),
+      );
+      final text = await engine.extractText(h, 0);
+      await engine.close(h);
+
+      expect(text!.fullText, contains('Confidential'));
+    });
+
+    test('a skipped first page really has no number', () async {
+      final src = await seed('Skipped.pdf');
+      final before = await render(src, 0);
+
+      final out = await numbering.apply(
+        src.id,
+        const PageNumbering(skipFirst: true),
+      );
+
+      expect(
+        diff(before, await render(out, 0)),
+        0,
+        reason: 'page one is untouched, not merely unnumbered',
+      );
+    });
+
+    test('the source document is untouched', () async {
+      final src = await seed('Source.pdf');
+      final bytes = await File(
+        await library.resolveReadablePath(src),
+      ).readAsBytes();
+
+      await numbering.apply(src.id, const PageNumbering());
+
+      expect(
+        await File(await library.resolveReadablePath(src)).readAsBytes(),
+        bytes,
       );
     });
   });
