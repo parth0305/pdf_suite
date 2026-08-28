@@ -6,14 +6,6 @@ each one is where it is.
 Everything here is a deliberate list, not a wish list: an item is added when it
 has been decided on, and removed when it ships or is ruled out.
 
-## Large, and not started
-
-### Edit PDF
-Changing text that is already on the page. This needs the content-stream
-operator parser that redaction deliberately avoided, plus font metrics, plus
-reflow. The single hardest item on this list, and the one whose failure modes
-are least visible - text that looks edited but is subtly wrong.
-
 ## Office conversion
 
 PDF to Word, Excel and PowerPoint has shipped. The other direction has not,

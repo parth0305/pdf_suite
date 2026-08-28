@@ -20,6 +20,7 @@ enum DocumentAction {
   flatten,
   archive,
   office,
+  editText,
   exportImages,
   watermark,
   imageWatermark,
@@ -171,6 +172,7 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 l10n.archiveMode,
               ),
               item(DocumentAction.office, Icons.swap_horiz, l10n.officeMode),
+              item(DocumentAction.editText, Icons.edit_note, l10n.editTextMode),
               item(
                 DocumentAction.exportImages,
                 Icons.image_outlined,

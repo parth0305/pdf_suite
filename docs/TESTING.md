@@ -727,3 +727,15 @@ The third - not chaining the update to the previous trailer - survives on
 device and always will: PDFium reconstructs a damaged cross-reference table
 rather than refusing the file. The unit tests assert `/Prev` directly.
 Unobservable on device, joining the earlier seven.
+
+## 42. Setting a field to the text it already holds
+
+A dialog test typed the original text back into the field to prove that doing
+so is not treated as a change. It passed, and a mutation removing the code it
+was aiming at also passed - because setting a `TextField` to the value it
+already contains notifies nobody. `onChanged` never fired, and the branch under
+test was never entered.
+
+The fix is to change the text FIRST, get the refusal, and then type the
+original back. Only then is the callback carrying the original value, which is
+the case the code exists for.

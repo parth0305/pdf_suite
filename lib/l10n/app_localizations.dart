@@ -2008,6 +2008,78 @@ abstract class AppLocalizations {
   /// **'OK'**
   String get okAction;
 
+  /// No description provided for @editTextMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit text'**
+  String get editTextMode;
+
+  /// No description provided for @editTextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit this text'**
+  String get editTextTitle;
+
+  /// No description provided for @editTextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get editTextLabel;
+
+  /// No description provided for @editTextApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get editTextApply;
+
+  /// No description provided for @editTextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any highlighted words to change them. Words in a font Folio cannot measure are shown greyed out.'**
+  String get editTextHint;
+
+  /// No description provided for @editTextNone.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no text on this page that can be edited.'**
+  String get editTextNone;
+
+  /// No description provided for @editTextDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited {name}'**
+  String editTextDone(String name);
+
+  /// No description provided for @editTextMissingCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'This document\'s font has no {characters} in it, so those cannot be typed here.'**
+  String editTextMissingCharacters(String characters);
+
+  /// No description provided for @editTextWouldOverlap.
+  ///
+  /// In en, this message translates to:
+  /// **'That is {overrun} too long — it would run into the text after it.'**
+  String editTextWouldOverlap(String overrun);
+
+  /// No description provided for @editTextUnknownWidths.
+  ///
+  /// In en, this message translates to:
+  /// **'This font does not say how wide its letters are, so the text cannot be refitted.'**
+  String get editTextUnknownWidths;
+
+  /// No description provided for @editTextUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'Folio cannot tell what these bytes say, so it will not guess at changing them.'**
+  String get editTextUnreadable;
+
+  /// No description provided for @editTextNotVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'This text is invisible — it sits under a scan for searching. Changing it would alter nothing you can see.'**
+  String get editTextNotVisible;
+
   /// No description provided for @officeMode.
   ///
   /// In en, this message translates to:

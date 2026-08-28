@@ -1067,6 +1067,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get okAction => 'OK';
 
   @override
+  String get editTextMode => 'Edit text';
+
+  @override
+  String get editTextTitle => 'Edit this text';
+
+  @override
+  String get editTextLabel => 'Text';
+
+  @override
+  String get editTextApply => 'Replace';
+
+  @override
+  String get editTextHint =>
+      'Tap any highlighted words to change them. Words in a font Folio cannot measure are shown greyed out.';
+
+  @override
+  String get editTextNone =>
+      'There is no text on this page that can be edited.';
+
+  @override
+  String editTextDone(String name) {
+    return 'Edited $name';
+  }
+
+  @override
+  String editTextMissingCharacters(String characters) {
+    return 'This document\'s font has no $characters in it, so those cannot be typed here.';
+  }
+
+  @override
+  String editTextWouldOverlap(String overrun) {
+    return 'That is $overrun too long — it would run into the text after it.';
+  }
+
+  @override
+  String get editTextUnknownWidths =>
+      'This font does not say how wide its letters are, so the text cannot be refitted.';
+
+  @override
+  String get editTextUnreadable =>
+      'Folio cannot tell what these bytes say, so it will not guess at changing them.';
+
+  @override
+  String get editTextNotVisible =>
+      'This text is invisible — it sits under a scan for searching. Changing it would alter nothing you can see.';
+
+  @override
   String get officeMode => 'Convert to Office';
 
   @override

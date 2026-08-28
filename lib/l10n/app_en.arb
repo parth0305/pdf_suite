@@ -463,6 +463,27 @@
   "errorNothingToFlattenTitle": "Nothing to flatten",
   "errorNothingToFlattenBody": "This document has no annotations that can be painted into its pages.",
   "okAction": "OK",
+  "editTextMode": "Edit text",
+  "editTextTitle": "Edit this text",
+  "editTextLabel": "Text",
+  "editTextApply": "Replace",
+  "editTextHint": "Tap any highlighted words to change them. Words in a font Folio cannot measure are shown greyed out.",
+  "editTextNone": "There is no text on this page that can be edited.",
+  "editTextDone": "Edited {name}",
+  "editTextMissingCharacters": "This document's font has no {characters} in it, so those cannot be typed here.",
+  "editTextWouldOverlap": "That is {overrun} too long \u2014 it would run into the text after it.",
+  "editTextUnknownWidths": "This font does not say how wide its letters are, so the text cannot be refitted.",
+  "editTextUnreadable": "Folio cannot tell what these bytes say, so it will not guess at changing them.",
+  "editTextNotVisible": "This text is invisible \u2014 it sits under a scan for searching. Changing it would alter nothing you can see.",
+  "@editTextDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "@editTextMissingCharacters": {
+    "placeholders": { "characters": { "type": "String" } }
+  },
+  "@editTextWouldOverlap": {
+    "placeholders": { "overrun": { "type": "String" } }
+  },
   "officeMode": "Convert to Office",
   "officeWord": "Word (.docx)",
   "officeExcel": "Excel (.xlsx)",

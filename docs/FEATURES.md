@@ -467,6 +467,38 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Editing text on a page
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Change words already on a page | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Edit text**. The words that can be changed are highlighted; tap
+one, type, and the page is rewritten with everything else exactly where it
+was.
+
+**Layout is preserved, not reflowed.** The replacement is written in the run's
+own font and the difference in width is absorbed by a kerning adjustment, so
+the text after it does not move. That is what editing a total or a date needs;
+it is not a word processor, and it does not re-wrap paragraphs.
+
+**What it refuses, and why each refusal is useful:**
+
+- **A character the font does not have.** A document carries only the glyphs
+  it uses, so a page numbered "900 of 902" has no 3, 4, 5 or 6 in that font.
+  Folio names the characters rather than saying it failed.
+- **A replacement that would run into the text after it**, reported in points.
+- **Text in a font that does not declare its widths.** Nothing can be refitted
+  without them, so those words are shown greyed out rather than accepting a
+  tap and then refusing whatever is typed.
+- **Invisible text** — the layer OCR puts under a scan. Changing it alters
+  nothing anybody can see.
+- **Bytes Folio cannot read**, which it will not guess at.
+
+Words that cannot be edited are still shown, in a quieter style. Hiding them
+would leave you tapping at a word and getting nothing, unable to tell whether
+you had missed it or it was fixed.
+
 ## Converting to Office
 
 | Feature | iPhone | iPad | Android | Windows | Offline |

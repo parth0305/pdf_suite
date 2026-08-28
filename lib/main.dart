@@ -32,6 +32,7 @@ import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/flatten_repository_impl.dart';
 import 'package:folio/data/repositories/form_repository_impl.dart';
 import 'package:folio/data/repositories/office_export_repository_impl.dart';
+import 'package:folio/data/repositories/text_edit_repository_impl.dart';
 import 'package:folio/data/repositories/page_operations_repository_impl.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/engine/pdfrx_engine.dart';
@@ -57,6 +58,7 @@ import 'package:folio/features/viewer/flatten_providers.dart';
 import 'package:folio/features/viewer/form_providers.dart';
 import 'package:folio/features/viewer/numbering_providers.dart';
 import 'package:folio/features/viewer/office_providers.dart';
+import 'package:folio/features/viewer/text_edit_providers.dart';
 import 'package:folio/features/viewer/metadata_providers.dart';
 import 'package:folio/features/viewer/unlock_providers.dart';
 import 'package:folio/features/batch/batch_providers.dart';
@@ -150,6 +152,9 @@ Future<void> main() async {
         ocrRepositoryProvider.overrideWithValue(ocr),
         compressionRepositoryProvider.overrideWithValue(compression),
         preferencesDaoProvider.overrideWithValue(PreferencesDao(db)),
+        textEditRepositoryProvider.overrideWithValue(
+          TextEditRepositoryImpl(library: library, documents: documentWriter),
+        ),
         officeExportRepositoryProvider.overrideWithValue(
           OfficeExportRepositoryImpl(library: library, engine: PdfrxEngine()),
         ),

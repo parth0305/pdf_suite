@@ -6,6 +6,7 @@ import 'package:folio/core/constants/breakpoints.dart';
 import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/core/errors/failure_messages.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
+import 'package:folio/domain/editing/pdf_text_editor.dart';
 import 'package:folio/domain/models/library_document.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/engine/pdfrx_engine.dart';
@@ -39,12 +40,15 @@ import 'package:folio/features/forms/form_fill_screen.dart';
 import 'package:folio/features/viewer/flatten_providers.dart';
 import 'package:folio/features/viewer/numbering_providers.dart';
 import 'package:folio/features/viewer/office_providers.dart';
+import 'package:folio/features/viewer/text_edit_providers.dart';
 import 'package:folio/features/viewer/widgets/number_pages_sheet.dart';
 import 'package:folio/features/viewer/widgets/archive_dialog.dart';
 import 'package:folio/features/viewer/widgets/crop_sheet.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/flatten_confirm_dialog.dart';
 import 'package:folio/features/viewer/widgets/office_format_sheet.dart';
+import 'package:folio/features/viewer/widgets/text_edit_dialog.dart';
+import 'package:folio/features/viewer/widgets/text_edit_overlay.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
 import 'package:folio/features/viewer/export_providers.dart';
@@ -82,6 +86,7 @@ enum _ViewerMode {
   stamp,
   redact,
   insertImage,
+  editText,
 }
 
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -114,6 +119,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   int _drawColour = drawingColours.first;
   double _drawStrokeWidth = 2;
   StampPreset _stampPreset = StampPreset.approved;
+
+  /// The runs on the page being edited, read once on entering the mode.
+  List<EditableRun> _editableRuns = const [];
 
   /// Set when the user chose custom wording or today's date. Null means the
   /// preset speaks for itself.
@@ -429,6 +437,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _fillForm();
       case DocumentAction.flatten:
         await _flattenAnnotations();
+      case DocumentAction.editText:
+        await _enterEditTextMode();
       case DocumentAction.office:
         await _convertToOffice();
       case DocumentAction.archive:
@@ -750,6 +760,74 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         builder: (_) => FormFillScreen(document: widget.document),
       ),
     );
+  }
+
+  /// Loads the page's runs and shows them for tapping.
+  ///
+  /// Loaded once on entering the mode rather than per frame: reading a page's
+  /// instructions and its fonts is real work, and doing it while scrolling
+  /// would make the page stutter.
+  Future<void> _enterEditTextMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final runs = await ref
+          .read(textEditRepositoryProvider)
+          .runsOn(widget.document.id, _currentPage - 1);
+      if (!mounted) return;
+
+      if (!runs.any((r) => r.isEditable)) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.editTextNone)));
+        return;
+      }
+
+      setState(() {
+        _editableRuns = runs;
+        _mode = _ViewerMode.editText;
+      });
+      messenger.showSnackBar(SnackBar(content: Text(l10n.editTextHint)));
+    } on AppFailure catch (f) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
+  void _leaveEditTextMode() => setState(() {
+    _mode = _ViewerMode.read;
+    _editableRuns = const [];
+  });
+
+  Future<void> _editRun(EditableRun run) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final repository = ref.read(textEditRepositoryProvider);
+
+    final replacement = await showTextEditDialog(
+      context,
+      original: run.text ?? '',
+      check: (value) => repository.plan(widget.document.id, run, value),
+    );
+    if (replacement == null || !mounted) return;
+
+    try {
+      final out = await repository.apply(widget.document.id, run, replacement);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      setState(() {
+        _mode = _ViewerMode.read;
+        _editableRuns = const [];
+      });
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.editTextDone(out.displayName))),
+      );
+    } on AppFailure catch (f) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
   }
 
   Future<void> _convertToOffice() async {
@@ -1583,6 +1661,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     pixelWidth: _insertImage!.width,
                     pixelHeight: _insertImage!.height,
                   )
+                else if (_mode == _ViewerMode.editText)
+                  TextEditOverlay(
+                    pageRect: Offset.zero & pageRect.size,
+                    pageWidthPt: page.width,
+                    pageHeightPt: page.height,
+                    runs: _editableRuns
+                        .where((r) => r.pageIndex == page.pageNumber - 1)
+                        .toList(),
+                    onTap: _editRun,
+                  )
                 else if (_mode == _ViewerMode.redact)
                   RedactOverlay(
                     pageRect: Offset.zero & pageRect.size,
@@ -1890,6 +1978,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       _ViewerMode.signature => _leaveModeButton(_leaveSignatureMode, l10n),
       _ViewerMode.note ||
       _ViewerMode.stamp => _leaveModeButton(_leaveStagingMode, l10n),
+      _ViewerMode.editText => _leaveModeButton(_leaveEditTextMode, l10n),
       _ViewerMode.read => null,
     },
     actions: [
