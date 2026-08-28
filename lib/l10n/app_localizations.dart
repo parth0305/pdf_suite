@@ -1978,6 +1978,48 @@ abstract class AppLocalizations {
   /// **'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.'**
   String get exportImagesNote;
 
+  /// No description provided for @errorNothingToFlattenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to flatten'**
+  String get errorNothingToFlattenTitle;
+
+  /// No description provided for @errorNothingToFlattenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This document has no annotations that can be painted into its pages.'**
+  String get errorNothingToFlattenBody;
+
+  /// No description provided for @flattenMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Flatten annotations'**
+  String get flattenMode;
+
+  /// No description provided for @flattenConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flatten annotations?'**
+  String get flattenConfirmTitle;
+
+  /// No description provided for @flattenConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes, drawings, stamps and signatures become part of the page. They can no longer be selected, moved or deleted — in Folio or anywhere else. Your original stays in the library.'**
+  String get flattenConfirmBody;
+
+  /// No description provided for @flattenConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Flatten'**
+  String get flattenConfirm;
+
+  /// No description provided for @flattenDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Flattened {name}'**
+  String flattenDone(String name);
+
   /// No description provided for @cropMode.
   ///
   /// In en, this message translates to:

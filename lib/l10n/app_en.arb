@@ -458,6 +458,16 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "exportImagesNote": "PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.",
+  "errorNothingToFlattenTitle": "Nothing to flatten",
+  "errorNothingToFlattenBody": "This document has no annotations that can be painted into its pages.",
+  "flattenMode": "Flatten annotations",
+  "flattenConfirmTitle": "Flatten annotations?",
+  "flattenConfirmBody": "Notes, drawings, stamps and signatures become part of the page. They can no longer be selected, moved or deleted \u2014 in Folio or anywhere else. Your original stays in the library.",
+  "flattenConfirm": "Flatten",
+  "flattenDone": "Flattened {name}",
+  "@flattenDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "cropMode": "Crop pages",
   "cropTop": "Top",
   "cropBottom": "Bottom",

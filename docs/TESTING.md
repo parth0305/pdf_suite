@@ -423,3 +423,18 @@ The synthetic fixture agreed with the code because both assumed the same thing.
 The fix (measure against the modal tone of the page's outer edge, where a
 margin is by definition) is pinned by a fixture at luma 210, and the mutation
 "assume paper is white" now fails it.
+
+## 21. Two draws of the same thing in the same place
+
+Leaving a flattened annotation in `/Annots` — so the mark is painted into the
+page AND still drawn by the annotation layer — passed every device test. The
+two draws land on the same pixels, so the render is identical either way.
+
+That mutation is not cosmetic: the whole claim of flattening is that the mark
+can no longer be selected, moved or deleted. What decides that is the
+annotation list, not the pixels. The device test now parses the output with the
+same reader the move-and-resize feature uses and asserts the page has no
+annotations left — with a premise check that it had one to begin with.
+
+The general shape: when a feature's promise is about what a user can no longer
+DO, a picture of the result cannot test it.

@@ -34,10 +34,12 @@ import 'package:folio/features/viewer/widgets/unlock_dialog.dart';
 import 'package:folio/features/viewer/image_export_providers.dart';
 import 'package:folio/features/viewer/widgets/export_images_dialog.dart';
 import 'package:folio/features/viewer/crop_providers.dart';
+import 'package:folio/features/viewer/flatten_providers.dart';
 import 'package:folio/features/viewer/numbering_providers.dart';
 import 'package:folio/features/viewer/widgets/number_pages_sheet.dart';
 import 'package:folio/features/viewer/widgets/crop_sheet.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
+import 'package:folio/features/viewer/widgets/flatten_confirm_dialog.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
 import 'package:folio/features/viewer/export_providers.dart';
@@ -418,6 +420,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _numberPages();
       case DocumentAction.crop:
         await _cropPages();
+      case DocumentAction.flatten:
+        await _flattenAnnotations();
       case DocumentAction.watermark:
         await _applyWatermark();
       case DocumentAction.imageWatermark:
@@ -722,6 +726,29 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       );
     } on EmptyDocument {
       messenger.showSnackBar(SnackBar(content: Text(l10n.cropTooMuch)));
+    } on AppFailure catch (f) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
+  Future<void> _flattenAnnotations() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (!await showFlattenConfirmDialog(context) || !mounted) return;
+
+    try {
+      final out = await ref
+          .read(flattenRepositoryProvider)
+          .apply(widget.document.id);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.flattenDone(out.displayName))),
+      );
     } on AppFailure catch (f) {
       messenger.showSnackBar(
         SnackBar(content: Text(failureMessage(f, l10n).title)),

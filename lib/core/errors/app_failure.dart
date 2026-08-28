@@ -63,6 +63,13 @@ final class EmptyDocument extends AppFailure {
   String get code => 'empty_document';
 }
 
+/// The document has nothing that can be flattened.
+final class NothingToFlatten extends AppFailure {
+  const NothingToFlatten({super.technicalDetail});
+  @override
+  String get code => 'nothing_to_flatten';
+}
+
 final class InvalidPageRange extends AppFailure {
   const InvalidPageRange({super.technicalDetail});
   @override

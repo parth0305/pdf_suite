@@ -467,6 +467,32 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Flattening
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Flatten annotations | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Flatten annotations**. Notes, drawings, stamps and signatures
+become part of the page: they can no longer be selected, moved or deleted, in
+Folio or anywhere else. Your original stays in the library.
+
+Appearance streams are reused rather than re-rendered — an annotation's
+appearance is already a form XObject, which is exactly what a page needs —
+so nothing is re-encoded and nothing loses quality.
+
+Three things are deliberately not flattened:
+
+- **Links** keep working. A flattened link is a rectangle that goes nowhere.
+- **Annotations with no appearance** are left alone. A form field whose value
+  lives only in the annotation would otherwise vanish, which looks like
+  flattening until someone needs the value.
+- **Popups** are removed rather than painted. A popup is the note's open
+  window, never part of the printed page.
+
+When every field has been flattened, `/AcroForm` goes too — otherwise a
+viewer draws its own empty fields straight back over them.
+
 ## Cropping
 
 | Feature | iPhone | iPad | Android | Windows | Offline |

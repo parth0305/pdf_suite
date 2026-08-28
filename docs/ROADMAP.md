@@ -6,16 +6,6 @@ each one is where it is.
 Everything here is a deliberate list, not a wish list: an item is added when it
 has been decided on, and removed when it ships or is ruled out.
 
-## Next
-
-### Flatten PDF
-Merge annotations into the page's own content so they cannot be edited or
-removed. The pieces exist: appearance streams are already generated, and the
-content-merging is what watermarking does.
-
-Flattening is irreversible in the output, which puts it in the same class as
-redaction: it needs a confirmation that says so.
-
 ## Large, and not started
 
 ### Form filler

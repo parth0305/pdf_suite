@@ -1050,6 +1050,31 @@ class AppLocalizationsEn extends AppLocalizations {
       'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.';
 
   @override
+  String get errorNothingToFlattenTitle => 'Nothing to flatten';
+
+  @override
+  String get errorNothingToFlattenBody =>
+      'This document has no annotations that can be painted into its pages.';
+
+  @override
+  String get flattenMode => 'Flatten annotations';
+
+  @override
+  String get flattenConfirmTitle => 'Flatten annotations?';
+
+  @override
+  String get flattenConfirmBody =>
+      'Notes, drawings, stamps and signatures become part of the page. They can no longer be selected, moved or deleted — in Folio or anywhere else. Your original stays in the library.';
+
+  @override
+  String get flattenConfirm => 'Flatten';
+
+  @override
+  String flattenDone(String name) {
+    return 'Flattened $name';
+  }
+
+  @override
   String get cropMode => 'Crop pages';
 
   @override

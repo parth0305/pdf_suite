@@ -44,6 +44,10 @@ FailureMessage failureMessage(AppFailure failure, AppLocalizations l10n) {
       l10n.errorEmptyDocumentTitle,
       l10n.errorEmptyDocumentBody,
     ),
+    NothingToFlatten() => FailureMessage(
+      l10n.errorNothingToFlattenTitle,
+      l10n.errorNothingToFlattenBody,
+    ),
     InvalidPageRange() => FailureMessage(
       l10n.errorInvalidPageRangeTitle,
       l10n.errorInvalidPageRangeBody,
