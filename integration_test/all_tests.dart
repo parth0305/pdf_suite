@@ -22,6 +22,7 @@ import 'annotation_edit_flow_test.dart' as annotation_edit_flow;
 import 'compression_flow_test.dart' as compression_flow;
 import 'drawing_flow_test.dart' as drawing_flow;
 import 'export_flow_test.dart' as export_flow;
+import 'image_export_flow_test.dart' as image_export_flow;
 import 'image_signature_flow_test.dart' as image_signature_flow;
 import 'library_flow_test.dart' as library_flow;
 import 'markup_flow_test.dart' as markup_flow;
@@ -56,6 +57,7 @@ void main() {
   group('annotation_edit_flow', annotation_edit_flow.main);
   group('signature_flow', signature_flow.main);
   group('image_signature_flow', image_signature_flow.main);
+  group('image_export_flow', image_export_flow.main);
   group('notes_stamps_flow', notes_stamps_flow.main);
   group('move_resize_flow', move_resize_flow.main);
   group('watermark_flow', watermark_flow.main);

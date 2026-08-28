@@ -1020,6 +1020,36 @@ class AppLocalizationsEn extends AppLocalizations {
       'The new document has no password at all. Anyone who can open the file can read it.';
 
   @override
+  String get exportImagesMode => 'Export pages as images';
+
+  @override
+  String get exportImagesRange => 'Pages (leave empty for all)';
+
+  @override
+  String get exportImagesQuality => 'Detail';
+
+  @override
+  String get exportImagesLow => 'Screen';
+
+  @override
+  String get exportImagesMedium => 'Good';
+
+  @override
+  String get exportImagesHigh => 'Print';
+
+  @override
+  String get exportImagesAction => 'Export';
+
+  @override
+  String exportImagesDone(int count) {
+    return 'Exported $count pages';
+  }
+
+  @override
+  String get exportImagesNote =>
+      'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.';
+
+  @override
   String get protectMode => 'Protect with password';
 
   @override

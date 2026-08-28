@@ -8,13 +8,6 @@ has been decided on, and removed when it ships or is ruled out.
 
 ## Next
 
-### PDF to JPG
-Export pages as images. Folio already renders pages to pixels for redaction and
-OCR, and already encodes PNG for the signature preview. Mostly plumbing plus a
-page-range choice. **JPEG encoding is the open question** — `dart:ui` encodes
-PNG only, so this either exports PNG, or bundles an encoder, or accepts larger
-files. Decide before building.
-
 ### Number pages
 A content stream per page with a number in it, drawn with the standard-14 font
 that stamps and watermarks already use. Needs a position choice and a starting

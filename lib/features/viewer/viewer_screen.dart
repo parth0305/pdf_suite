@@ -31,6 +31,8 @@ import 'package:folio/features/viewer/widgets/metadata_dialog.dart';
 import 'package:folio/domain/watermark/watermark.dart';
 import 'package:folio/features/viewer/unlock_providers.dart';
 import 'package:folio/features/viewer/widgets/unlock_dialog.dart';
+import 'package:folio/features/viewer/image_export_providers.dart';
+import 'package:folio/features/viewer/widgets/export_images_dialog.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
@@ -406,6 +408,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _enterStampMode();
       case DocumentAction.metadata:
         await _editMetadata();
+      case DocumentAction.exportImages:
+        await _exportImages();
       case DocumentAction.watermark:
         await _applyWatermark();
       case DocumentAction.imageWatermark:
@@ -639,6 +643,42 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     } on UnsupportedPdfStructure {
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text(l10n.unlockNotProtected)));
+    } on AppFailure catch (f) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
+  /// Renders pages as PNGs and hands them to the share sheet.
+  ///
+  /// The images go to a temporary directory rather than the library: the
+  /// library holds documents, and these are pictures on their way out.
+  Future<void> _exportImages() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final request = await showExportImagesDialog(context);
+    if (request == null || !mounted) return;
+
+    try {
+      final pages = await ref
+          .read(imageExportRepositoryProvider)
+          .export(
+            documentId: widget.document.id,
+            range: request.range,
+            dpi: request.dpi,
+          );
+      if (!mounted || pages.isEmpty) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.exportImagesDone(pages.length))),
+      );
+
+      await ref
+          .read(platformExportProvider)
+          .shareFiles(pages.map((p) => p.path).toList());
     } on AppFailure catch (f) {
       if (!mounted) return;
       messenger.showSnackBar(

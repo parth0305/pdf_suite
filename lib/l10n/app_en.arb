@@ -446,6 +446,18 @@
   "unlockWrong": "That password does not open this document.",
   "unlockNotProtected": "This document is not password protected.",
   "unlockNote": "The new document has no password at all. Anyone who can open the file can read it.",
+  "exportImagesMode": "Export pages as images",
+  "exportImagesRange": "Pages (leave empty for all)",
+  "exportImagesQuality": "Detail",
+  "exportImagesLow": "Screen",
+  "exportImagesMedium": "Good",
+  "exportImagesHigh": "Print",
+  "exportImagesAction": "Export",
+  "exportImagesDone": "Exported {count} pages",
+  "@exportImagesDone": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "exportImagesNote": "PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.",
   "protectMode": "Protect with password",
   "protectPassword": "Password",
   "protectConfirm": "Confirm password",

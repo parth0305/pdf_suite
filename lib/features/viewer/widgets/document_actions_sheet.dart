@@ -14,6 +14,7 @@ enum DocumentAction {
   signature,
   annotations,
   metadata,
+  exportImages,
   watermark,
   imageWatermark,
   removeWatermark,
@@ -141,6 +142,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 DocumentAction.metadata,
                 Icons.info_outline,
                 l10n.metadataMode,
+              ),
+              item(
+                DocumentAction.exportImages,
+                Icons.image_outlined,
+                l10n.exportImagesMode,
               ),
               item(
                 DocumentAction.watermark,

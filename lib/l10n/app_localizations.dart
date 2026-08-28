@@ -1924,6 +1924,60 @@ abstract class AppLocalizations {
   /// **'The new document has no password at all. Anyone who can open the file can read it.'**
   String get unlockNote;
 
+  /// No description provided for @exportImagesMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Export pages as images'**
+  String get exportImagesMode;
+
+  /// No description provided for @exportImagesRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages (leave empty for all)'**
+  String get exportImagesRange;
+
+  /// No description provided for @exportImagesQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Detail'**
+  String get exportImagesQuality;
+
+  /// No description provided for @exportImagesLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen'**
+  String get exportImagesLow;
+
+  /// No description provided for @exportImagesMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get exportImagesMedium;
+
+  /// No description provided for @exportImagesHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get exportImagesHigh;
+
+  /// No description provided for @exportImagesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get exportImagesAction;
+
+  /// No description provided for @exportImagesDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {count} pages'**
+  String exportImagesDone(int count);
+
+  /// No description provided for @exportImagesNote.
+  ///
+  /// In en, this message translates to:
+  /// **'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.'**
+  String get exportImagesNote;
+
   /// No description provided for @protectMode.
   ///
   /// In en, this message translates to:

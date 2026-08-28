@@ -467,6 +467,24 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Exporting pages as images
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Export pages as images | ✅ | ✅ | ✅ | 🟡 | ❌ |
+
+Actions → **Export pages as images**. Choose pages — `1-3, 7`, or leave it
+empty for all — and a detail level, and Folio renders them and hands them to
+the share sheet.
+
+**PNG, not JPEG, and measured rather than assumed.** A 300 DPI A4 page of text
+came out at 100 KB as PNG; at 96 DPI it is 25 KB. JPEG would be no smaller for
+text and would smear the edges of every letter. `dart:ui` also encodes PNG
+only, so choosing JPEG would have meant writing an encoder for a worse result.
+
+The Offline column says ❌ because sharing is how the images leave — the
+rendering itself happens entirely on your device.
+
 ## Not built yet
 
 Accurate as of SP-10. Everything here is genuinely absent — nothing in this

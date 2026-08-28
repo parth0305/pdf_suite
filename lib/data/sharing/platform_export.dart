@@ -13,6 +13,12 @@ import 'package:share_plus/share_plus.dart';
 abstract interface class PlatformExport {
   Future<void> print(DocumentExport export);
   Future<void> share(DocumentExport export, {Rect? origin});
+
+  /// Hands several already-written files to the share sheet.
+  ///
+  /// Used by page export, where the files exist on disk already and there is
+  /// no single document to describe.
+  Future<void> shareFiles(List<String> paths, {Rect? origin});
 }
 
 class SystemExport implements PlatformExport {
@@ -26,6 +32,18 @@ class SystemExport implements PlatformExport {
     onLayout: (_) async => export.bytes,
     name: export.fileName,
   );
+
+  @override
+  Future<void> shareFiles(List<String> paths, {Rect? origin}) async {
+    if (paths.isEmpty) return;
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [for (final p in paths) XFile(p)],
+        sharePositionOrigin: origin,
+      ),
+    );
+  }
 
   @override
   Future<void> share(DocumentExport export, {Rect? origin}) async {
