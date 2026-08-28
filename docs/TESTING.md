@@ -547,3 +547,15 @@ mutation survives and always will. It stays because PDF/A validators require
 the entry to be *present*, which is a requirement no renderer enforces.
 
 Unobservable on device, joining the earlier six.
+
+## 30. An assertion that matched the wrong element
+
+The PowerPoint test checked the presentation contained
+`cx="7556500" cy="10693400"` — the slide size in English Metric Units. It
+passed through a mutation that stopped converting points to EMU at all,
+because `<p:notesSz>` carries the same two attributes with the same values,
+and the assertion never said which element it wanted.
+
+Naming the element (`<p:sldSz cx="..." cy="..."/>`) fixes it. When a document
+format repeats an attribute across elements, matching on the attribute alone
+matches whichever one happens to be right.

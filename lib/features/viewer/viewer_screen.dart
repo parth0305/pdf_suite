@@ -38,11 +38,13 @@ import 'package:folio/features/viewer/crop_providers.dart';
 import 'package:folio/features/forms/form_fill_screen.dart';
 import 'package:folio/features/viewer/flatten_providers.dart';
 import 'package:folio/features/viewer/numbering_providers.dart';
+import 'package:folio/features/viewer/office_providers.dart';
 import 'package:folio/features/viewer/widgets/number_pages_sheet.dart';
 import 'package:folio/features/viewer/widgets/archive_dialog.dart';
 import 'package:folio/features/viewer/widgets/crop_sheet.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/flatten_confirm_dialog.dart';
+import 'package:folio/features/viewer/widgets/office_format_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
 import 'package:folio/features/viewer/export_providers.dart';
@@ -427,6 +429,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _fillForm();
       case DocumentAction.flatten:
         await _flattenAnnotations();
+      case DocumentAction.office:
+        await _convertToOffice();
       case DocumentAction.archive:
         await _archiveDocument();
       case DocumentAction.watermark:
@@ -746,6 +750,39 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         builder: (_) => FormFillScreen(document: widget.document),
       ),
     );
+  }
+
+  Future<void> _convertToOffice() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final office = ref.read(officeExportRepositoryProvider);
+
+    try {
+      // Asked before the format, not after: a Word document with nothing in
+      // it is a worse answer than saying there was nothing to convert.
+      if (!await office.hasText(widget.document.id)) {
+        if (!mounted) return;
+        messenger.showSnackBar(SnackBar(content: Text(l10n.officeNoText)));
+        return;
+      }
+      if (!mounted) return;
+
+      final format = await showOfficeFormatSheet(context);
+      if (format == null || !mounted) return;
+
+      final exported = await office.export(widget.document.id, format);
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.officeDone(exported.name))),
+      );
+
+      await ref.read(platformExportProvider).shareFiles([exported.path]);
+    } on AppFailure catch (f) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
   }
 
   Future<void> _archiveDocument() async {

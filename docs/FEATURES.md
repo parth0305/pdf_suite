@@ -467,6 +467,44 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Converting to Office
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| PDF to Word (.docx) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| PDF to Excel (.xlsx) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| PDF to PowerPoint (.pptx) | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Convert to Office**.
+
+**The text is converted, not the layout.** A PDF records where letters sit, not
+that they form a paragraph - so paragraphs, columns and tables are inferred
+from spacing and alignment, and some documents come out differently from how
+they look. The sheet says this before you choose a format, not after.
+
+- **Word** keeps the page size and puts a page break between pages. Paragraphs
+  are inferred from the gaps between lines and from indentation.
+- **Excel** gives one sheet per page, one row per line, and splits cells where
+  the spacing is much wider than the spacing elsewhere on the page. It makes
+  sense for a document that is a table; on anything else you get one column,
+  which is honest but not useful.
+- **PowerPoint** is the weakest, and modest on purpose: one slide per page with
+  the text in a single box. Nothing resembling the original design is
+  attempted, because a PDF does not record one.
+
+A scan has no text until it has been through OCR, and Folio says so rather
+than handing over an empty document.
+
+The archive is written here rather than by a package: every Office format is
+XML inside a ZIP, and a malformed archive gives a file Word refuses to open at
+all. The tests read it back with a reader written from the specification and
+hand the same bytes to Python's `zipfile` - an implementation nobody here
+wrote, and one that cannot share a misunderstanding with this one.
+
+**Office to PDF is not built**, and is a much larger job: it means laying out
+a document rather than reading one - line breaking, tables, sections, and
+fonts that must be measured to be placed.
+
 ## Fonts
 
 Folio **carries the font it draws with**. Page numbers, and in time every

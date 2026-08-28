@@ -14,33 +14,11 @@ operator parser that redaction deliberately avoided, plus font metrics, plus
 reflow. The single hardest item on this list, and the one whose failure modes
 are least visible - text that looks edited but is subtly wrong.
 
-## Office conversion — agreed, and the two directions are not one job
+## Office conversion
 
-Added on request. They belong in the plan, but calling them a single feature
-would be dishonest: one direction is hard work and the other is a research
-project.
-
-### PDF to Word, Excel and PowerPoint — feasible
-
-Folio already has the hard half. PDFium reports **per-character rectangles**,
-which is what OCR and redaction are built on, so the text and its positions are
-in hand. The output formats are OOXML: XML inside a ZIP, and writing XML is
-mechanical.
-
-The honest limits, which should be said in the UI rather than discovered:
-
-- **Layout is reconstructed, not preserved.** A PDF records where glyphs sit,
-  not that they form a paragraph. Grouping characters into words, lines and
-  paragraphs is inference, and it will get some documents wrong.
-- **Excel only makes sense for tables**, and finding a table in a PDF means
-  inferring one from alignment. A PDF has no notion of a cell.
-- **PowerPoint is the weakest.** One slide per page with the text placed on it
-  is achievable; anything resembling the original design is not.
-
-It needs a **ZIP writer**, which Folio does not have. `dart:io` provides
-deflate, so the container is a bounded piece of work rather than a dependency —
-but it is new code that has to be right, because a malformed ZIP produces a file
-Word refuses to open at all.
+PDF to Word, Excel and PowerPoint has shipped. The other direction has not,
+and calling them one feature would have been dishonest: one was hard work and
+the other is a research project.
 
 ### Word, Excel and PowerPoint to PDF — much harder
 

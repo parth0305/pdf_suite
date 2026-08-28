@@ -463,6 +463,16 @@
   "errorNothingToFlattenTitle": "Nothing to flatten",
   "errorNothingToFlattenBody": "This document has no annotations that can be painted into its pages.",
   "okAction": "OK",
+  "officeMode": "Convert to Office",
+  "officeWord": "Word (.docx)",
+  "officeExcel": "Excel (.xlsx)",
+  "officePowerPoint": "PowerPoint (.pptx)",
+  "officeReconstructed": "The text is converted, not the layout. A PDF records where letters sit, not that they form a paragraph \u2014 so headings, columns and tables are inferred, and some documents come out differently from how they look.",
+  "officeNoText": "There is no text to convert. Run OCR on this document first.",
+  "officeDone": "Converted to {name}",
+  "@officeDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "archiveMode": "Save as PDF/A",
   "archiveTitle": "Save as PDF/A?",
   "archiveBody": "PDF/A is the format archives accept: everything the document needs to render is carried inside it. Your original stays in the library.",

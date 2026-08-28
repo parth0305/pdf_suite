@@ -2008,6 +2008,48 @@ abstract class AppLocalizations {
   /// **'OK'**
   String get okAction;
 
+  /// No description provided for @officeMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to Office'**
+  String get officeMode;
+
+  /// No description provided for @officeWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Word (.docx)'**
+  String get officeWord;
+
+  /// No description provided for @officeExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Excel (.xlsx)'**
+  String get officeExcel;
+
+  /// No description provided for @officePowerPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'PowerPoint (.pptx)'**
+  String get officePowerPoint;
+
+  /// No description provided for @officeReconstructed.
+  ///
+  /// In en, this message translates to:
+  /// **'The text is converted, not the layout. A PDF records where letters sit, not that they form a paragraph — so headings, columns and tables are inferred, and some documents come out differently from how they look.'**
+  String get officeReconstructed;
+
+  /// No description provided for @officeNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no text to convert. Run OCR on this document first.'**
+  String get officeNoText;
+
+  /// No description provided for @officeDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Converted to {name}'**
+  String officeDone(String name);
+
   /// No description provided for @archiveMode.
   ///
   /// In en, this message translates to:

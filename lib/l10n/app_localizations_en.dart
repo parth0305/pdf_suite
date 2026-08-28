@@ -1067,6 +1067,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get okAction => 'OK';
 
   @override
+  String get officeMode => 'Convert to Office';
+
+  @override
+  String get officeWord => 'Word (.docx)';
+
+  @override
+  String get officeExcel => 'Excel (.xlsx)';
+
+  @override
+  String get officePowerPoint => 'PowerPoint (.pptx)';
+
+  @override
+  String get officeReconstructed =>
+      'The text is converted, not the layout. A PDF records where letters sit, not that they form a paragraph — so headings, columns and tables are inferred, and some documents come out differently from how they look.';
+
+  @override
+  String get officeNoText =>
+      'There is no text to convert. Run OCR on this document first.';
+
+  @override
+  String officeDone(String name) {
+    return 'Converted to $name';
+  }
+
+  @override
   String get archiveMode => 'Save as PDF/A';
 
   @override
