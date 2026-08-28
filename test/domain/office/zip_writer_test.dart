@@ -247,20 +247,27 @@ void main() {
         ]),
       );
 
+      // The comparison happens inside Python and only ASCII comes back.
+      // Windows' console encoding cannot print Devanagari, and a check that
+      // fails on how it reports itself tells you nothing about the archive.
       final result = await Process.run(python, [
         '-c',
         'import zipfile,sys\n'
             'z=zipfile.ZipFile(sys.argv[1])\n'
-            'bad=z.testzip()\n'
-            'assert bad is None, bad\n'
-            'print(",".join(z.namelist()))\n'
-            'print(z.read("word/document.xml").decode())',
+            'assert z.testzip() is None\n'
+            'print("names:"+",".join(z.namelist()))\n'
+            'doc=z.read("word/document.xml").decode("utf-8")\n'
+            r'print("unicode-ok:"+str(doc=="<w:document>\u0928\u092e\u0938'
+            r'\u094d\u0924\u0947</w:document>"))',
         path,
       ]);
 
       expect(result.exitCode, 0, reason: result.stderr.toString());
-      expect(result.stdout, contains('[Content_Types].xml,word/document.xml'));
-      expect(result.stdout, contains('नमस्ते'));
+      expect(
+        result.stdout,
+        contains('names:[Content_Types].xml,word/document.xml'),
+      );
+      expect(result.stdout, contains('unicode-ok:True'));
     });
   });
 }
