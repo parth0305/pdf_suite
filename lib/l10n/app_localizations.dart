@@ -1978,6 +1978,78 @@ abstract class AppLocalizations {
   /// **'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.'**
   String get exportImagesNote;
 
+  /// No description provided for @cropMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop pages'**
+  String get cropMode;
+
+  /// No description provided for @cropTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Top'**
+  String get cropTop;
+
+  /// No description provided for @cropBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom'**
+  String get cropBottom;
+
+  /// No description provided for @cropLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get cropLeft;
+
+  /// No description provided for @cropRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get cropRight;
+
+  /// No description provided for @cropMillimetres.
+  ///
+  /// In en, this message translates to:
+  /// **'mm'**
+  String get cropMillimetres;
+
+  /// No description provided for @cropDetect.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect margins'**
+  String get cropDetect;
+
+  /// No description provided for @cropKeepsContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Cropping hides the margins. Anything in them stays in the file — use Redact to remove it for good.'**
+  String get cropKeepsContent;
+
+  /// No description provided for @cropApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop'**
+  String get cropApply;
+
+  /// No description provided for @cropNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to trim — the pages have no white margins to speak of.'**
+  String get cropNothing;
+
+  /// No description provided for @cropTooMuch.
+  ///
+  /// In en, this message translates to:
+  /// **'That would leave nothing on the page.'**
+  String get cropTooMuch;
+
+  /// No description provided for @cropDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Cropped {name}'**
+  String cropDone(String name);
+
   /// No description provided for @numberPagesMode.
   ///
   /// In en, this message translates to:

@@ -16,6 +16,9 @@ import 'package:folio/data/repositories/library_repository_impl.dart';
 import 'package:folio/data/repositories/numbering_repository_impl.dart';
 import 'package:folio/domain/numbering/page_numbers.dart';
 import 'package:folio/data/repositories/watermark_repository_impl.dart';
+import 'package:folio/data/repositories/crop_repository_impl.dart';
+import 'package:folio/domain/crop/page_crop.dart';
+import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/editing/pdf_metadata.dart';
 import 'package:folio/domain/engine/pdf_engine.dart';
 import 'package:folio/domain/models/library_document.dart';
@@ -375,6 +378,115 @@ void main() {
       ).readAsBytes();
 
       await numbering.apply(src.id, const PageNumbering());
+
+      expect(
+        await File(await library.resolveReadablePath(src)).readAsBytes(),
+        bytes,
+      );
+    });
+  });
+
+  // A crop is only real if the PAGE is smaller afterwards. Drawing white
+  // rectangles over the margins would pass any pixel comparison.
+  group('cropping pages', () {
+    late CropRepositoryImpl crop;
+
+    setUp(() {
+      crop = CropRepositoryImpl(
+        library: library,
+        documents: DocumentWriter(
+          library: library,
+          writer: SafeFileWriter(),
+          libraryRoot: root,
+        ),
+        engine: engine,
+      );
+    });
+
+    Future<PdfPageInfo> firstPage(LibraryDocument d) async {
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(d)),
+      );
+      final info = await engine.pageInfo(h, 0);
+      await engine.close(h);
+      return info;
+    }
+
+    test('the page itself is smaller afterwards', () async {
+      final src = await seed('Cropped.pdf');
+      final before = await firstPage(src);
+
+      final out = await crop.apply(
+        src.id,
+        PageMargins(left: mmToPoints(20), top: mmToPoints(10)),
+      );
+      final after = await firstPage(out);
+
+      expect(after.widthPt, closeTo(before.widthPt - mmToPoints(20), 1));
+      expect(after.heightPt, closeTo(before.heightPt - mmToPoints(10), 1));
+    });
+
+    // Every page, not just the one that was looked at.
+    test('the last page is cropped too', () async {
+      final src = await seed('AllCropped.pdf');
+      final out = await crop.apply(src.id, PageMargins(left: mmToPoints(20)));
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(out)),
+      );
+      final last = await engine.pageInfo(h, h.pageCount - 1);
+      await engine.close(h);
+
+      expect(last.widthPt, closeTo(595 - mmToPoints(20), 1));
+    });
+
+    test('the text on the page survives the crop', () async {
+      final src = await seed('Text.pdf');
+      final out = await crop.apply(src.id, PageMargins(left: mmToPoints(5)));
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(out)),
+      );
+      final text = await engine.extractText(h, 0);
+      await engine.close(h);
+
+      expect(text!.fullText.trim(), isNotEmpty);
+    });
+
+    test('detection finds the margins of a real document', () async {
+      final src = await seed('Detect.pdf');
+      final margins = await crop.detect(src.id);
+
+      expect(margins.isNothing, isFalse);
+      // A margin wider than the page would mean the detector had found
+      // nothing and reported the whole page as white space.
+      expect(margins.left, lessThan(595 / 2));
+      expect(margins.top, lessThan(842 / 2));
+    });
+
+    test('a detected crop leaves a page that still has its text', () async {
+      final src = await seed('DetectCrop.pdf');
+      final margins = await crop.detect(src.id);
+      final out = await crop.apply(src.id, margins);
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(out)),
+      );
+      final text = await engine.extractText(h, 0);
+      final info = await engine.pageInfo(h, 0);
+      await engine.close(h);
+
+      expect(text!.fullText.trim(), isNotEmpty);
+      expect(info.widthPt, lessThan(595));
+    });
+
+    test('the source document is untouched', () async {
+      final src = await seed('CropSource.pdf');
+      final bytes = await File(
+        await library.resolveReadablePath(src),
+      ).readAsBytes();
+
+      await crop.apply(src.id, PageMargins(left: mmToPoints(10)));
 
       expect(
         await File(await library.resolveReadablePath(src)).readAsBytes(),

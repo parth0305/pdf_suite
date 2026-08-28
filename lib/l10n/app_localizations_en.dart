@@ -1050,6 +1050,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.';
 
   @override
+  String get cropMode => 'Crop pages';
+
+  @override
+  String get cropTop => 'Top';
+
+  @override
+  String get cropBottom => 'Bottom';
+
+  @override
+  String get cropLeft => 'Left';
+
+  @override
+  String get cropRight => 'Right';
+
+  @override
+  String get cropMillimetres => 'mm';
+
+  @override
+  String get cropDetect => 'Detect margins';
+
+  @override
+  String get cropKeepsContent =>
+      'Cropping hides the margins. Anything in them stays in the file — use Redact to remove it for good.';
+
+  @override
+  String get cropApply => 'Crop';
+
+  @override
+  String get cropNothing =>
+      'Nothing to trim — the pages have no white margins to speak of.';
+
+  @override
+  String get cropTooMuch => 'That would leave nothing on the page.';
+
+  @override
+  String cropDone(String name) {
+    return 'Cropped $name';
+  }
+
+  @override
   String get numberPagesMode => 'Number pages';
 
   @override

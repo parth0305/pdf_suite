@@ -8,14 +8,6 @@ has been decided on, and removed when it ships or is ruled out.
 
 ## Next
 
-### Crop PDF
-A `/CropBox` per page. The writing is small — the work is a UI for choosing the
-crop and previewing it, and deciding whether one crop applies to every page.
-
-**Nothing is destroyed by cropping**: `/CropBox` hides content rather than
-removing it, so a cropped document still carries what was cropped away. That
-must be said in the UI, because people crop to remove things.
-
 ### Flatten PDF
 Merge annotations into the page's own content so they cannot be edited or
 removed. The pieces exist: appearance streams are already generated, and the

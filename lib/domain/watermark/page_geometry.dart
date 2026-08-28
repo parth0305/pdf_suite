@@ -20,12 +20,53 @@ const _maxDepth = 32;
 /// reading a node that is not a page dictionary, and that reader's own
 /// documentation says a caller needing more than page dictionaries should
 /// reconsider scope rather than grow the file.
-TextRect mediaBoxOf(PdfObjectIndex index, PdfPageObject page) {
+TextRect mediaBoxOf(PdfObjectIndex index, PdfPageObject page) =>
+    _inherited(index, page, _boxIn) ?? _fallback;
+
+/// The page as the reader sees it: `/CropBox` where there is one, clipped to
+/// `/MediaBox`, and `/MediaBox` where there is not.
+///
+/// Cropping an already-cropped page has to start from the visible box. Reading
+/// `/MediaBox` instead would silently UNDO an existing crop and call it a crop.
+TextRect visibleBoxOf(PdfObjectIndex index, PdfPageObject page) {
+  final media = mediaBoxOf(index, page);
+  final crop = _inherited(index, page, (d) => _boxIn(d, name: 'CropBox'));
+  if (crop == null) return media;
+
+  return TextRect(
+    left: crop.left > media.left ? crop.left : media.left,
+    bottom: crop.bottom > media.bottom ? crop.bottom : media.bottom,
+    right: crop.right < media.right ? crop.right : media.right,
+    top: crop.top < media.top ? crop.top : media.top,
+  );
+}
+
+/// `/Rotate`, normalised to 0, 90, 180 or 270.
+///
+/// The value is a multiple of 90 that may be negative or exceed a full turn;
+/// Dart's `%` on a negative left operand already returns a positive result.
+int rotationOf(PdfObjectIndex index, PdfPageObject page) {
+  final rotate = _inherited(index, page, (d) {
+    final m = RegExp(r'/Rotate\s+(-?\d+)').firstMatch(d);
+    return m == null ? null : int.parse(m.group(1)!);
+  });
+  if (rotate == null) return 0;
+
+  final turns = (rotate ~/ 90) % 4;
+  return (turns < 0 ? turns + 4 : turns) * 90;
+}
+
+/// Walks `/Parent` until [read] finds the inheritable attribute it wants.
+T? _inherited<T>(
+  PdfObjectIndex index,
+  PdfPageObject page,
+  T? Function(String dict) read,
+) {
   var dict = page.rawDictionary;
 
   for (var depth = 0; depth < _maxDepth; depth++) {
-    final box = _boxIn(dict);
-    if (box != null) return box;
+    final found = read(dict);
+    if (found != null) return found;
 
     final parent = RegExp(r'/Parent\s+(\d+)\s+\d+\s+R').firstMatch(dict);
     if (parent == null) break;
@@ -35,11 +76,14 @@ TextRect mediaBoxOf(PdfObjectIndex index, PdfPageObject page) {
     dict = next;
   }
 
-  return _fallback;
+  return null;
 }
 
-TextRect? _boxIn(String dict) {
-  final match = RegExp(r'/MediaBox\s*\[([^\]]*)\]').firstMatch(dict);
+TextRect? _boxIn(String dict, {String name = 'MediaBox'}) {
+  final match = RegExp(
+    '/$name'
+    r'\s*\[([^\]]*)\]',
+  ).firstMatch(dict);
   if (match == null) return null;
 
   final numbers = RegExp(

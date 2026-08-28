@@ -467,6 +467,31 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Cropping
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Crop pages | ✅ | ✅ | ✅ | 🟡 | ✅ |
+| Detect margins | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Crop pages**. Type a margin in millimetres for each side, or press
+**Detect margins** to have Folio measure where the ink stops.
+
+Detection reads the page's own paper colour rather than assuming white. A
+scan's background sits around 210-240 — grey platen, JPEG noise, aged paper —
+and measuring against white finds the whole page to be content, so exactly the
+documents that most need trimming would report no margins at all.
+
+Where pages disagree, the **smallest** margin wins. A trim that suits a sparse
+page would cut into a full one.
+
+Rotation is taken into account: on a page with `/Rotate 90`, the edge you see
+as the top is the `/MediaBox` left edge, and cropping without that correction
+trims the wrong side of every rotated scan — convincingly.
+
+**Cropping hides the margins; it does not delete them.** The text is still in
+the file and still extractable. Use redaction to remove content for good.
+
 ## Page numbers
 
 | Feature | iPhone | iPad | Android | Windows | Offline |

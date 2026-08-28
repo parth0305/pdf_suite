@@ -33,8 +33,10 @@ import 'package:folio/features/viewer/unlock_providers.dart';
 import 'package:folio/features/viewer/widgets/unlock_dialog.dart';
 import 'package:folio/features/viewer/image_export_providers.dart';
 import 'package:folio/features/viewer/widgets/export_images_dialog.dart';
+import 'package:folio/features/viewer/crop_providers.dart';
 import 'package:folio/features/viewer/numbering_providers.dart';
 import 'package:folio/features/viewer/widgets/number_pages_sheet.dart';
+import 'package:folio/features/viewer/widgets/crop_sheet.dart';
 import 'package:folio/features/viewer/widgets/document_actions_sheet.dart';
 import 'package:folio/features/viewer/widgets/protect_dialog.dart';
 import 'package:folio/features/viewer/compression_providers.dart';
@@ -414,6 +416,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _exportImages();
       case DocumentAction.numberPages:
         await _numberPages();
+      case DocumentAction.crop:
+        await _cropPages();
       case DocumentAction.watermark:
         await _applyWatermark();
       case DocumentAction.imageWatermark:
@@ -692,6 +696,39 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
 
   /// Stamps page numbers onto every page.
+  Future<void> _cropPages() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final crop = ref.read(cropRepositoryProvider);
+
+    final margins = await showCropSheet(
+      context,
+      onDetect: () => crop.detect(widget.document.id),
+    );
+    if (margins == null || !mounted) return;
+
+    if (margins.isNothing) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.cropNothing)));
+      return;
+    }
+
+    try {
+      final out = await crop.apply(widget.document.id, margins);
+      await ref.read(libraryControllerProvider.notifier).refresh();
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.cropDone(out.displayName))),
+      );
+    } on EmptyDocument {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.cropTooMuch)));
+    } on AppFailure catch (f) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failureMessage(f, l10n).title)),
+      );
+    }
+  }
+
   Future<void> _numberPages() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);

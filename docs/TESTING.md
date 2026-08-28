@@ -381,3 +381,45 @@ this codebase are asserted by deliberate mutation rather than assumption:
   of ISO 32000-1 Table 22, so asserting through them would make a swapped-bit
   bug invisible. The restricted fixture is deliberately asymmetric for the same
   reason: denying everything passes even when two bits are swapped.
+
+## 18. A test fixture whose defaults painted a pixel
+
+`painted(width: 50, height: 50)` was meant to make a blank page. Its `right`
+and `bottom` defaulted to `0`, so the loop `for (x = left; x <= right; x++)`
+ran once and blacked out the pixel at the origin. "A blank page has nothing to
+trim" was therefore asserting against a page with ink on it — and passing,
+because a single corner pixel produced margins on two sides and the assertion
+only looked at whether *any* margin existed.
+
+The failure surfaced only when a second test needed a genuinely blank page.
+Default arguments in a fixture builder are a claim about what the fixture is;
+`right = -1` (paint nothing) is the honest default for a blank page.
+
+## 19. Two boxes that a renderer cannot tell apart
+
+The crop writer sets both `/CropBox` and `/MediaBox`. On device, mutating away
+*either one* leaves every test green: PDFium reports the crop box when there is
+one and the media box when there is not, so a page cropped by either route
+renders identically. The reason for writing both is what happens in OTHER
+software — printers and importers that read `/MediaBox` — which this project
+has no way to observe.
+
+Recorded rather than papered over. The unit tests assert both boxes explicitly,
+which is the only place the distinction is real.
+
+Unobservable on device, joining the earlier five: AES IV reuse, JPEG
+`/ColorSpace`, a wrong `/Length`, stream-payload reference remapping, and the
+unrunnable-rule guard.
+
+## 20. Measuring ink against white
+
+Margin detection first compared each pixel against a fixed threshold of 250,
+with white-page fixtures that made it look right. A scan's background is not
+white — grey platen, JPEG noise and aged paper all sit around 210 to 240 — so
+on a real scan every pixel counted as ink and the detector reported nothing to
+trim, on precisely the documents the feature exists for.
+
+The synthetic fixture agreed with the code because both assumed the same thing.
+The fix (measure against the modal tone of the page's outer edge, where a
+margin is by definition) is pinned by a fixture at luma 210, and the mutation
+"assume paper is white" now fails it.

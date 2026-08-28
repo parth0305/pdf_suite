@@ -458,6 +458,21 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "exportImagesNote": "PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.",
+  "cropMode": "Crop pages",
+  "cropTop": "Top",
+  "cropBottom": "Bottom",
+  "cropLeft": "Left",
+  "cropRight": "Right",
+  "cropMillimetres": "mm",
+  "cropDetect": "Detect margins",
+  "cropKeepsContent": "Cropping hides the margins. Anything in them stays in the file \u2014 use Redact to remove it for good.",
+  "cropApply": "Crop",
+  "cropNothing": "Nothing to trim \u2014 the pages have no white margins to speak of.",
+  "cropTooMuch": "That would leave nothing on the page.",
+  "cropDone": "Cropped {name}",
+  "@cropDone": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "numberPagesMode": "Number pages",
   "numberPagesPosition": "Position",
   "numberPagesFormat": "Format",
