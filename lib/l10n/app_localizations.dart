@@ -1978,6 +1978,18 @@ abstract class AppLocalizations {
   /// **'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.'**
   String get exportImagesNote;
 
+  /// No description provided for @errorNoFormFieldsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No form to fill'**
+  String get errorNoFormFieldsTitle;
+
+  /// No description provided for @errorNoFormFieldsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This document has no fillable form fields.'**
+  String get errorNoFormFieldsBody;
+
   /// No description provided for @errorNothingToFlattenTitle.
   ///
   /// In en, this message translates to:
@@ -1989,6 +2001,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This document has no annotations that can be painted into its pages.'**
   String get errorNothingToFlattenBody;
+
+  /// No description provided for @formMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill form'**
+  String get formMode;
+
+  /// No description provided for @formSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get formSave;
+
+  /// No description provided for @formSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled {name}'**
+  String formSaved(String name);
+
+  /// No description provided for @formEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No form here'**
+  String get formEmptyTitle;
+
+  /// No description provided for @formEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This document has no fillable form fields.'**
+  String get formEmptyBody;
+
+  /// No description provided for @formReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled in by the form\'s issuer'**
+  String get formReadOnly;
+
+  /// No description provided for @formSignatureField.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature field — Folio leaves this alone'**
+  String get formSignatureField;
+
+  /// No description provided for @formNoScripts.
+  ///
+  /// In en, this message translates to:
+  /// **'Folio fills in what you type. Fields that calculate themselves in other readers will not recalculate here.'**
+  String get formNoScripts;
 
   /// No description provided for @flattenMode.
   ///

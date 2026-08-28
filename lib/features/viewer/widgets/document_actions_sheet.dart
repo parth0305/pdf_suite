@@ -16,6 +16,7 @@ enum DocumentAction {
   metadata,
   numberPages,
   crop,
+  fillForm,
   flatten,
   exportImages,
   watermark,
@@ -152,6 +153,11 @@ Future<DocumentAction?> showDocumentActionsSheet(
                 l10n.numberPagesMode,
               ),
               item(DocumentAction.crop, Icons.crop, l10n.cropMode),
+              item(
+                DocumentAction.fillForm,
+                Icons.assignment_outlined,
+                l10n.formMode,
+              ),
               item(
                 DocumentAction.flatten,
                 Icons.layers_clear,

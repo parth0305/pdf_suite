@@ -38,10 +38,15 @@ FlattenDecision flattenDecisionFor(String dict, {required int? appearance}) {
   // Flattening one leaves a rectangle that no longer goes anywhere.
   if (subtype == 'Link') return FlattenDecision.keep;
 
-  // No appearance means nothing to paint. Removing it anyway would delete
-  // whatever it held - a form field's value, most often - and call that
-  // flattening.
-  return appearance == null ? FlattenDecision.keep : FlattenDecision.draw;
+  if (appearance != null) return FlattenDecision.draw;
+
+  // No appearance means nothing to paint. An annotation that HOLDS something
+  // is kept, because removing it would delete the value rather than flatten
+  // it. An empty one has nothing to lose and is dropped: leaving it behind
+  // keeps a document a form on account of fields nobody filled in.
+  return RegExp(r'/V(?![A-Za-z0-9])').hasMatch(dict)
+      ? FlattenDecision.keep
+      : FlattenDecision.drop;
 }
 
 /// The object number of the annotation's normal appearance stream.

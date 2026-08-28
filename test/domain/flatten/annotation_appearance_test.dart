@@ -16,13 +16,25 @@ void main() {
 
     // Removing an annotation whose value lives only in the annotation is not
     // flattening, it is deletion.
-    test('an annotation with no appearance is kept', () {
+    test('an annotation with no appearance but a value is kept', () {
       expect(
         flattenDecisionFor(
           '<< /Subtype /Widget /FT /Tx /V (Priya) >>',
           appearance: null,
         ),
         FlattenDecision.keep,
+      );
+    });
+
+    // Nothing to draw and nothing to lose. Keeping it leaves a document a
+    // form on account of fields nobody filled in.
+    test('an empty annotation with no appearance is dropped', () {
+      expect(
+        flattenDecisionFor(
+          '<< /Subtype /Widget /FT /Tx /T (name) >>',
+          appearance: null,
+        ),
+        FlattenDecision.drop,
       );
     });
 

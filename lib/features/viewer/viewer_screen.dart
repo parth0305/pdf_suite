@@ -34,6 +34,7 @@ import 'package:folio/features/viewer/widgets/unlock_dialog.dart';
 import 'package:folio/features/viewer/image_export_providers.dart';
 import 'package:folio/features/viewer/widgets/export_images_dialog.dart';
 import 'package:folio/features/viewer/crop_providers.dart';
+import 'package:folio/features/forms/form_fill_screen.dart';
 import 'package:folio/features/viewer/flatten_providers.dart';
 import 'package:folio/features/viewer/numbering_providers.dart';
 import 'package:folio/features/viewer/widgets/number_pages_sheet.dart';
@@ -420,6 +421,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         await _numberPages();
       case DocumentAction.crop:
         await _cropPages();
+      case DocumentAction.fillForm:
+        await _fillForm();
       case DocumentAction.flatten:
         await _flattenAnnotations();
       case DocumentAction.watermark:
@@ -731,6 +734,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         SnackBar(content: Text(failureMessage(f, l10n).title)),
       );
     }
+  }
+
+  Future<void> _fillForm() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FormFillScreen(document: widget.document),
+      ),
+    );
   }
 
   Future<void> _flattenAnnotations() async {

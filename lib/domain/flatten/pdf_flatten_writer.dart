@@ -8,6 +8,7 @@ import 'package:folio/domain/annotations/pdf_object_index.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
 import 'package:folio/domain/engine/pdf_types.dart';
 import 'package:folio/domain/flatten/annotation_appearance.dart';
+import 'package:folio/domain/forms/pdf_form_reader.dart';
 
 /// Paints every annotation into the page it sits on, by appending an
 /// incremental update.
@@ -54,7 +55,7 @@ Uint8List writeFlattened(Uint8List pdf) {
   }
 
   var flattened = 0;
-  var widgetsKept = false;
+  final keptWidgets = <int>{};
 
   for (var pageIndex = 0; ; pageIndex++) {
     final page = reader.pageAt(pageIndex);
@@ -72,6 +73,7 @@ Uint8List writeFlattened(Uint8List pdf) {
       // already broken; deleting it would only hide that.
       if (annot == null) {
         kept.add(ref);
+        keptWidgets.add(number);
         continue;
       }
 
@@ -79,9 +81,7 @@ Uint8List writeFlattened(Uint8List pdf) {
       switch (flattenDecisionFor(annot, appearance: appearance)) {
         case FlattenDecision.keep:
           kept.add(ref);
-          if (RegExp(r'/Subtype\s*/Widget').hasMatch(annot)) {
-            widgetsKept = true;
-          }
+          keptWidgets.add(number);
         case FlattenDecision.drop:
           break;
         case FlattenDecision.draw:
@@ -92,6 +92,7 @@ Uint8List writeFlattened(Uint8List pdf) {
           // fit into /Rect, and guessing would paint it at the wrong scale.
           if (rect == null || bbox == null) {
             kept.add(ref);
+            keptWidgets.add(number);
             continue;
           }
 
@@ -139,11 +140,20 @@ Uint8List writeFlattened(Uint8List pdf) {
   }
 
   // A form whose fields are now page content must stop being a form, or a
-  // viewer will draw its own empty fields straight back over them.
+  // viewer will draw its own empty fields straight back over them - and a
+  // document that still LISTS a field nobody can see is a form on paper only.
   final root = roots.last;
-  final catalog = index.bodyOf(int.parse(root.group(1)!));
-  if (!widgetsKept && catalog != null && catalog.contains('/AcroForm')) {
-    emit(int.parse(root.group(1)!), _withoutAcroForm(catalog));
+  final catalogNumber = int.parse(root.group(1)!);
+  final catalog = index.bodyOf(catalogNumber);
+  if (catalog != null && catalog.contains('/AcroForm')) {
+    _rewriteForm(
+      text: text,
+      index: index,
+      catalog: catalog,
+      catalogNumber: catalogNumber,
+      keptWidgets: keptWidgets,
+      emit: emit,
+    );
   }
 
   final xrefOffset = out.length;
@@ -253,6 +263,80 @@ String _flattenedPage(
   }
 
   return '<< $body /Resources << /XObject << $entries >> >> >>';
+}
+
+/// Brings `/AcroForm /Fields` down to the fields that still have a widget on
+/// a page, and removes `/AcroForm` entirely when none of them do.
+///
+/// A field whose every widget was painted into the page is not a field any
+/// more. Leaving it listed keeps the document a form, and a reader that
+/// regenerates appearances will draw an empty box over the flattened value.
+void _rewriteForm({
+  required String text,
+  required PdfObjectIndex index,
+  required String catalog,
+  required int catalogNumber,
+  required Set<int> keptWidgets,
+  required void Function(int number, String body) emit,
+}) {
+  // Nothing survived anywhere, so there is no form left to describe - and
+  // this holds even when the /AcroForm dictionary itself cannot be read.
+  if (keptWidgets.isEmpty) {
+    emit(catalogNumber, _withoutAcroForm(catalog));
+    return;
+  }
+
+  final form = PdfFormReader.parse(text);
+
+  bool survives(int fieldNumber) => form.fields
+      .where(
+        (f) =>
+            f.objectNumber == fieldNumber || f.ancestors.contains(fieldNumber),
+      )
+      .any((f) => f.widgets.any((w) => keptWidgets.contains(w.objectNumber)));
+
+  final reference = RegExp(r'/AcroForm\s+(\d+)\s+\d+\s+R').firstMatch(catalog);
+  final dict = reference != null
+      ? index.bodyOf(int.parse(reference.group(1)!))
+      : _inlineForm(catalog);
+  if (dict == null) return;
+
+  final fields = RegExp(r'/Fields\s*\[([^\]]*)\]').firstMatch(dict);
+  final surviving = fields == null
+      ? <String>[]
+      : RegExp(r'(\d+)\s+\d+\s+R')
+            .allMatches(fields.group(1)!)
+            .where((m) => survives(int.parse(m.group(1)!)))
+            .map((m) => m.group(0)!)
+            .toList();
+
+  if (surviving.isEmpty) {
+    emit(catalogNumber, _withoutAcroForm(catalog));
+    return;
+  }
+  // Nothing was pruned, so the catalog does not need rewriting.
+  final before = RegExp(r'\d+\s+\d+\s+R').allMatches(fields!.group(1)!).length;
+  if (surviving.length == before) return;
+
+  final updated = dict.replaceRange(
+    fields.start,
+    fields.end,
+    '/Fields [${surviving.join(' ')}]',
+  );
+
+  if (reference != null) {
+    emit(int.parse(reference.group(1)!), updated);
+  } else {
+    emit(catalogNumber, catalog.replaceFirst(dict, updated));
+  }
+}
+
+String? _inlineForm(String catalog) {
+  final at = RegExp(r'/AcroForm\s*<<').firstMatch(catalog);
+  if (at == null) return null;
+
+  final close = PdfObjectIndex.matchingClose(catalog, at.end - 2);
+  return catalog.substring(at.end - 2, (close + 2).clamp(0, catalog.length));
 }
 
 /// The catalog with `/AcroForm` removed, reference or dictionary.

@@ -43,6 +43,8 @@ List<int> _build(String name) {
             '<< /Title (FOLIO-PROBE-TITLE) /Author (FOLIO-PROBE-AUTHOR) '
             '/Subject (FOLIO-PROBE-SUBJECT) >>',
       );
+    case 'membership_form.pdf':
+      return buildFormPdf();
     case 'corrupt_truncated.pdf':
       final full = buildPdf(generatedPages(3));
       return full.sublist(0, full.length - 200);

@@ -23,6 +23,7 @@ import 'compression_flow_test.dart' as compression_flow;
 import 'drawing_flow_test.dart' as drawing_flow;
 import 'export_flow_test.dart' as export_flow;
 import 'flatten_flow_test.dart' as flatten_flow;
+import 'form_flow_test.dart' as form_flow;
 import 'image_export_flow_test.dart' as image_export_flow;
 import 'image_signature_flow_test.dart' as image_signature_flow;
 import 'library_flow_test.dart' as library_flow;
@@ -70,4 +71,5 @@ void main() {
   group('compression_flow', compression_flow.main);
   group('export_flow', export_flow.main);
   group('flatten_flow', flatten_flow.main);
+  group('form_flow', form_flow.main);
 }

@@ -228,3 +228,73 @@ List<int> buildEncryptedPdf(
   );
   return out;
 }
+
+/// A one-page AcroForm covering every field kind the form filler supports,
+/// plus the two it deliberately does not: a read-only field and a signature.
+///
+/// The names are asserted on by tests. **Do not change them.**
+List<int> buildFormPdf() {
+  const helv = 14;
+  const page = 3;
+
+  final objects = <String>[
+    // 1 catalog
+    '<< /Type /Catalog /Pages 2 0 R /AcroForm << /Fields '
+        '[5 0 R 6 0 R 7 0 R 8 0 R 11 0 R 12 0 R 17 0 R] /DA (/Helv 0 Tf 0 g) '
+        '/DR << /Font << /Helv $helv 0 R >> >> >> >>',
+    // 2 pages
+    '<< /Type /Pages /Kids [$page 0 R 15 0 R] /Count 2 >>',
+    // 3 page
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] '
+        '/Resources << /Font << /Helv $helv 0 R >> >> /Contents 4 0 R '
+        '/Annots [5 0 R 6 0 R 7 0 R 9 0 R 10 0 R 11 0 R 12 0 R] >>',
+    // 4 content
+    _stream('BT /Helv 12 Tf 60 780 Td (Membership form) Tj ET\n'),
+    // 5 text field: full name
+    '<< /Type /Annot /Subtype /Widget /FT /Tx /T (full name) '
+        '/Rect [200 700 500 725] /DA (/Helv 12 Tf 0 g) /P 3 0 R >>',
+    // 6 text field with a length limit
+    '<< /Type /Annot /Subtype /Widget /FT /Tx /T (membership number) '
+        '/Rect [200 660 500 685] /MaxLen 8 /DA (/Helv 12 Tf 0 g) /P 3 0 R >>',
+    // 7 checkbox, whose on-state is NOT called Yes
+    '<< /Type /Annot /Subtype /Widget /FT /Btn /T (newsletter) '
+        '/Rect [200 620 220 640] /AS /Off '
+        '/AP << /N << /Off 13 0 R /On 13 0 R >> >> /P 3 0 R >>',
+    // 8 radio group: two widget kids, one value
+    '<< /FT /Btn /Ff 32768 /T (plan) /Kids [9 0 R 10 0 R] /V /Off >>',
+    // 9 radio widget
+    '<< /Type /Annot /Subtype /Widget /Parent 8 0 R /Rect [200 580 220 600] '
+        '/AS /Off /AP << /N << /Off 13 0 R /Basic 13 0 R >> >> /P 3 0 R >>',
+    // 10 radio widget
+    '<< /Type /Annot /Subtype /Widget /Parent 8 0 R /Rect [300 580 320 600] '
+        '/AS /Off /AP << /N << /Off 13 0 R /Premium 13 0 R >> >> /P 3 0 R >>',
+    // 11 choice, with paired export and display values
+    '<< /Type /Annot /Subtype /Widget /FT /Ch /Ff 131072 /T (country) '
+        '/Rect [200 540 500 565] /Opt [[(IN) (India)] [(GB) (United Kingdom)]] '
+        '/DA (/Helv 12 Tf 0 g) /P 3 0 R >>',
+    // 12 read-only field, which is shown and not editable
+    '<< /Type /Annot /Subtype /Widget /FT /Tx /Ff 1 /T (issued on) '
+        '/V (2026-08-28) /Rect [200 500 500 525] /DA (/Helv 12 Tf 0 g) '
+        '/P 3 0 R >>',
+    // 13 a shared appearance, so the widgets have one
+    '<< /Type /XObject /Subtype /Form /BBox [0 0 20 20] /Length 0 >>\n'
+        'stream\n\nendstream',
+    // 14 font
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Name /Helv >>',
+    // 15 a second page, so a field's page is something a reader has to look
+    // up rather than assume
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] '
+        '/Resources << /Font << /Helv $helv 0 R >> >> /Contents 16 0 R '
+        '/Annots [17 0 R] >>',
+    // 16 content
+    _stream('BT /Helv 12 Tf 60 780 Td (Signature) Tj ET\\n'),
+    // 17 signature field, which Folio shows and leaves alone
+    '<< /Type /Annot /Subtype /Widget /FT /Sig /T (signed by) '
+        '/Rect [200 700 500 760] /P 15 0 R >>',
+  ];
+
+  return assemble(objects, '<< /Size ${objects.length + 1} /Root 1 0 R >>');
+}
+
+String _stream(String content) =>
+    '<< /Length ${content.length} >>\nstream\n${content}endstream';

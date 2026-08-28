@@ -8,10 +8,6 @@ has been decided on, and removed when it ships or is ruled out.
 
 ## Large, and not started
 
-### Form filler
-AcroForm fields, widget annotations, and regenerating each field's appearance
-as it is filled. A real subsystem rather than a slice.
-
 ### Edit PDF
 Changing text that is already on the page. This needs the content-stream
 operator parser that redaction deliberately avoided, plus font metrics, plus

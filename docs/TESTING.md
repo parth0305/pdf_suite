@@ -438,3 +438,35 @@ annotations left — with a premise check that it had one to begin with.
 
 The general shape: when a feature's promise is about what a user can no longer
 DO, a picture of the result cannot test it.
+
+## 22. A render that cannot see the thing being rendered
+
+Form filling generates an appearance stream so the value is visible in every
+reader. The obvious device test — render the page and look for the value —
+cannot test it: PDFium draws no widget appearance in EITHER annotation
+rendering mode, so a filled document and an untouched one are pixel-identical.
+The first version of the test asserted a difference of at least 100 pixels and
+found zero, against code that was working correctly.
+
+What does discriminate: flatten the filled document and render THAT. Flattening
+paints the appearance into the page, and it only has something to paint if an
+appearance was generated. The mutation "generate no appearance" now fails it.
+
+The lesson is the inverse of #21. There, a picture could not test a claim about
+what a user can no longer do. Here, a picture could not test a claim about
+drawing — because the renderer under test declines to draw that layer at all.
+Both times the fix was to find the observation the property actually reaches.
+
+## 23. Flattened, or only looking flattened
+
+`/AcroForm /Fields` still listed every field after flattening, so a document
+whose fields had all been painted into its pages still declared itself a form —
+and a reader that regenerates appearances would draw empty boxes over the
+flattened values. Every pixel test passed, because the boxes are only drawn by
+readers that do that.
+
+The device test now reads the form back after flattening and asserts the
+flattened field is gone from it while the one that could NOT be flattened
+remains. That second half matters: a field holding a value with no appearance
+to paint is deliberately kept, and a test that just asserted "no form left"
+would have driven the code to delete it.

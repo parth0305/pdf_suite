@@ -48,6 +48,10 @@ FailureMessage failureMessage(AppFailure failure, AppLocalizations l10n) {
       l10n.errorNothingToFlattenTitle,
       l10n.errorNothingToFlattenBody,
     ),
+    NoFormFields() => FailureMessage(
+      l10n.errorNoFormFieldsTitle,
+      l10n.errorNoFormFieldsBody,
+    ),
     InvalidPageRange() => FailureMessage(
       l10n.errorInvalidPageRangeTitle,
       l10n.errorInvalidPageRangeBody,

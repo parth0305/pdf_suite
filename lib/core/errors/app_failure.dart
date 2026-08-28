@@ -70,6 +70,13 @@ final class NothingToFlatten extends AppFailure {
   String get code => 'nothing_to_flatten';
 }
 
+/// The document has no form fields that can be filled.
+final class NoFormFields extends AppFailure {
+  const NoFormFields({super.technicalDetail});
+  @override
+  String get code => 'no_form_fields';
+}
+
 final class InvalidPageRange extends AppFailure {
   const InvalidPageRange({super.technicalDetail});
   @override

@@ -1050,11 +1050,45 @@ class AppLocalizationsEn extends AppLocalizations {
       'PNG, not JPEG: for a page of text it is both smaller and sharper. The images leave your device when you share them.';
 
   @override
+  String get errorNoFormFieldsTitle => 'No form to fill';
+
+  @override
+  String get errorNoFormFieldsBody =>
+      'This document has no fillable form fields.';
+
+  @override
   String get errorNothingToFlattenTitle => 'Nothing to flatten';
 
   @override
   String get errorNothingToFlattenBody =>
       'This document has no annotations that can be painted into its pages.';
+
+  @override
+  String get formMode => 'Fill form';
+
+  @override
+  String get formSave => 'Save';
+
+  @override
+  String formSaved(String name) {
+    return 'Filled $name';
+  }
+
+  @override
+  String get formEmptyTitle => 'No form here';
+
+  @override
+  String get formEmptyBody => 'This document has no fillable form fields.';
+
+  @override
+  String get formReadOnly => 'Filled in by the form\'s issuer';
+
+  @override
+  String get formSignatureField => 'Signature field — Folio leaves this alone';
+
+  @override
+  String get formNoScripts =>
+      'Folio fills in what you type. Fields that calculate themselves in other readers will not recalculate here.';
 
   @override
   String get flattenMode => 'Flatten annotations';

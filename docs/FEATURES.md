@@ -467,6 +467,39 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Forms
+
+| Feature | iPhone | iPad | Android | Windows | Offline |
+|---|---|---|---|---|---|
+| Fill AcroForm fields | ✅ | ✅ | ✅ | 🟡 | ✅ |
+
+Actions → **Fill form**. Text fields, checkboxes, radio groups and dropdowns,
+with the document's own length limits and required marks.
+
+Folio **generates the appearance itself** rather than setting
+`/NeedAppearances` and asking the reader to draw the value. Readers that
+honour that flag disagree about how; readers that ignore it show a blank
+field; printing frequently shows neither. The value is there because Folio put
+it there.
+
+A choice field stores the export value and shows the label — you pick *India*,
+the form's owner reads `IN`.
+
+Shown but not filled:
+
+- **Read-only fields**, because a read-only field is information the form is
+  giving you. Hiding it loses that.
+- **Signature fields**. A `/Sig` field promises a cryptographic signature;
+  Folio can place a drawn signature on the page instead.
+
+Two limits, said out loud on the screen rather than discovered afterwards:
+**field scripts do not run**, so a total that calculates itself in another
+reader will not recalculate here; and **XFA forms are refused**, because their
+fields live in an XML payload the PDF page only stands in for.
+
+Filled fields stay editable until you **flatten** — which is usually how a
+filled form should leave the app.
+
 ## Flattening
 
 | Feature | iPhone | iPad | Android | Windows | Offline |
