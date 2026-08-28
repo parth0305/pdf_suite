@@ -201,9 +201,13 @@ void main() {
     });
   });
 
-  // The strongest check available on the host: an implementation nobody here
-  // wrote. A reader of my own can share a misunderstanding with the writer;
-  // Python's cannot.
+  // The strongest check available: an implementation nobody here wrote. A
+  // reader of my own can share a misunderstanding with the writer; Python's
+  // cannot.
+  //
+  // Not every machine has Python - the Windows runner does not - so the test
+  // says it was skipped rather than passing quietly. A check that silently
+  // does nothing is worse than one that is not there.
   group('read by something that is not this code', () {
     late Directory dir;
 
@@ -212,7 +216,26 @@ void main() {
       if (dir.existsSync()) await dir.delete(recursive: true);
     });
 
+    /// The first Python on this machine, or null if there is none.
+    Future<String?> interpreter() async {
+      for (final name in ['python3', 'python']) {
+        try {
+          final probe = await Process.run(name, ['--version']);
+          if (probe.exitCode == 0) return name;
+        } on ProcessException {
+          continue;
+        }
+      }
+      return null;
+    }
+
     test('python opens the archive and agrees about its contents', () async {
+      final python = await interpreter();
+      if (python == null) {
+        markTestSkipped('no Python on this machine');
+        return;
+      }
+
       final path = '${dir.path}/probe.zip';
       await File(path).writeAsBytes(
         writeZip([
@@ -224,7 +247,7 @@ void main() {
         ]),
       );
 
-      final result = await Process.run('python3', [
+      final result = await Process.run(python, [
         '-c',
         'import zipfile,sys\n'
             'z=zipfile.ZipFile(sys.argv[1])\n'
