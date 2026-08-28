@@ -38,7 +38,16 @@ class EditableRun {
 
   final PageFont? font;
 
-  bool get isEditable => text != null && run.isVisible && font?.decoder != null;
+  /// Whether any edit to this run is possible at all.
+  ///
+  /// Includes knowing the glyph widths: without them no replacement can be
+  /// fitted, so every edit would be refused. A run shown as editable that
+  /// refuses everything typed into it is worse than one shown as fixed.
+  bool get isEditable =>
+      text != null &&
+      run.isVisible &&
+      font?.decoder != null &&
+      (font!.widths.isNotEmpty || font!.byCode != null);
 
   double get x => run.position.x;
   double get y => run.position.y;

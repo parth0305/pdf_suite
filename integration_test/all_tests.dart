@@ -22,6 +22,7 @@ import 'annotation_edit_flow_test.dart' as annotation_edit_flow;
 import 'compression_flow_test.dart' as compression_flow;
 import 'drawing_flow_test.dart' as drawing_flow;
 import 'archive_flow_test.dart' as archive_flow;
+import 'edit_flow_test.dart' as edit_flow;
 import 'office_flow_test.dart' as office_flow;
 import 'export_flow_test.dart' as export_flow;
 import 'flatten_flow_test.dart' as flatten_flow;
@@ -73,6 +74,7 @@ void main() {
   group('compression_flow', compression_flow.main);
   group('export_flow', export_flow.main);
   group('archive_flow', archive_flow.main);
+  group('edit_flow', edit_flow.main);
   group('office_flow', office_flow.main);
   group('flatten_flow', flatten_flow.main);
   group('form_flow', form_flow.main);

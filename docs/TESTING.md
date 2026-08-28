@@ -690,3 +690,40 @@ that table passed everything: the object was there, and the scan found it.
 The file would have opened nowhere. The test now follows `startxref` to the
 table, reads the offset out of it, and checks the object really begins there —
 which is the route a reader takes and the only one that can see this.
+
+## 40. A device suite that was never in the aggregate
+
+The edit suite ran green a dozen times while I was writing it, because I kept
+naming it directly. It was never added to `all_tests.dart`: the check meant to
+add it looked for `edit_flow_test`, which is a **substring** of
+`annotation_edit_flow_test`, so it concluded the suite was already registered
+and did nothing.
+
+The aggregate is what runs before a commit. A suite outside it runs only while
+somebody remembers to name it, and stops the day they forget - which is
+usually the day after they wrote it.
+
+There is now a test that reads `all_tests.dart` and asserts every
+`*_test.dart` in the directory is imported AND run, with an explicit list of
+the ones deliberately left out and why. Dropping a suite from the aggregate
+fails it.
+
+## 41. The adjustment that nothing could see
+
+Three device mutations survived the first edit suite, two of them the same
+thing: remove the width compensation entirely, or flip its sign, and every
+test still passed.
+
+The fixture was a page number - the last thing on its line, with nothing after
+it to be pushed around. The whole purpose of the adjustment is invisible in a
+document like that.
+
+The test that sees it needs text CONTINUING from the edited run: a second show
+with no repositioning between them. PDFium reports where each character
+landed, so the check is that the following text is still at the same x
+afterwards. Both mutations now fail it.
+
+The third - not chaining the update to the previous trailer - survives on
+device and always will: PDFium reconstructs a damaged cross-reference table
+rather than refusing the file. The unit tests assert `/Prev` directly.
+Unobservable on device, joining the earlier seven.

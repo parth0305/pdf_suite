@@ -277,6 +277,22 @@ void main() {
       );
     });
 
+    // A run whose widths are unknown can never be edited, whatever is typed.
+    // Showing it as editable and then refusing everything is worse than
+    // showing it as fixed.
+    test('a run with no widths is not offered as editable', () {
+      final pdf = document(
+        font:
+            '/Type /Font /Subtype /Type1 /BaseFont /Helvetica '
+            '/Encoding /WinAnsiEncoding',
+      );
+
+      final run = editorOf(pdf).runsOn(0).single;
+
+      expect(run.text, 'Total 48500');
+      expect(run.isEditable, isFalse);
+    });
+
     test('a font with no widths cannot be fitted', () {
       final pdf = document(
         font:
