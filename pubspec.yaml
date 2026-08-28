@@ -97,6 +97,14 @@ flutter:
     # first use.
     - assets/tessdata/
     - assets/tessdata_config.json
+    # Noto Sans, SIL Open Font License 1.1. Embedded into documents Folio
+    # writes text into, because a PDF that names a font it does not carry
+    # renders differently everywhere - and cannot be archived at all.
+    #
+    # Noto rather than Liberation, which is metric-compatible with Helvetica
+    # and would have been the tidier choice: Liberation has no rupee sign,
+    # and that is the one character this app cannot do without.
+    - assets/fonts/
   generate: true
 
 

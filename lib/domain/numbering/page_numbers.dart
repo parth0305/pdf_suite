@@ -79,11 +79,11 @@ String? numberTextFor(PageNumbering numbering, int pageIndex, int pageCount) {
   };
 }
 
-/// Roughly how wide [text] will be at [fontSizePt] in Helvetica.
+/// Roughly how wide [text] will be at [fontSizePt] in a text face.
 ///
-/// An estimate, because Folio embeds no font and so has no width table. It is
-/// only used to centre and right-align, where being a few points out is
-/// invisible - unlike using it for layout, which it is not.
+/// The fallback for when no font has been measured. Folio now embeds one, so
+/// [numberOrigin] takes a real width instead; this remains for callers that
+/// have no font to hand.
 double estimatedWidth(String text, double fontSizePt) =>
     text.length * fontSizePt * 0.5;
 
@@ -91,9 +91,17 @@ double estimatedWidth(String text, double fontSizePt) =>
 ({double x, double y}) numberOrigin(
   PageNumbering numbering,
   String text,
-  TextRect mediaBox,
-) {
-  final width = estimatedWidth(text, numbering.fontSizePt);
+  TextRect mediaBox, {
+
+  /// The measured width in thousandths of the text size, where the caller has
+  /// a font to measure with. Right-aligning by an estimate puts the number a
+  /// few points off the margin, which shows up as a ragged edge down a
+  /// hundred-page document.
+  double? widthPerMille,
+}) {
+  final width = widthPerMille == null
+      ? estimatedWidth(text, numbering.fontSizePt)
+      : widthPerMille * numbering.fontSizePt / 1000;
 
   final x = switch (numbering.position) {
     NumberPosition.bottomLeft ||
@@ -127,15 +135,32 @@ String pageNumberContentStream(
   PageNumbering numbering,
   String text, {
   required TextRect mediaBox,
+
+  /// The text already encoded for the embedded font, as a hex string of glyph
+  /// indices, with its measured width in thousandths of the text size.
+  ///
+  /// Absent means the caller has no font and the text is written as literal
+  /// bytes - which only works for characters the reader's standard encoding
+  /// happens to cover.
+  ({String hex, double width})? encoded,
 }) {
-  final origin = numberOrigin(numbering, text, mediaBox);
+  final origin = numberOrigin(
+    numbering,
+    text,
+    mediaBox,
+    widthPerMille: encoded?.width,
+  );
+
+  final show = encoded == null
+      ? '${pdfString(text)} Tj'
+      : '<${encoded.hex}> Tj';
 
   return 'q\n'
       'BT\n'
       '/$numberFontName ${pdfNumber(numbering.fontSizePt)} Tf\n'
       '0 g\n'
       '1 0 0 1 ${pdfNumber(origin.x)} ${pdfNumber(origin.y)} Tm\n'
-      '${pdfString(text)} Tj\n'
+      '$show\n'
       'ET\n'
       'Q\n';
 }

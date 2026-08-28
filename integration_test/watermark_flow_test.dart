@@ -11,6 +11,8 @@ import 'package:folio/core/errors/app_failure.dart';
 import 'package:folio/core/storage/safe_file_writer.dart';
 import 'package:folio/data/local/app_database.dart';
 import 'package:folio/data/local/library_dao.dart';
+import 'package:folio/data/fonts/font_assets.dart';
+import 'package:folio/data/repositories/archive_repository_impl.dart';
 import 'package:folio/data/repositories/document_writer.dart';
 import 'package:folio/data/repositories/library_repository_impl.dart';
 import 'package:folio/data/repositories/numbering_repository_impl.dart';
@@ -296,6 +298,7 @@ void main() {
           writer: SafeFileWriter(),
           libraryRoot: root,
         ),
+        fonts: FontAssets(),
       );
     });
 
@@ -303,9 +306,12 @@ void main() {
       final src = await seed('Numbered.pdf');
       final before = await render(src, 0);
 
+      // Numbered from 900, because the fixture's own footer already reads
+      // "Page 1 of 3" - and an assertion looking for "1 of 3" passes on that
+      // whether or not Folio drew anything.
       final out = await numbering.apply(
         src.id,
-        const PageNumbering(format: NumberFormat.ofTotal),
+        const PageNumbering(format: NumberFormat.ofTotal, startAt: 900),
       );
 
       expect(
@@ -320,7 +326,7 @@ void main() {
       final text = await engine.extractText(h, 0);
       await engine.close(h);
 
-      expect(text!.fullText, contains('1 of 3'));
+      expect(text!.fullText, contains('900 of 902'));
     });
 
     test('every page is numbered, and each differently', () async {
@@ -492,6 +498,97 @@ void main() {
         await File(await library.resolveReadablePath(src)).readAsBytes(),
         bytes,
       );
+    });
+  });
+
+  // Numbering is the first writer to carry its own font. Everything below is
+  // about what that buys: text that can be read back, and a document an
+  // archive will accept.
+  group('numbering with an embedded font', () {
+    late NumberingRepositoryImpl numbering;
+    late ArchiveRepositoryImpl archive;
+
+    setUp(() {
+      final writer = DocumentWriter(
+        library: library,
+        writer: SafeFileWriter(),
+        libraryRoot: root,
+      );
+      numbering = NumberingRepositoryImpl(
+        library: library,
+        documents: writer,
+        fonts: FontAssets(),
+      );
+      archive = ArchiveRepositoryImpl(library: library, documents: writer);
+    });
+
+    test('the number is drawn on the page', () async {
+      final src = await seed('Embedded.pdf');
+      final before = await render(src, 0);
+
+      final out = await numbering.apply(src.id, const PageNumbering());
+
+      expect(diff(before, await render(out, 0)), greaterThan(20));
+    });
+
+    // Glyph indices mean nothing to a reader without the map back to
+    // characters. Extraction is the only thing that proves the map is right.
+    test('the number reads back as the number it is', () async {
+      final src = await seed('Readable.pdf');
+      // A number the fixture's own footer cannot produce: it already reads
+      // "Page 1 of 3", so "1 of 3" would be found whether or not the glyphs
+      // Folio drew can be read back at all.
+      final out = await numbering.apply(
+        src.id,
+        const PageNumbering(format: NumberFormat.ofTotal, startAt: 900),
+      );
+
+      final h = await engine.open(
+        FileSource(await library.resolveReadablePath(out)),
+      );
+      final text = await engine.extractText(h, 0);
+      await engine.close(h);
+
+      expect(text!.fullText, contains('900 of 902'));
+    });
+
+    // The whole reason for carrying a font. A page numbered with a font the
+    // document does not carry cannot be archived at all.
+    test('a numbered scan can now be archived', () async {
+      final scan = await library.importFile(
+        await fixturePath('scanned_no_text.pdf'),
+        displayName: 'Scan.pdf',
+      );
+
+      expect((await archive.check(scan.id)).canConvert, isTrue);
+
+      final numberedScan = await numbering.apply(
+        scan.id,
+        const PageNumbering(),
+      );
+      final report = await archive.check(numberedScan.id);
+
+      expect(
+        report.canConvert,
+        isTrue,
+        reason: 'the font Folio drew with is carried in the document',
+      );
+
+      final archived = await archive.convert(numberedScan.id);
+      expect(archived.displayName, contains('PDF/A'));
+    });
+
+    // The subset carries the digits and nothing else.
+    test('the document grows by kilobytes, not by half a megabyte', () async {
+      final src = await seed('Size.pdf');
+      final before = await File(
+        await library.resolveReadablePath(src),
+      ).length();
+
+      final out = await numbering.apply(src.id, const PageNumbering());
+      final after = await File(await library.resolveReadablePath(out)).length();
+
+      expect(after - before, lessThan(60 * 1024));
     });
   });
 }

@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'dart:io';
+import 'package:folio/domain/fonts/pdf_embedded_font.dart';
+import 'package:folio/domain/fonts/truetype_font.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:folio/domain/numbering/page_numbers.dart';
 import 'package:folio/domain/numbering/pdf_page_number_writer.dart';
@@ -166,5 +169,67 @@ void main() {
       () => writePageNumbers(empty, const PageNumbering()),
       throwsA(anything),
     );
+  });
+
+  group('with an embedded font', () {
+    late TrueTypeFont noto;
+
+    setUpAll(
+      () => noto = TrueTypeFont.parse(
+        File('assets/fonts/NotoSans-Regular.ttf').readAsBytesSync(),
+      ),
+    );
+
+    String withFont([PageNumbering numbering = const PageNumbering()]) =>
+        latin1.decode(
+          writePageNumbers(threePages(), numbering, font: noto),
+          allowInvalid: true,
+        );
+
+    test('the font is carried in the document', () {
+      final out = withFont();
+
+      expect(out, contains('/FontFile2'));
+      expect(out, contains('/Subtype /CIDFontType2'));
+    });
+
+    // Without this a reader can draw the numbers and nothing else: they
+    // cannot be selected, copied, searched or extracted.
+    test('a map back to characters is carried', () {
+      expect(withFont(), contains('/ToUnicode'));
+    });
+
+    test('the numbers are written as glyph indices, not as letters', () {
+      final out = withFont();
+
+      // `<0011> Tj` rather than `(1) Tj`.
+      expect(RegExp(r'<[0-9A-F]{4,}> Tj').hasMatch(out), isTrue);
+    });
+
+    test('the page points at the embedded font', () {
+      final page = pageDict(withFont(), 3);
+
+      expect(page, contains('/$numberFontName'));
+      expect(bracesBalance(page), isTrue);
+    });
+
+    // The font objects are numbered after the one the page points at, and
+    // every one of them has to be in the cross-reference table or a reader
+    // cannot find the font at all.
+    test('every font object is in the cross-reference table', () {
+      final out = withFont();
+      final font = int.parse(
+        RegExp(r'/PgF1 (\d+) 0 R').firstMatch(out)!.group(1)!,
+      );
+
+      for (var n = font; n < font + EmbeddedFont.objectCount; n++) {
+        expect(out, contains('\n$n 1\n'), reason: 'object $n');
+      }
+    });
+
+    test('without a font the numbers are still written', () {
+      expect(numbered(), contains('Tj'));
+      expect(numbered(), isNot(contains('/FontFile2')));
+    });
   });
 }

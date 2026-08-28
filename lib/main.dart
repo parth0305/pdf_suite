@@ -25,6 +25,7 @@ import 'package:folio/data/scanner/image_source.dart';
 import 'package:folio/data/local/signature_dao.dart';
 import 'package:folio/data/repositories/annotation_edit_repository_impl.dart';
 import 'package:folio/data/repositories/annotation_repository_impl.dart';
+import 'package:folio/data/fonts/font_assets.dart';
 import 'package:folio/data/repositories/archive_repository_impl.dart';
 import 'package:folio/data/repositories/crop_repository_impl.dart';
 import 'package:folio/data/repositories/document_writer.dart';
@@ -81,6 +82,10 @@ Future<void> main() async {
     writer: SafeFileWriter(),
     libraryRoot: libraryRoot,
   );
+
+  // Parsed on first use and kept: the font covers tens of thousands of
+  // characters, and building that map twice is a visible pause.
+  final fonts = FontAssets();
   final annotations = AnnotationRepositoryImpl(
     library: library,
     documents: documentWriter,
@@ -160,7 +165,11 @@ Future<void> main() async {
           ),
         ),
         numberingRepositoryProvider.overrideWithValue(
-          NumberingRepositoryImpl(library: library, documents: documentWriter),
+          NumberingRepositoryImpl(
+            library: library,
+            documents: documentWriter,
+            fonts: fonts,
+          ),
         ),
         imageExportRepositoryProvider.overrideWithValue(
           ImageExportRepositoryImpl(library: library, engine: PdfrxEngine()),

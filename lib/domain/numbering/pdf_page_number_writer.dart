@@ -8,6 +8,8 @@ import 'package:folio/domain/annotations/pdf_object_index.dart';
 import 'package:folio/domain/annotations/pdf_object_reader.dart';
 import 'package:folio/domain/annotations/stamp_appearance.dart'
     show helveticaFontObject;
+import 'package:folio/domain/fonts/pdf_embedded_font.dart';
+import 'package:folio/domain/fonts/truetype_font.dart';
 import 'package:folio/domain/numbering/page_numbers.dart';
 import 'package:folio/domain/watermark/page_geometry.dart';
 
@@ -16,7 +18,15 @@ import 'package:folio/domain/watermark/page_geometry.dart';
 /// The original bytes are never rewritten. This is page content rather than an
 /// annotation, for the same reason a watermark is: a page number that any
 /// viewer can select and delete is not a page number.
-Uint8List writePageNumbers(Uint8List pdf, PageNumbering numbering) {
+Uint8List writePageNumbers(
+  Uint8List pdf,
+  PageNumbering numbering, {
+
+  /// The font to embed. Without one the numbers are written as literal bytes
+  /// against whatever encoding the reader assumes, and the document cannot be
+  /// archived - PDF/A requires every font used to be carried in the file.
+  TrueTypeFont? font,
+}) {
   final text = latin1.decode(pdf, allowInvalid: true);
   final reader = PdfObjectReader.parse(text);
   final index = PdfObjectIndex.parse(text);
@@ -76,9 +86,16 @@ Uint8List writePageNumbers(Uint8List pdf, PageNumbering numbering) {
       ..addAll(latin1.encode('\nendstream\nendobj\n'));
   }
 
-  // One font for the whole document, not one per page.
+  // One font for the whole document, not one per page. The embedded font's
+  // objects are written LAST, because which glyphs it must carry is not known
+  // until every number has been encoded.
+  final embedded = font == null ? null : EmbeddedFont(font);
   final fontNum = nextObj++;
-  emit(fontNum, helveticaFontObject());
+  if (embedded == null) {
+    emit(fontNum, helveticaFontObject());
+  } else {
+    nextObj += EmbeddedFont.objectCount - 1;
+  }
 
   var numbered = 0;
 
@@ -97,6 +114,12 @@ Uint8List writePageNumbers(Uint8List pdf, PageNumbering numbering) {
         numbering,
         label,
         mediaBox: mediaBoxOf(index, page),
+        encoded: embedded == null
+            ? null
+            : (() {
+                final encoded = embedded.encode(label);
+                return (hex: encoded.hex, width: encoded.width);
+              })(),
       ),
     );
 
@@ -106,6 +129,16 @@ Uint8List writePageNumbers(Uint8List pdf, PageNumbering numbering) {
 
   if (numbered == 0) {
     throw const EmptyDocument();
+  }
+
+  if (embedded != null) {
+    for (final object in embedded.objects(fontNum)) {
+      offsets[object.number] = out.length;
+      out
+        ..addAll(latin1.encode('${object.number} 0 obj\n'))
+        ..addAll(object.body)
+        ..addAll(latin1.encode('\nendobj\n'));
+    }
   }
 
   final xrefOffset = out.length;

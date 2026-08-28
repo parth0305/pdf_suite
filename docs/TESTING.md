@@ -507,3 +507,43 @@ nothing points at is not an output intent.
 The test now walks the file the way a reader does: last trailer, `/Root`,
 catalogue, and only then the objects it names. Both "not referenced" mutations
 fail it.
+
+## 27. The fixture already said what the test was looking for
+
+The device test for page numbering asserted the extracted text contained
+`1 of 3`. The fixture's own footer reads **"Page 1 of 3"**. The assertion had
+never once depended on Folio drawing anything, and it stayed green through a
+mutation that removed the entire `/ToUnicode` map — the one thing that makes
+drawn glyphs readable as text.
+
+It surfaced only because that mutation was expected to fail and did not.
+Numbering from 900 gives "900 of 902", which the fixture cannot produce.
+
+When a test asserts that output contains a string, check the input does not
+contain it already.
+
+## 28. Four paths the shipped font could not reach
+
+The TrueType parser had four mutations survive at once: short glyph offsets
+read without doubling, a width read past the metric array, a character map
+segment's indirection measured from the wrong place, and font units not scaled
+into the thousandths a PDF wants.
+
+None was a weak assertion. Noto Sans is drawn on a 1000-unit grid (so the
+scaling is arithmetically invisible), uses long offsets, carries a metric for
+every glyph, and needs no indirection in its character map. Four code paths
+existed and were never once executed.
+
+The fix was a synthetic font built by the tests with the awkward choices made
+deliberately — a 2048-unit grid, short offsets, a short metric array, and the
+indirection placed in the SECOND segment, because in the first one the wrong
+arithmetic gives the right answer.
+
+## 29. A default that hides a requirement
+
+`/CIDToGIDMap /Identity` is what the specification says the entry means when it
+is absent, so removing it changes nothing a renderer does — the device
+mutation survives and always will. It stays because PDF/A validators require
+the entry to be *present*, which is a requirement no renderer enforces.
+
+Unobservable on device, joining the earlier six.

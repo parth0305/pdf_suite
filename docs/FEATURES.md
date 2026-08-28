@@ -467,6 +467,30 @@ rather than becoming a black rectangle on your contract.
 **Not available on Windows**, because it needs the camera and gallery picker
 that has no Windows implementation — the same reason OCR is unavailable there.
 
+## Fonts
+
+Folio **carries the font it draws with**. Page numbers, and in time every
+other piece of text Folio adds, are written in Noto Sans, embedded into the
+document as a subset.
+
+Why it matters:
+
+- A PDF that names a font it does not carry renders in whatever the reader
+  substitutes. The same document looks different on every machine.
+- **PDF/A refuses such a document outright**, which is why a numbered scan
+  could not be archived before and can be now.
+- The standard fourteen fonts cover Latin-1 and nothing else. **The rupee sign
+  is not in Latin-1.** Folio writes text as glyph indices, two bytes each, so
+  any character the font has can be written.
+
+Only the glyphs actually used are embedded — a page number adds a few
+kilobytes, not half a megabyte. Every embedded font carries a map back to
+characters, so the text can still be selected, copied, searched and extracted.
+
+Noto Sans is used under the SIL Open Font License 1.1; the licence travels
+with it in `assets/fonts/`. Liberation Sans would have been the tidier choice,
+being metric-compatible with Helvetica — but it has no rupee sign.
+
 ## Archiving (PDF/A)
 
 | Feature | iPhone | iPad | Android | Windows | Offline |
