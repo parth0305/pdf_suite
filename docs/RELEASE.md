@@ -127,3 +127,25 @@ PDFium plus Tesseract's native library, and 3.9 MB is the English OCR model.
 `FEATURES.md` distinguishes ✅ verified from 🟡 built-but-unexercised. Windows
 is 🟡 throughout and must stay that way until someone runs the app on Windows.
 Do not promote a status because a build passed.
+
+## Checking Office conversion against Office
+
+The unit tests read Folio's archives back with a reader written from the
+specification, and hand the same bytes to Python's `zipfile`. Neither is Word.
+
+Word, Excel and PowerPoint are the only things that can answer whether they
+will open a file, so before releasing a change to the Office writers:
+
+    flutter test integration_test/office_sample_export_test.dart -d macos
+
+It converts a real document and prints where the three files went - inside the
+app's container, because a sandboxed app cannot write anywhere else. Copy them
+out and open each one.
+
+What to look for: the file opens **without a repair prompt**, the text is all
+there, Word shows a page break between pages, Excel shows one sheet per page,
+and PowerPoint shows one slide per page.
+
+Last run 2026-08-28 against Microsoft 365 on macOS 15.4.1: Word 8 paragraphs
+across 3 pages, Excel 3 sheets, PowerPoint 3 slides, no repair prompt from any
+of them.

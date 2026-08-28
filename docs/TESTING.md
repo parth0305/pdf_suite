@@ -559,3 +559,18 @@ and the assertion never said which element it wanted.
 Naming the element (`<p:sldSz cx="..." cy="..."/>`) fixes it. When a document
 format repeats an attribute across elements, matching on the attribute alone
 matches whichever one happens to be right.
+
+## 31. The only implementation whose opinion counted
+
+Folio's Office archives were checked by a reader written from the
+specification, and by Python's `zipfile`. Both agreed the files were correct.
+Neither is Word.
+
+Opening one in Word, Excel and PowerPoint found no fault - but that was not the
+point. The point is that until it was done, "the archive is structurally
+correct" was the strongest claim available, and it is a weaker claim than "it
+opens", which is what a user actually needs. The two are not the same
+sentence and should not have been reported as one.
+
+`docs/RELEASE.md` now carries the procedure, because the check cannot run in
+CI: the applications are not there.

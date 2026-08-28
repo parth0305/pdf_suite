@@ -501,6 +501,11 @@ all. The tests read it back with a reader written from the specification and
 hand the same bytes to Python's `zipfile` - an implementation nobody here
 wrote, and one that cannot share a misunderstanding with this one.
 
+None of which is Word. A converted document has been opened in **Word, Excel
+and PowerPoint themselves** (Microsoft 365 on macOS, 2026-08-28): all three
+opened it with no repair prompt and the text intact. `docs/RELEASE.md` has the
+procedure for repeating that.
+
 **Office to PDF is not built**, and is a much larger job: it means laying out
 a document rather than reading one - line breaking, tables, sections, and
 fonts that must be measured to be placed.
