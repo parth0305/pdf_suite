@@ -662,3 +662,31 @@ and a mutation removing it survived.
 
 The function is public and is called directly elsewhere. Being right only when
 approached through one particular caller is not being right.
+
+## 38. Two guards that masked each other
+
+A run is not "the next thing on this line" if it sits on a different line, and
+not if it sits further left. Both checks exist; removing EITHER left every
+test green.
+
+The fixture put the second run directly below the first — same x, lower y — so
+the line check and the position check each ruled it out on their own. Whichever
+one was deleted, the other still gave the right answer.
+
+The fixtures now separate the two: one run lower AND further right, another
+drawn later but further left. Each case can now only be decided by the guard
+it is there to exercise.
+
+Two guards that agree on every test case are, as far as the tests know, one
+guard.
+
+## 39. Reading the file in a way no reader does
+
+Every assertion about an edited document read it back with Folio's own parser,
+which finds objects by scanning the bytes. A real reader finds them through
+the cross-reference table. So a mutation that wrote a nonsense offset into
+that table passed everything: the object was there, and the scan found it.
+
+The file would have opened nowhere. The test now follows `startxref` to the
+table, reads the offset out of it, and checks the object really begins there —
+which is the route a reader takes and the only one that can see this.
