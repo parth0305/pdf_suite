@@ -142,7 +142,7 @@ void main() {
     test('data that would grow is stored instead', () {
       final zip = _Zip(
         writeZip([
-          ZipEntry(name: 'x', bytes: [7]),
+          const ZipEntry(name: 'x', bytes: [7]),
         ]),
       );
 
