@@ -621,3 +621,18 @@ Worth noting what this would have cost later. Element `a` is not read by
 anything today; it becomes load-bearing the moment a run's WIDTH is measured,
 which is the next slice. A wrong multiply would have shown up there as text
 that overlaps by a little, on rotated pages only.
+
+## 35. A guard against cost, which no assertion measured
+
+A damaged `/ToUnicode` CMap can declare a range covering sixteen million
+codes. The parser skips such a range; removing that guard left every test
+green, because the map still contained the right answers for the codes the
+tests asked about. It was merely also filling sixteen million entries first.
+
+Nothing in the tests measured cost, and cost was the entire point of the
+guard. The fix does not measure it either - it asserts the CONSEQUENCE: a
+code the absurd range would have covered is not mapped. That is checkable in
+microseconds and fails the moment the range is expanded.
+
+When a guard exists to prevent work rather than to change an answer, find the
+answer it does change.
