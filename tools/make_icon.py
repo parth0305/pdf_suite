@@ -48,8 +48,17 @@ def polygon(points):
     return inside
 
 
-def render(size, with_background=True, inset=0.0):
-    """Foreground inset lets Android's adaptive icon keep its safe zone."""
+def render(size, with_background=True, inset=0.0, monochrome=False):
+    """Foreground inset lets Android's adaptive icon keep its safe zone.
+
+    Android masks an adaptive icon to whatever shape the launcher likes - a
+    circle on a Pixel - and only the central 66 of 108 units is guaranteed to
+    survive. The mark is inset so its corners are inside that circle rather
+    than trimmed off by it.
+
+    `monochrome` draws the themed-icon layer, where only the alpha channel is
+    used: the sheet is solid and the fold and rules are holes in it.
+    """
     w = h = size * SS
     buf = [[(0, 0, 0, 0)] * w for _ in range(h)]
 
@@ -62,7 +71,9 @@ def render(size, with_background=True, inset=0.0):
         return 0.5 + (v - 0.5) * (1.0 - inset)
 
     px0, py0, px1, py1 = u(sc(0.255)), u(sc(0.175)), u(sc(0.745)), u(sc(0.825))
-    cut = u(sc(0.175)) * 0.95   # size of the turned corner
+    # A SIZE, not a position: scaling it through sc() made the turned corner
+    # grow as the mark shrank, until the fold ate half the page.
+    cut = u(0.175) * 0.95 * (1.0 - inset)
 
     page = polygon([
         (px0, py0), (px1 - cut, py0), (px1, py0 + cut), (px1, py1), (px0, py1),
@@ -91,11 +102,11 @@ def render(size, with_background=True, inset=0.0):
                 )
                 row[x] = c + (255,)
             if page(x, y):
-                row[x] = PAPER + (255,)
+                row[x] = (255, 255, 255, 255) if monochrome else PAPER + (255,)
                 if any(r(x, y) for r in rules):
-                    row[x] = INK + (255,)
+                    row[x] = (0, 0, 0, 0) if monochrome else INK + (255,)
             if fold(x, y):
-                row[x] = FOLD + (255,)
+                row[x] = (0, 0, 0, 0) if monochrome else FOLD + (255,)
 
     # Downsample.
     out = bytearray()
@@ -125,9 +136,27 @@ def write_png(path, raw, size):
     open(path, 'wb').write(png)
 
 
+# Android adaptive layers are 108dp square at each density.
+ADAPTIVE = {'mdpi': 108, 'hdpi': 162, 'xhdpi': 216, 'xxhdpi': 324,
+            'xxxhdpi': 432}
+
+# The mark's diagonal has to fit the 66/108 circle the launcher guarantees.
+# Anything larger has its corners shaved off on a round-masked launcher.
+SAFE_INSET = 0.25
+
+
 if __name__ == '__main__':
     import sys
     sd = sys.argv[1]
     raw, s = render(512)
     write_png(f'{sd}/folio_icon_512.png', raw, s)
     print('drawn 512')
+
+    for name, px in ADAPTIVE.items():
+        raw, s = render(px, with_background=False, inset=SAFE_INSET)
+        write_png(f'{sd}/foreground_{name}.png', raw, s)
+
+        raw, s = render(px, with_background=False, inset=SAFE_INSET,
+                        monochrome=True)
+        write_png(f'{sd}/monochrome_{name}.png', raw, s)
+        print(f'drawn adaptive {name} {px}')

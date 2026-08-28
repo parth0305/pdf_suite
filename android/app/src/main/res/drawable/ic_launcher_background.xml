@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The same top-to-bottom teal the iOS icon has, so the two match. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="#2F5D62"
+        android:endColor="#1E3D41" />
+</shape>
