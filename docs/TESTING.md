@@ -603,3 +603,21 @@ skipping it changed nothing.
 Both were written defensively and both read, to anyone later, as cases someone
 had thought about and handled. They are gone. A mutation that survives is
 usually a missing test; sometimes it is code that should not exist.
+
+## 34. Two of six products that upright text never exercises
+
+The matrix multiply had a mutation survive: its rows and columns swapped, and
+every test still passed. Not a weak assertion - the tests exercise translation,
+scaling, the graphics state, `Tm`, `Td`, `T*` and the rest, and all of them use
+UPRIGHT text, where the `b` and `c` elements are zero and two of the six
+products cancel. Swapped or not, the answer comes out the same.
+
+The fix is a test of the multiply itself, on two matrices with no zeroes in
+them, against six values worked out by hand. It is the same shape as the
+synthetic font in #28: the real inputs are all comfortable, so the awkward one
+has to be made deliberately.
+
+Worth noting what this would have cost later. Element `a` is not read by
+anything today; it becomes load-bearing the moment a run's WIDTH is measured,
+which is the next slice. A wrong multiply would have shown up there as text
+that overlaps by a little, on rotated pages only.
