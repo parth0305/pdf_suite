@@ -574,3 +574,32 @@ sentence and should not have been reported as one.
 
 `docs/RELEASE.md` now carries the procedure, because the check cannot run in
 CI: the applications are not there.
+
+## 32. The mutation that hung, and what it was hiding
+
+A mutation of the content-stream parser made a sub-parser return where it
+started. The tokeniser then looped forever, and the mutation run stopped
+producing output at all - no pass, no fail, nothing.
+
+The mutation was mine and artificial. The gap it exposed was not: nothing in
+the parser guaranteed that a token consumes at least one byte, so any future
+mistake of that shape would freeze on a document rather than fail on one. A
+parser fed arbitrary files has to terminate on all of them.
+
+That property is now stated - `tokensAdvance` - and asserted against a dozen
+malformed streams and every stream in the fixtures. And the mutation runner
+now uses a timeout, so a hang reports as CAUGHT rather than as silence: a run
+that produces nothing looks exactly like a run that has not finished.
+
+## 33. Two guards that could never fire
+
+The same run reported two survivors that no test could have caught, because
+the code was unreachable. A `%` is itself neither newline nor carriage return,
+so a comment always consumes at least that byte and the empty-comment guard
+was dead. And the whitespace after an inline image's `ID` only matters to a
+reader that decodes the data; this parser holds the image as a span, so
+skipping it changed nothing.
+
+Both were written defensively and both read, to anyone later, as cases someone
+had thought about and handled. They are gone. A mutation that survives is
+usually a missing test; sometimes it is code that should not exist.
