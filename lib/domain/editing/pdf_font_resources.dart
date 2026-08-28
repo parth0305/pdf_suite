@@ -33,6 +33,7 @@ Map<String, PageFont> pageFonts(
   PdfObjectIndex index,
   String pageDictionary,
 ) {
+  final pdfText = latin1.decode(pdf, allowInvalid: true);
   final resources = _inherited(index, pageDictionary, 'Resources');
   if (resources == null) return const {};
 
@@ -47,13 +48,18 @@ Map<String, PageFont> pageFonts(
     final body = index.bodyOf(int.parse(match.group(2)!));
     if (body == null) continue;
 
-    out[match.group(1)!] = _fontFrom(pdf, index, body);
+    out[match.group(1)!] = _fontFrom(pdf, pdfText, index, body);
   }
 
   return out;
 }
 
-PageFont _fontFrom(Uint8List pdf, PdfObjectIndex index, String font) {
+PageFont _fontFrom(
+  Uint8List pdf,
+  String pdfText,
+  PdfObjectIndex index,
+  String font,
+) {
   final toUnicode = RegExp(r'/ToUnicode\s+(\d+)\s+\d+\s+R').firstMatch(font);
 
   FontDecoder? decoder;
@@ -76,7 +82,7 @@ PageFont _fontFrom(Uint8List pdf, PdfObjectIndex index, String font) {
 
     return PageFont(
       decoder: decoder,
-      widths: _compositeWidths(body),
+      widths: _compositeWidths(pdfText, body),
       byCode:
           double.tryParse(
             RegExp(r'/DW\s+(-?[\d.]+)').firstMatch(body)?.group(1) ?? '',
@@ -94,7 +100,7 @@ PageFont _fontFrom(Uint8List pdf, PdfObjectIndex index, String font) {
 
   return PageFont(
     decoder: decoder,
-    widths: _simpleWidths(font),
+    widths: _simpleWidths(pdfText, font),
     byCode: double.tryParse(
       RegExp(r'/MissingWidth\s+(-?[\d.]+)').firstMatch(font)?.group(1) ?? '',
     ),
@@ -102,32 +108,93 @@ PageFont _fontFrom(Uint8List pdf, PdfObjectIndex index, String font) {
 }
 
 /// `/FirstChar` and `/Widths`, which together say how wide each byte is.
-Map<int, double> _simpleWidths(String font) {
+Map<int, double> _simpleWidths(String pdfText, String font) {
   final first = int.tryParse(
     RegExp(r'/FirstChar\s+(\d+)').firstMatch(font)?.group(1) ?? '',
   );
-  final widths = RegExp(r'/Widths\s*\[([^\]]*)\]').firstMatch(font);
+  final widths = _arrayFor(pdfText, font, 'Widths');
   if (first == null || widths == null) return const {};
 
-  final values = RegExp(r'-?[\d.]+')
-      .allMatches(widths.group(1)!)
-      .map((m) => double.tryParse(m.group(0)!) ?? 0)
-      .toList();
+  final values = RegExp(
+    r'-?[\d.]+',
+  ).allMatches(widths).map((m) => double.tryParse(m.group(0)!) ?? 0).toList();
 
   return {for (var i = 0; i < values.length; i++) first + i: values[i]};
 }
 
+/// The contents of an array entry, whether written inline or held in its own
+/// object.
+///
+/// A `/Widths` array of two hundred numbers is very often an indirect
+/// reference - it is exactly the sort of thing a producer puts in its own
+/// object. Reading only the inline form finds no widths at all, and then
+/// nothing in the document can be edited.
+String? _arrayFor(String pdfText, String dictionary, String key) {
+  final inline = RegExp(
+    '/$key'
+    r'\s*\[([^\]]*)\]',
+  ).firstMatch(dictionary);
+  if (inline != null) return inline.group(1);
+
+  final reference = RegExp(
+    '/$key'
+    r'\s+(\d+)\s+\d+\s+R',
+  ).firstMatch(dictionary);
+  if (reference == null) return null;
+
+  // Read the object out of the file rather than through the index: the index
+  // holds DICTIONARIES, and an object that is a bare array has none, so it is
+  // not in there at all. That is why a /Widths array in its own object looked
+  // like a document carrying no widths.
+  final body = rawObjectBody(pdfText, int.parse(reference.group(1)!));
+  if (body == null) return null;
+
+  final open = body.indexOf('[');
+  return open == -1 ? null : _bracketed(body, open);
+}
+
+/// The contents of the array opening at [open], brackets balanced.
+///
+/// A composite font's `/W` nests: `[1 [640 700] 5 9 500]`. Stopping at the
+/// first closing bracket returns half of it, which parses as nothing at all.
+String? _bracketed(String text, int open) {
+  var depth = 0;
+
+  for (var i = open; i < text.length; i++) {
+    if (text[i] == '[') depth++;
+    if (text[i] == ']') {
+      depth--;
+      if (depth == 0) return text.substring(open + 1, i);
+    }
+  }
+
+  return null;
+}
+
+/// Everything between `N 0 obj` and `endobj`, for objects the index does not
+/// hold - which is any object that is not a dictionary.
+String? rawObjectBody(String pdfText, int objectNumber) {
+  final match = RegExp(
+    '(?<![0-9])$objectNumber 0 obj',
+  ).allMatches(pdfText).lastOrNull;
+  if (match == null) return null;
+
+  final end = pdfText.indexOf('endobj', match.end);
+  return end == -1 ? null : pdfText.substring(match.end, end);
+}
+
 /// `/W`, which states widths in two forms at once: a start code followed by a
 /// list, or a range of codes followed by one width for all of them.
-Map<int, double> _compositeWidths(String font) {
-  final w = RegExp(
+Map<int, double> _compositeWidths(String pdfText, String font) {
+  final inline = RegExp(
     r'/W\s*\[(.*?)\]\s*(?:/|>>|$)',
     dotAll: true,
   ).firstMatch(font);
-  if (w == null) return const {};
+
+  final source = inline?.group(1) ?? _arrayFor(pdfText, font, 'W');
+  if (source == null) return const {};
 
   final out = <int, double>{};
-  final source = w.group(1)!;
 
   for (final match in RegExp(r'(\d+)\s*\[([^\]]*)\]').allMatches(source)) {
     final start = int.parse(match.group(1)!);

@@ -6,6 +6,18 @@ each one is where it is.
 Everything here is a deliberate list, not a wish list: an item is added when it
 has been decided on, and removed when it ships or is ruled out.
 
+## Next
+
+### The metrics of the fourteen standard fonts
+Helvetica, Times, Courier, Symbol and Zapf Dingbats may be used by a document
+without carrying their widths: a reader is expected to know them. Folio does
+not, so it cannot refit text in them, and that is what stops 7 documents in 60
+from being editable - the largest single cause.
+
+The tables are public and fixed. They must be TRANSCRIBED rather than
+estimated: a width that is close is worse than none, because the text after an
+edit moves by the error and nothing reports it.
+
 ## Office conversion
 
 PDF to Word, Excel and PowerPoint has shipped. The other direction has not,

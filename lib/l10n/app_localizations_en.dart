@@ -1083,6 +1083,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap any highlighted words to change them. Words in a font Folio cannot measure are shown greyed out.';
 
   @override
+  String get editTextNoMetrics =>
+      'This document leaves its font measurements to the reader, so Folio cannot refit the text. Words it can measure are editable; these are not.';
+
+  @override
+  String get editTextUnreadableDocument =>
+      'Folio cannot tell what this document\'s text says — its fonts give no way to read their bytes back.';
+
+  @override
   String get editTextNone =>
       'There is no text on this page that can be edited.';
 

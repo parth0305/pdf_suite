@@ -468,6 +468,8 @@
   "editTextLabel": "Text",
   "editTextApply": "Replace",
   "editTextHint": "Tap any highlighted words to change them. Words in a font Folio cannot measure are shown greyed out.",
+  "editTextNoMetrics": "This document leaves its font measurements to the reader, so Folio cannot refit the text. Words it can measure are editable; these are not.",
+  "editTextUnreadableDocument": "Folio cannot tell what this document's text says \u2014 its fonts give no way to read their bytes back.",
   "editTextNone": "There is no text on this page that can be edited.",
   "editTextDone": "Edited {name}",
   "editTextMissingCharacters": "This document's font has no {characters} in it, so those cannot be typed here.",

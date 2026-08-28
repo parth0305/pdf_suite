@@ -293,6 +293,60 @@ void main() {
       expect(run.isEditable, isFalse);
     });
 
+    // A /Widths array of two hundred numbers is very often kept in its own
+    // object. Reading only the inline form finds no widths at all - and then
+    // nothing in the document can be edited, which is what five documents out
+    // of sixty were doing.
+    test('a /Widths array in its own object is found', () {
+      final objects = <String>[
+        '<< /Type /Catalog /Pages 2 0 R >>',
+        '<< /Type /Pages /Kids [3 0 R] /Count 1 /MediaBox [0 0 595 842] >>',
+        '<< /Type /Page /Parent 2 0 R /Contents 4 0 R '
+            '/Resources << /Font << /F1 5 0 R >> >> >>',
+        '<< /Length 41 >>\nstream\n'
+            'BT /F1 12 Tf 72 700 Td (Total) Tj ET\nendstream',
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica '
+            '/Encoding /WinAnsiEncoding /FirstChar 32 /Widths 6 0 R >>',
+        '[${List.filled(95, '500').join(' ')}]',
+      ];
+
+      final run = editorOf(
+        Uint8List.fromList(assemble(objects, '<< /Size 7 /Root 1 0 R >>')),
+      ).runsOn(0).single;
+
+      expect(run.text, 'Total');
+      expect(run.isEditable, isTrue);
+      expect(run.font!.widthOf(0x54), 500);
+    });
+
+    // The same for a composite font, whose /W lives in its own object just as
+    // often.
+    test('a /W array in its own object is found', () {
+      final objects = <String>[
+        '<< /Type /Catalog /Pages 2 0 R >>',
+        '<< /Type /Pages /Kids [3 0 R] /Count 1 /MediaBox [0 0 595 842] >>',
+        '<< /Type /Page /Parent 2 0 R /Contents 4 0 R '
+            '/Resources << /Font << /F1 5 0 R >> >> >>',
+        '<< /Length 43 >>\nstream\n'
+            'BT /F1 12 Tf 72 700 Td <0001> Tj ET\nendstream',
+        '<< /Type /Font /Subtype /Type0 /BaseFont /Sub+Noto '
+            '/Encoding /Identity-H /DescendantFonts [6 0 R] /ToUnicode 8 0 R >>',
+        '<< /Type /Font /Subtype /CIDFontType2 /BaseFont /Sub+Noto '
+            '/W 7 0 R /DW 1000 >>',
+        '[1 [640]]',
+        '<< /Length 190 >>\nstream\n'
+            'begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n'
+            '1 beginbfchar\n<0001> <0041>\nendbfchar\nendstream',
+      ];
+
+      final run = editorOf(
+        Uint8List.fromList(assemble(objects, '<< /Size 9 /Root 1 0 R >>')),
+      ).runsOn(0).single;
+
+      expect(run.text, 'A');
+      expect(run.font!.widthOf(1), 640);
+    });
+
     test('a font with no widths cannot be fitted', () {
       final pdf = document(
         font:

@@ -778,7 +778,21 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (!mounted) return;
 
       if (!runs.any((r) => r.isEditable)) {
-        messenger.showSnackBar(SnackBar(content: Text(l10n.editTextNone)));
+        // Which of the three it is matters. "No text here" is what a page of
+        // pictures deserves; a page full of words that cannot be measured
+        // deserves to be told so, or the app looks broken rather than
+        // limited.
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              runs.isEmpty
+                  ? l10n.editTextNone
+                  : runs.every((r) => r.text == null)
+                  ? l10n.editTextUnreadableDocument
+                  : l10n.editTextNoMetrics,
+            ),
+          ),
+        );
         return;
       }
 

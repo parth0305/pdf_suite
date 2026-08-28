@@ -2038,6 +2038,18 @@ abstract class AppLocalizations {
   /// **'Tap any highlighted words to change them. Words in a font Folio cannot measure are shown greyed out.'**
   String get editTextHint;
 
+  /// No description provided for @editTextNoMetrics.
+  ///
+  /// In en, this message translates to:
+  /// **'This document leaves its font measurements to the reader, so Folio cannot refit the text. Words it can measure are editable; these are not.'**
+  String get editTextNoMetrics;
+
+  /// No description provided for @editTextUnreadableDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Folio cannot tell what this document\'s text says — its fonts give no way to read their bytes back.'**
+  String get editTextUnreadableDocument;
+
   /// No description provided for @editTextNone.
   ///
   /// In en, this message translates to:

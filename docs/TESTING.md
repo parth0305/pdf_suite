@@ -739,3 +739,29 @@ test was never entered.
 The fix is to change the text FIRST, get the refusal, and then type the
 original back. Only then is the callback carrying the original value, which is
 the case the code exists for.
+
+## 43. Sixty real documents, and what they said
+
+Editing was built against fixtures and verified on device, and it worked. The
+first real document a person opened could not be edited at all, and the app
+said "there is no text on this page that can be edited" - which reads as "this
+page is empty" about a page covered in text.
+
+Running the editor over sixty real PDFs was the only way to find out how
+common that was. It found:
+
+- 38 fully editable
+- 7 held back by standard fonts whose widths the document does not carry
+- 8 whose content streams could not be read
+- 5 whose `/Widths` array lived in its own object, which the code did not
+  resolve — a plain bug, and the fix moved them straight into the first group
+- the rest structural
+
+The fixtures could not have told me any of this. They were all written by the
+same hand, and that hand happened to put its arrays inline.
+
+Two lessons. A corpus is not a substitute for tests, but tests are not a
+substitute for a corpus either. And when a feature declines to work, the
+message has to distinguish "nothing here to do" from "I cannot do this",
+because the first reads as a fact about the document and the second as a fact
+about the app.
