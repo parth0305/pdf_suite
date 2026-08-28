@@ -10,7 +10,7 @@
 /// failure the whole feature exists to avoid.
 library;
 
-/// Reads the bytes of a shown string.
+/// Reads the bytes of a shown string, and writes text back as the same bytes.
 abstract interface class FontDecoder {
   /// The characters [bytes] stand for, or null when they cannot all be
   /// resolved.
@@ -18,14 +18,79 @@ abstract interface class FontDecoder {
   /// All or nothing on purpose: a partly-read run is worse than an unread one,
   /// because it looks editable and re-encodes wrongly.
   String? decode(List<int> bytes);
+
+  /// [text] as this font's own bytes, or null when it has no way to write
+  /// some of it.
+  ///
+  /// Refusing is the point. A font subsetted for "Invoice 2026" has no `x` in
+  /// it; writing one anyway draws nothing, or draws a box, and nothing
+  /// reports either.
+  List<int>? encode(String text);
+
+  /// The characters of [text] this font cannot write, in the order they
+  /// appear. Empty when it can write all of them.
+  List<String> missingFrom(String text);
+}
+
+/// Reverses a code-to-text table.
+///
+/// Longest match first, so a ligature mapped from one code is written as that
+/// code rather than as its separate letters. Where two codes give the same
+/// text the lower one wins, so the same edit always produces the same bytes.
+class _Reverse {
+  _Reverse(Map<int, String> table) {
+    for (final entry in table.entries) {
+      if (entry.value.isEmpty) continue;
+
+      final existing = _codes[entry.value];
+      if (existing == null || entry.key < existing) {
+        _codes[entry.value] = entry.key;
+      }
+      if (entry.value.length > _longest) _longest = entry.value.length;
+    }
+  }
+
+  final Map<String, int> _codes = {};
+  int _longest = 1;
+
+  /// The codes for [text], or null with the first character it cannot write.
+  ({List<int>? codes, List<String> missing}) codesFor(String text) {
+    final codes = <int>[];
+    final missing = <String>[];
+    var at = 0;
+
+    while (at < text.length) {
+      var matched = false;
+
+      for (var length = _longest; length >= 1; length--) {
+        if (at + length > text.length) continue;
+
+        final code = _codes[text.substring(at, at + length)];
+        if (code != null) {
+          codes.add(code);
+          at += length;
+          matched = true;
+          break;
+        }
+      }
+
+      if (!matched) {
+        missing.add(text[at]);
+        at++;
+      }
+    }
+
+    return (codes: missing.isEmpty ? codes : null, missing: missing);
+  }
 }
 
 /// A font whose codes are single bytes, mapped by an encoding table.
 class SimpleFontDecoder implements FontDecoder {
-  const SimpleFontDecoder(this._table);
+  SimpleFontDecoder(this._table) : _reverse = _Reverse(_table);
 
   /// Byte to character. A missing entry is a byte this font cannot explain.
   final Map<int, String> _table;
+  final _Reverse _reverse;
 
   @override
   String? decode(List<int> bytes) {
@@ -39,6 +104,12 @@ class SimpleFontDecoder implements FontDecoder {
 
     return out.toString();
   }
+
+  @override
+  List<int>? encode(String text) => _reverse.codesFor(text).codes;
+
+  @override
+  List<String> missingFrom(String text) => _reverse.codesFor(text).missing;
 }
 
 /// A font whose codes are mapped by a `/ToUnicode` CMap carried in the
@@ -47,13 +118,13 @@ class SimpleFontDecoder implements FontDecoder {
 /// The most trustworthy case, because the document itself says what its bytes
 /// mean - which is exactly why Folio writes one into every font it embeds.
 class ToUnicodeDecoder implements FontDecoder {
-  const ToUnicodeDecoder({
-    required Map<int, String> mapping,
-    required int codeLength,
-  }) : _mapping = mapping,
-       _codeLength = codeLength;
+  ToUnicodeDecoder({required Map<int, String> mapping, required int codeLength})
+    : _mapping = mapping,
+      _codeLength = codeLength,
+      _reverse = _Reverse(mapping);
 
   final Map<int, String> _mapping;
+  final _Reverse _reverse;
 
   /// How many bytes make one code. Two for the identity encodings, one for
   /// most simple fonts. Reading a two-byte font one byte at a time gives
@@ -81,6 +152,26 @@ class ToUnicodeDecoder implements FontDecoder {
 
     return out.toString();
   }
+
+  /// The codes as bytes, most significant first.
+  ///
+  /// A `/ToUnicode` map is written to be READ, and inverting it is sound only
+  /// where it maps each code to a different string. Where it does not, the
+  /// lower code wins - so the same edit always writes the same bytes, even if
+  /// they are not the ones the original used.
+  @override
+  List<int>? encode(String text) {
+    final codes = _reverse.codesFor(text).codes;
+    if (codes == null) return null;
+
+    return [
+      for (final code in codes)
+        for (var b = _codeLength - 1; b >= 0; b--) (code >> (b * 8)) & 0xFF,
+    ];
+  }
+
+  @override
+  List<String> missingFrom(String text) => _reverse.codesFor(text).missing;
 }
 
 /// Reads a `/ToUnicode` CMap.

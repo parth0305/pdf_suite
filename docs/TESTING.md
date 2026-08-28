@@ -636,3 +636,29 @@ microseconds and fails the moment the range is expanded.
 
 When a guard exists to prevent work rather than to change an answer, find the
 answer it does change.
+
+## 36. Two units that cancelled out
+
+The overlap check multiplies a width in thousandths of the text size by the
+font size to get points, and compares that with the room available. Removing
+the multiplication left every test green, because the replacement in the test
+was so much longer that it overran the budget either way.
+
+At twelve point the two answers differ by a factor of twelve. The test that
+catches it is deliberately marginal: three characters replacing one, five
+points of room. With the size, it overruns and is refused; without, it looks
+like a one-point overrun and sails through - which in a real document is a
+word printed on top of the next one.
+
+A test built from an extreme case cannot see a factor. It has to be built from
+a case near the boundary.
+
+## 37. A public function tested only through its caller
+
+`encode` refuses a string containing a character the font cannot write. Every
+test went through the edit planner, which checks for missing characters FIRST
+and returns before encoding - so the refusal inside `encode` was never reached,
+and a mutation removing it survived.
+
+The function is public and is called directly elsewhere. Being right only when
+approached through one particular caller is not being right.
