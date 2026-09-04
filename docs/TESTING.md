@@ -785,3 +785,35 @@ looked like it did nothing.
 The advance needs the glyph WIDTHS, which live outside the content stream, so
 the finder now takes them from the caller and reports the unmoved position
 when it has none - honest, and visibly different from a guess.
+
+## 45. The overlay that was never mounted
+
+Editing text had unit tests for the overlay widget, widget tests for the
+dialog, device tests for the engine, and 22 mutations caught. Tapping "Edit
+text" on a real document on a real simulator drew nothing at all.
+
+The viewer builds page overlays only for a list of modes, and `editText` was
+never added to that list. The builder was null, so the widget was never
+constructed. Every test of the overlay passed because every test built the
+overlay directly.
+
+Nothing in the app failed: the mode activated, the hint appeared, and the page
+sat there unmarked. A feature can be entirely correct in every part and still
+do nothing, if the part that mounts it is missing.
+
+The list is now inverted - the two modes that must NOT have overlays are named
+instead of the seven that must - so a new mode gets one by default rather than
+by being remembered.
+
+The lesson is about which tests were absent, not which were weak. There was no
+test that ran the viewer in this mode; the wiring between a feature and its
+screen is exactly the seam that unit tests cannot see and that a person tapping
+the button finds in a second.
+
+## 46. A layout that overflows on a screen nobody photographed
+
+Driving the simulator by hand for the overlay bug wandered into the Scan
+screen, which reported RIGHT OVERFLOWED BY 37 PIXELS in its own debug stripe -
+on a device size no test uses. Recorded rather than fixed in the same breath,
+but worth saying: two bugs found in ten minutes of looking at the app, after a
+day of tests that all passed.

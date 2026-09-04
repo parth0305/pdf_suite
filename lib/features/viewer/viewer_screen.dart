@@ -1649,16 +1649,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           },
         ),
         pagePaintCallbacks: [_paintSearchMatches],
-        // Only present in draw mode: in read mode there is no overlay at all,
-        // so it cannot compete with the viewer for scroll or pinch gestures.
+        // Absent while reading, so an overlay cannot compete with the viewer
+        // for scroll or pinch. Named as the two modes that must NOT have one
+        // rather than as the seven that must: listing the modes that opt IN
+        // means a new mode silently gets no overlay, which is exactly how
+        // editing text shipped with its highlights never mounted.
         pageOverlaysBuilder:
-            (_mode != _ViewerMode.draw &&
-                _mode != _ViewerMode.annotations &&
-                _mode != _ViewerMode.signature &&
-                _mode != _ViewerMode.note &&
-                _mode != _ViewerMode.stamp &&
-                _mode != _ViewerMode.redact &&
-                _mode != _ViewerMode.insertImage)
+            (_mode == _ViewerMode.read || _mode == _ViewerMode.pages)
             ? null
             : (context, pageRect, page) => [
                 // The overlay is positioned at the page, so its own local
