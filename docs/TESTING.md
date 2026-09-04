@@ -765,3 +765,23 @@ substitute for a corpus either. And when a feature declines to work, the
 message has to distinguish "nothing here to do" from "I cannot do this",
 because the first reads as a fact about the document and the second as a fact
 about the app.
+
+## 44. Every fragment at the start of the line
+
+A real document reported 1813 runs on one page, and the first several all
+claimed the same position. Showing text MOVES the text position by the width
+of what was shown, and nothing in the run finder did that: only `Td`, `Tm` and
+`T*` moved anything.
+
+Every fixture had drawn one string per position, so the bug could not appear
+in any of them. Real documents draw a line in a dozen pieces — "To be t",
+"ype", "d", "on a no", "n" — and every piece after the first landed on top of
+the first.
+
+Nothing failed loudly. The overlay drew its rectangles in a stack at the left
+margin, the room-to-the-next-run measurement was nonsense, and the feature
+looked like it did nothing.
+
+The advance needs the glyph WIDTHS, which live outside the content stream, so
+the finder now takes them from the caller and reports the unmoved position
+when it has none - honest, and visibly different from a guess.

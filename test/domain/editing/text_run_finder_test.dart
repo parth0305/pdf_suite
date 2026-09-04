@@ -314,4 +314,110 @@ void main() {
       expect(source.substring(run.operationStart, run.operationEnd), '(Hi) Tj');
     });
   });
+
+  // Showing text MOVES the text position. A document that draws a line in a
+  // dozen pieces - which is most of them - puts every piece after the first
+  // at the start of the line without this, stacked on top of each other.
+  group('showing text moves on', () {
+    double? evenWidths(String? font, int code) => 500;
+
+    List<TextRun> advanced(String source) =>
+        findTextRuns(latin1.encode(source), advanceOf: evenWidths);
+
+    test('a second show starts where the first ended', () {
+      final runs = advanced('BT /F1 10 Tf 72 700 Td (ab) Tj (cd) Tj ET');
+
+      // Two glyphs at 500 thousandths of 10 point is 10 points.
+      expect(runs.first.position.x, 72);
+      expect(runs.last.position.x, closeTo(82, 0.001));
+    });
+
+    test('each string in an array starts where the last ended', () {
+      final runs = advanced('BT /F1 10 Tf 72 700 Td [(ab) (cd) (ef)] TJ ET');
+
+      expect(runs[1].position.x, closeTo(82, 0.001));
+      expect(runs[2].position.x, closeTo(92, 0.001));
+    });
+
+    // The numbers between them move the position too, the other way.
+    test('a kerning number shifts what follows it', () {
+      final runs = advanced('BT /F1 10 Tf 72 700 Td [(ab) -1000 (cd)] TJ ET');
+
+      // 1000 thousandths of 10 point is 10 more points.
+      expect(runs.last.position.x, closeTo(92, 0.001));
+    });
+
+    test('character spacing widens every glyph', () {
+      final runs = advanced('BT /F1 10 Tf 2 Tc 72 700 Td (ab) Tj (cd) Tj ET');
+
+      expect(runs.last.position.x, closeTo(86, 0.001));
+    });
+
+    test('word spacing applies to spaces alone', () {
+      final runs = advanced('BT /F1 10 Tf 5 Tw 72 700 Td (a b) Tj (c) Tj ET');
+
+      // Three glyphs at 5 points each, plus 5 for the one space.
+      expect(runs.last.position.x, closeTo(92, 0.001));
+    });
+
+    test('horizontal scaling squeezes the advance too', () {
+      final runs = advanced('BT /F1 10 Tf 50 Tz 72 700 Td (ab) Tj (cd) Tj ET');
+
+      expect(runs.last.position.x, closeTo(77, 0.001));
+    });
+
+    // A new line starts again at the line matrix, not where the text got to.
+    test('the next line starts at the margin, not at the last word', () {
+      final runs = advanced(
+        'BT /F1 10 Tf 14 TL 72 700 Td (abcdef) Tj T* (next) Tj ET',
+      );
+
+      expect(runs.last.position.x, 72);
+    });
+
+    test('Td after showing is still relative to the LINE, not the text', () {
+      final runs = advanced(
+        'BT /F1 10 Tf 72 700 Td (abcdef) Tj 0 -14 Td (next) Tj ET',
+      );
+
+      expect(runs.last.position.x, 72);
+    });
+
+    // Without widths there is nothing to advance by, and the honest answer is
+    // the position the text object started at rather than a guess.
+    test('with no widths the position does not move', () {
+      final runs = runsOf('BT /F1 10 Tf 72 700 Td (ab) Tj (cd) Tj ET');
+
+      expect(runs.last.position.x, 72);
+    });
+
+    // Two bytes to a code, so four bytes are two glyphs and not four.
+    test('a two-byte font advances per code, not per byte', () {
+      final runs = findTextRuns(
+        latin1.encode('BT /F1 10 Tf 72 700 Td <00010002> Tj (x) Tj ET'),
+        advanceOf: evenWidths,
+        codeLengthOf: (_) => 2,
+      );
+
+      expect(runs.last.position.x, closeTo(82, 0.001));
+    });
+
+    // The two numbers a double-quote takes SET the word and character
+    // spacing, and they stay set for everything drawn after it.
+    test('the quote operator sets the spacing it is given', () {
+      final runs = advanced('BT /F1 10 Tf 14 TL 0 2 (ab) " (cd) Tj ET');
+
+      // Two glyphs at 5 points, plus 2 of character spacing each.
+      expect(runs.last.position.x, closeTo(14, 0.001));
+    });
+
+    test('a glyph of unknown width stops the advance rather than guessing', () {
+      final runs = findTextRuns(
+        latin1.encode('BT /F1 10 Tf 72 700 Td (ab) Tj (cd) Tj ET'),
+        advanceOf: (font, code) => code == 0x62 ? null : 500,
+      );
+
+      expect(runs.last.position.x, 72);
+    });
+  });
 }

@@ -86,7 +86,19 @@ class PdfTextEditor {
       final stream = streamContents(_pdf, _index, object);
       if (stream == null) continue;
 
-      final runs = findTextRuns(stream);
+      // The fonts are what make positions right: showing text moves the
+      // text position by the width of what was shown, and a document that
+      // draws a line in a dozen pieces puts every piece after the first in
+      // the wrong place without them.
+      final runs = findTextRuns(
+        stream,
+        advanceOf: (name, code) =>
+            name == null ? null : fonts[name]?.widthOf(code),
+        codeLengthOf: (name) {
+          final decoder = name == null ? null : fonts[name]?.decoder;
+          return decoder is ToUnicodeDecoder ? decoder.codeLength : 1;
+        },
+      );
 
       for (var i = 0; i < runs.length; i++) {
         final run = runs[i];

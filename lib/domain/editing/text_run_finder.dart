@@ -117,7 +117,17 @@ class TextRun {
 /// the text matrix, the line matrix, the graphics state, and the font size at
 /// the moment it was shown. Reporting a run without that is reporting that
 /// something was drawn somewhere.
-List<TextRun> findTextRuns(List<int> bytes) {
+///
+/// [advanceOf] gives a glyph's width in thousandths, for the font named and
+/// the code given. Showing text MOVES the text position, and a document that
+/// draws a line in a dozen pieces - which is most of them - puts every piece
+/// after the first in the wrong place without it. Absent, the positions after
+/// the first show in each text object are the position it started at.
+List<TextRun> findTextRuns(
+  List<int> bytes, {
+  double? Function(String? fontName, int code)? advanceOf,
+  int? Function(String? fontName)? codeLengthOf,
+}) {
   final out = <TextRun>[];
   final stack = <Matrix>[];
 
@@ -130,6 +140,12 @@ List<TextRun> findTextRuns(List<int> bytes) {
   var renderMode = 0;
   var horizontalScale = 1.0;
   var rise = 0.0;
+  var characterSpacing = 0.0;
+  var wordSpacing = 0.0;
+
+  /// How many bytes make one code in the current font. Two for the identity
+  /// encodings; the caller says so by what its widths are keyed on.
+  var codeLength = 1;
 
   double number(ContentOperation op, int index) {
     if (index >= op.operands.length) return 0;
@@ -154,6 +170,48 @@ List<TextRun> findTextRuns(List<int> bytes) {
   void nextLine() {
     lineMatrix = Matrix(1, 0, 0, 1, 0, -leading).then(lineMatrix);
     textMatrix = lineMatrix;
+  }
+
+  /// Moves the text position on by what was just drawn.
+  ///
+  /// ISO 32000-1 9.4.4: each glyph advances by its own width at the text
+  /// size, plus the character spacing, plus the word spacing when the code is
+  /// a single-byte 32 - all scaled horizontally.
+  void advance(List<int> shown, int codeLength) {
+    if (advanceOf == null) return;
+
+    var tx = 0.0;
+
+    for (var i = 0; i + codeLength <= shown.length; i += codeLength) {
+      var code = 0;
+      for (var b = 0; b < codeLength; b++) {
+        code = (code << 8) | shown[i + b];
+      }
+
+      final width = advanceOf(fontName, code);
+      if (width == null) return;
+
+      tx +=
+          width / 1000 * fontSize +
+          characterSpacing +
+          (codeLength == 1 && code == 32 ? wordSpacing : 0);
+    }
+
+    textMatrix = Matrix(1, 0, 0, 1, tx * horizontalScale, 0).then(textMatrix);
+  }
+
+  /// A kerning number inside a TJ array moves the position too, the other way.
+  void adjust(double amount) {
+    if (advanceOf == null) return;
+
+    textMatrix = Matrix(
+      1,
+      0,
+      0,
+      1,
+      -amount / 1000 * fontSize * horizontalScale,
+      0,
+    ).then(textMatrix);
   }
 
   void addRun(ContentOperation op, ContentToken token, TextRunSource source) {
@@ -205,6 +263,7 @@ List<TextRun> findTextRuns(List<int> bytes) {
           );
         }
         fontSize = number(op, 1);
+        codeLength = codeLengthOf?.call(fontName) ?? 1;
 
       case 'Td':
         lineMatrix = Matrix(
@@ -246,6 +305,12 @@ List<TextRun> findTextRuns(List<int> bytes) {
       case 'TL':
         leading = number(op, 0);
 
+      case 'Tc':
+        characterSpacing = number(op, 0);
+
+      case 'Tw':
+        wordSpacing = number(op, 0);
+
       case 'Tz':
         horizontalScale = number(op, 0) / 100;
 
@@ -257,7 +322,10 @@ List<TextRun> findTextRuns(List<int> bytes) {
 
       case 'Tj':
         final token = _lastString(op);
-        if (token != null) addRun(op, token, TextRunSource.show);
+        if (token != null) {
+          addRun(op, token, TextRunSource.show);
+          advance(_stringBytes(bytes, token), codeLength);
+        }
 
       case 'TJ':
         // One run per string: the numbers between them are kerning, and an
@@ -265,19 +333,35 @@ List<TextRun> findTextRuns(List<int> bytes) {
         for (final token in op.operands) {
           if (_isString(token)) {
             addRun(op, token, TextRunSource.showAdjusted);
+            advance(_stringBytes(bytes, token), codeLength);
+          } else if (token.kind == ContentTokenKind.number) {
+            adjust(
+              double.tryParse(
+                    String.fromCharCodes(bytes.sublist(token.start, token.end)),
+                  ) ??
+                  0,
+            );
           }
         }
 
       case "'":
         nextLine();
         final token = _lastString(op);
-        if (token != null) addRun(op, token, TextRunSource.nextLineShow);
+        if (token != null) {
+          addRun(op, token, TextRunSource.nextLineShow);
+          advance(_stringBytes(bytes, token), codeLength);
+        }
 
       case '"':
+        // Its first two operands set the word and character spacing, and they
+        // stay set for everything after it.
+        wordSpacing = number(op, 0);
+        characterSpacing = number(op, 1);
         nextLine();
         final token = _lastString(op);
         if (token != null) {
           addRun(op, token, TextRunSource.spacedNextLineShow);
+          advance(_stringBytes(bytes, token), codeLength);
         }
     }
   }
